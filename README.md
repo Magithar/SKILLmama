@@ -1,37 +1,27 @@
-# SKILLmama
+<h1 align="center">SKILLmama</h1>
 
-**AI-Native Capability Discovery Engine**
+<p align="center"><strong>AI-Native Capability Discovery Engine</strong></p>
 
-![License](https://img.shields.io/badge/license-Apache_2.0-blue.svg)
-![Claude Code](https://img.shields.io/badge/Claude_Code-slash_command-8A2BE2)
-![Claude.ai](https://img.shields.io/badge/Claude.ai-skill-orange)
-![OpenAI Codex](https://img.shields.io/badge/OpenAI_Codex-AGENTS.md-412991)
-![Antigravity](https://img.shields.io/badge/Antigravity-system_prompt-black)
-![Tiers](https://img.shields.io/badge/search_tiers-5-green)
-![Formula](https://img.shields.io/badge/ranking-deterministic-brightgreen)
+<p align="center">
+  <img src="https://img.shields.io/badge/license-Apache_2.0-blue.svg" alt="License"/>
+  <img src="https://img.shields.io/badge/Claude_Code-slash_command-8A2BE2" alt="Claude Code"/>
+  <img src="https://img.shields.io/badge/Claude.ai-skill-orange" alt="Claude.ai"/>
+  <img src="https://img.shields.io/badge/OpenAI_Codex-AGENTS.md-412991" alt="OpenAI Codex"/>
+  <img src="https://img.shields.io/badge/Antigravity-system_prompt-black" alt="Antigravity"/>
+  <img src="https://img.shields.io/badge/search_tiers-5-green" alt="Tiers"/>
+  <img src="https://img.shields.io/badge/ranking-deterministic-brightgreen" alt="Formula"/>
+</p>
 
-SKILLmama is an AI-native capability discovery engine. Point it at a capability gap — it searches across 5 tiers of the ecosystem, scores every candidate against your stack, and returns ranked recommendations with evidence and clickable links.
-
-Works with Claude Code, Claude.ai, OpenAI Codex, and Antigravity.
+<p align="center">
+  SKILLmama is an AI-native capability discovery engine. Point it at a capability gap — it searches across 5 tiers of the ecosystem, scores every candidate against your stack, and returns ranked recommendations with evidence and clickable links.<br/>
+  Works with Claude Code, Claude.ai, OpenAI Codex, and Antigravity.
+</p>
 
 ---
 
-## Table of Contents
-
-- [Install](#install)
-  - [Claude Code](#claude-code-cli)
-  - [Claude.ai](#claudeai-web--desktop)
-  - [OpenAI Codex](#openai-codex)
-  - [Antigravity](#antigravity)
-- [Usage](#usage)
-- [AI Adapters](#ai-adapters)
-- [Core Workflow](#core-workflow)
-- [Ranking Formula](#ranking-formula)
-- [5-Tier Search Hierarchy](#5-tier-search-hierarchy)
-- [Output Format](#output-format)
-- [End-to-End Example](#end-to-end-example)
-- [What SKILLmama Is Not](#what-skillmama-is-not)
-- [Project Structure](#project-structure)
+<p align="center">
+  <a href="#install">Install</a> • <a href="#usage">Usage</a> • <a href="#ai-adapters">AI Adapters</a> • <a href="#core-workflow">Core Workflow</a> • <a href="#ranking-formula">Ranking Formula</a> • <a href="#5-tier-search-hierarchy">5-Tier Search</a> • <a href="#output-format">Output Format</a> • <a href="#end-to-end-example">Example</a> • <a href="#project-structure">Project Structure</a>
+</p>
 
 ---
 
@@ -61,6 +51,7 @@ Then type `/skillmama` in any Claude Code session inside that project.
 ### OpenAI Codex
 
 Place `codex/AGENTS.md` in your repo root, then run naturally:
+
 ```bash
 codex "find me the best job queue for this project"
 ```
@@ -68,6 +59,7 @@ codex "find me the best job queue for this project"
 ### Antigravity
 
 Load `antigravity/PROMPT.md` as the system prompt, then ask naturally:
+
 ```
 find me a vector database for this project
 ```
@@ -87,12 +79,12 @@ find me a vector database for this project
 
 ## AI Adapters
 
-| AI System | File | How to use |
-|---|---|---|
-| Claude Code | [.claude/commands/skillmama.md](.claude/commands/skillmama.md) | `/skillmama` slash command |
-| Claude.ai | [skillmama/skill.md](skillmama/skill.md) | Upload zip via Customize → Skills |
-| OpenAI Codex | [codex/AGENTS.md](codex/AGENTS.md) | Place in repo root as agent instructions |
-| Antigravity | [antigravity/PROMPT.md](antigravity/PROMPT.md) | Load as system prompt |
+| AI System    | File                                                           | How to use                               |
+| ------------ | -------------------------------------------------------------- | ---------------------------------------- |
+| Claude Code  | [.claude/commands/skillmama.md](.claude/commands/skillmama.md) | `/skillmama` slash command               |
+| Claude.ai    | [skillmama/skill.md](skillmama/skill.md)                       | Upload zip via Customize → Skills        |
+| OpenAI Codex | [codex/AGENTS.md](codex/AGENTS.md)                             | Place in repo root as agent instructions |
+| Antigravity  | [antigravity/PROMPT.md](antigravity/PROMPT.md)                 | Load as system prompt                    |
 
 All four adapters run the same pipeline and produce the same output format.
 
@@ -225,12 +217,12 @@ All four adapters run the same pipeline and produce the same output format.
 
 Every candidate is scored 1–10 on four dimensions:
 
-| Factor | Weight | Signals |
-|---|---|---|
-| Compatibility | 40% | Language/framework fit, official SDK, integration effort |
-| Popularity | 30% | GitHub stars, npm/PyPI/go weekly downloads |
-| Maintenance | 15% | Days since last commit, release cadence |
-| Simplicity | 15% | Setup effort, documentation quality |
+| Factor        | Weight | Signals                                                  |
+| ------------- | ------ | -------------------------------------------------------- |
+| Compatibility | 40%    | Language/framework fit, official SDK, integration effort |
+| Popularity    | 30%    | GitHub stars, npm/PyPI/go weekly downloads               |
+| Maintenance   | 15%    | Days since last commit, release cadence                  |
+| Simplicity    | 15%    | Setup effort, documentation quality                      |
 
 `Total = (Compat × 0.40) + (Pop × 0.30) + (Maint × 0.15) + (Simp × 0.15)`
 
@@ -238,13 +230,13 @@ Every candidate is scored 1–10 on four dimensions:
 
 ## 5-Tier Search Hierarchy
 
-| Tier | Source | What it finds |
-|---|---|---|
-| 1 | [skills.sh](https://skills.sh) | Reusable skills and capability patterns |
-| 2 | GitHub | Open-source libraries, frameworks, SDKs |
-| 3 | [Smithery](https://smithery.ai) / MCP Ecosystem | AI-native tools installable as MCP servers |
-| 4 | npm / PyPI / pkg.go.dev | Package registries with download signals |
-| 5 | Curated Templates | LangGraph, OpenHands, cookbook examples |
+| Tier | Source                                          | What it finds                              |
+| ---- | ----------------------------------------------- | ------------------------------------------ |
+| 1    | [skills.sh](https://skills.sh)                  | Reusable skills and capability patterns    |
+| 2    | GitHub                                          | Open-source libraries, frameworks, SDKs    |
+| 3    | [Smithery](https://smithery.ai) / MCP Ecosystem | AI-native tools installable as MCP servers |
+| 4    | npm / PyPI / pkg.go.dev                         | Package registries with download signals   |
+| 5    | Curated Templates                               | LangGraph, OpenHands, cookbook examples    |
 
 ---
 
@@ -264,6 +256,7 @@ Each result card includes:
 ```
 
 Followed by:
+
 - **Also Considered** table with Name · Score · Why not #1 · Links
 - **MCP Option** callout with Smithery + GitHub links
 - **Next Steps** — 3 concrete actions
@@ -273,6 +266,7 @@ Followed by:
 ## End-to-End Example
 
 **User prompt:**
+
 ```
 find me a vector database for my FastAPI + Python project
 ```
@@ -309,7 +303,7 @@ Tier 5 Templates   → LangChain + Qdrant RAG template, FastAPI + Chroma starter
 **Step 4 — Scoring**
 
 | Candidate | Compat | Popular | Maint | Simple | **Score** |
-|-----------|--------|---------|-------|--------|-----------|
+| --------- | ------ | ------- | ----- | ------ | --------- |
 | Qdrant    | 9      | 8       | 10    | 9      | **9.05**  |
 | pgvector  | 10     | 7       | 9     | 7      | **8.65**  |
 | Chroma    | 8      | 8       | 9     | 10     | **8.55**  |
