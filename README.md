@@ -94,7 +94,7 @@ All four adapters run the same pipeline and produce the same output format.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                      USER REQUEST                        │
+│                      USER REQUEST                       │
 └─────────────────────────┬───────────────────────────────┘
                           │
                           ▼
@@ -159,7 +159,7 @@ All four adapters run the same pipeline and produce the same output format.
               │   5-Tier Search       │
               └───────────┬───────────┘
                           │
-                    ┌─────┴──────────────────────────────────────┐
+                    ┌─────┴───────────────────────────────────────┐
                     │         Search loop (tiers in order)        │
                     │                                             │
                     │  Tier 1 ── skills.sh                        │
@@ -184,7 +184,7 @@ All four adapters run the same pipeline and produce the same output format.
                           └─────┬──────┘
                                 │
                                 ▼
-              ┌───────────────────────────────────────┐
+              ┌────────────────────────────────────────┐
               │   PHASE 4 — Score Each Candidate       │
               │                                        │
               │   Score = (C × 0.40) +                 │
@@ -193,22 +193,22 @@ All four adapters run the same pipeline and produce the same output format.
               │           (S × 0.15)                   │
               │                                        │
               │   C — Compatibility   (stack fit)      │
-              │   P — Popularity      (stars/downloads) │
+              │   P — Popularity      (stars/downloads)│
               │   M — Maintenance     (last commit)    │
               │   S — Simplicity      (install effort) │
               │                                        │
               │   Each factor: 1–10                    │
-              └───────────────┬───────────────────────┘
+              └───────────────┬────────────────────────┘
                               │
                               ▼
-              ┌───────────────────────────────────────┐
+              ┌────────────────────────────────────────┐
               │   PHASE 5 — Present Results            │
               │                                        │
               │   #1, #2, #3 — full score breakdown    │
               │   Also Considered — table              │
               │   MCP callout (if found)               │
               │   Next Steps (3 actions)               │
-              └───────────────────────────────────────┘
+              └────────────────────────────────────────┘
 ```
 
 ---
