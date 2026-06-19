@@ -2,9 +2,36 @@
 
 **AI-Native Capability Discovery Engine**
 
+![License](https://img.shields.io/badge/license-Apache_2.0-blue.svg)
+![Claude Code](https://img.shields.io/badge/Claude_Code-slash_command-8A2BE2)
+![Claude.ai](https://img.shields.io/badge/Claude.ai-skill-orange)
+![OpenAI Codex](https://img.shields.io/badge/OpenAI_Codex-AGENTS.md-412991)
+![Antigravity](https://img.shields.io/badge/Antigravity-system_prompt-black)
+![Tiers](https://img.shields.io/badge/search_tiers-5-green)
+![Formula](https://img.shields.io/badge/ranking-deterministic-brightgreen)
+
 SKILLmama is an AI-native capability discovery engine. Point it at a capability gap — it searches across 5 tiers of the ecosystem, scores every candidate against your stack, and returns ranked recommendations with evidence and clickable links.
 
 Works with Claude Code, Claude.ai, OpenAI Codex, and Antigravity.
+
+---
+
+## Table of Contents
+
+- [Install](#install)
+  - [Claude Code](#claude-code-cli)
+  - [Claude.ai](#claudeai-web--desktop)
+  - [OpenAI Codex](#openai-codex)
+  - [Antigravity](#antigravity)
+- [Usage](#usage)
+- [AI Adapters](#ai-adapters)
+- [Core Workflow](#core-workflow)
+- [Ranking Formula](#ranking-formula)
+- [5-Tier Search Hierarchy](#5-tier-search-hierarchy)
+- [Output Format](#output-format)
+- [End-to-End Example](#end-to-end-example)
+- [What SKILLmama Is Not](#what-skillmama-is-not)
+- [Project Structure](#project-structure)
 
 ---
 
@@ -74,17 +101,122 @@ All four adapters run the same pipeline and produce the same output format.
 ## Core Workflow
 
 ```
-User Repo
-    ↓
-Architecture Scan          ← reads project files, detects stack
-    ↓
-Capability Detection       ← identifies what's missing or needed
-    ↓
-5-Tier Search              ← skills.sh, GitHub, MCP, npm/PyPI/go, Templates
-    ↓
-Scoring                    ← deterministic formula (Compat 40% · Pop 30% · Maint 15% · Simp 15%)
-    ↓
-Ranked Results             ← top 3 with links, also-considered table, MCP callout, next steps
+┌─────────────────────────────────────────────────────────┐
+│                      USER REQUEST                        │
+└─────────────────────────┬───────────────────────────────┘
+                          │
+                          ▼
+              ┌───────────────────────┐
+              │   PHASE 0             │
+              │   Understand Request  │
+              │   Extract: capability,│
+              │   stack, constraints  │
+              └───────────┬───────────┘
+                          │
+                          ▼
+                   ◇ Capability
+                     vague?
+                   /         \
+                 YES           NO
+                  │             │
+                  ▼             │
+          Ask 1 clarifying      │
+          question, await       │
+          user response         │
+                  │             │
+                  └──────┬──────┘
+                         │
+                         ▼
+              ┌───────────────────────┐
+              │   PHASE 1             │
+              │   Architecture Scan   │
+              └───────────┬───────────┘
+                          │
+                          ▼
+                   ◇ In a project
+                     repo?
+                   /         \
+                 YES           NO
+                  │             │
+                  ▼             │
+        Read: package.json,     │
+        Dockerfile, README,     │
+        source files            │
+        Extract: lang,          │
+        frameworks, DBs,        │
+        gaps                    │
+                  │             │
+                  └──────┬──────┘
+                         │
+                         ▼
+              ┌───────────────────────┐
+              │   PHASE 2             │
+              │   Capability Gap      │
+              │   Detection           │
+              │                       │
+              │   Define:             │
+              │   CAPABILITY          │
+              │   STACK               │
+              │   CONSTRAINTS         │
+              │   SEARCH_TERMS (3–5)  │
+              └───────────┬───────────┘
+                          │
+                          ▼
+              ┌───────────────────────┐
+              │   PHASE 3             │
+              │   5-Tier Search       │
+              └───────────┬───────────┘
+                          │
+                    ┌─────┴──────────────────────────────────────┐
+                    │         Search loop (tiers in order)        │
+                    │                                             │
+                    │  Tier 1 ── skills.sh                        │
+                    │     ↓                                       │
+                    │  Tier 2 ── GitHub (stars, recency, contrib) │
+                    │     ↓                                       │
+                    │  Tier 3 ── MCP Ecosystem                    │
+                    │     ↓                                       │
+                    │  Tier 4 ── npm / PyPI registries            │
+                    │     ↓                                       │
+                    │  Tier 5 ── Templates & Cookbooks            │
+                    └─────────────────┬───────────────────────────┘
+                                      │
+                          ◇ 8+ candidates
+                            found?
+                           /        \
+                         YES          NO
+                          │            │
+                     Skip remaining    │
+                     tiers             │
+                          │            │
+                          └─────┬──────┘
+                                │
+                                ▼
+              ┌───────────────────────────────────────┐
+              │   PHASE 4 — Score Each Candidate       │
+              │                                        │
+              │   Score = (C × 0.40) +                 │
+              │           (P × 0.30) +                 │
+              │           (M × 0.15) +                 │
+              │           (S × 0.15)                   │
+              │                                        │
+              │   C — Compatibility   (stack fit)      │
+              │   P — Popularity      (stars/downloads) │
+              │   M — Maintenance     (last commit)    │
+              │   S — Simplicity      (install effort) │
+              │                                        │
+              │   Each factor: 1–10                    │
+              └───────────────┬───────────────────────┘
+                              │
+                              ▼
+              ┌───────────────────────────────────────┐
+              │   PHASE 5 — Present Results            │
+              │                                        │
+              │   #1, #2, #3 — full score breakdown    │
+              │   Also Considered — table              │
+              │   MCP callout (if found)               │
+              │   Next Steps (3 actions)               │
+              └───────────────────────────────────────┘
 ```
 
 ---
