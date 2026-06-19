@@ -1,4 +1,4 @@
-<p align="center"><img src="logo.png" alt="SKILLmama" width="400"/></p>
+<p align="center"><img src="logo.png" alt="SKILLmama" width="200"/></p>
 
 <h1 align="center">SKILLmama</h1>
 
