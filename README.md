@@ -1,3 +1,5 @@
+<p align="center"><img src="logo.png" alt="SKILLmama" width="400"/></p>
+
 <h1 align="center">SKILLmama</h1>
 
 <p align="center">
