@@ -1,7 +1,5 @@
 <h1 align="center">SKILLmama</h1>
 
-<p align="center"><strong>Mother of all skills — scans your project, then finds, scores, and ranks the best libraries, SDKs & tools for your stack.</strong></p>
-
 <p align="center">
   <img src="https://img.shields.io/badge/license-Apache_2.0-blue.svg" alt="License"/>
   <img src="https://img.shields.io/badge/Claude_Code-slash_command-8A2BE2" alt="Claude Code"/>
