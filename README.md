@@ -1,6 +1,4 @@
-<p align="center"><img src="logo.png" alt="SKILLmama" width="200"/></p>
-
-<h1 align="center">SKILLmama</h1>
+<p align="center"><img src="logo.png" alt="SKILLmama" width="350"/></p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-Apache_2.0-blue.svg" alt="License"/>
