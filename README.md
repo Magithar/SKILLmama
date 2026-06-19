@@ -1,6 +1,6 @@
 <h1 align="center">SKILLmama</h1>
 
-<p align="center"><strong>AI-Native Capability Discovery Engine</strong></p>
+<p align="center"><strong>Mother of all skills — scans your project, then finds, scores, and ranks the best libraries, SDKs & tools for your stack.</strong></p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-Apache_2.0-blue.svg" alt="License"/>
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  SKILLmama is an AI-native capability discovery engine. Point it at a capability gap — it searches across 5 tiers of the ecosystem, scores every candidate against your stack, and returns ranked recommendations with evidence and clickable links.<br/>
+  SKILLmama is an AI-native capability discovery engine. Point it at a capability gap — it scans your project architecture, searches across 5 tiers of the ecosystem, scores every candidate against your stack, and returns ranked recommendations with evidence and clickable links.<br/>
   Works with Claude Code, Claude.ai, OpenAI Codex, and Antigravity.
 </p>
 
