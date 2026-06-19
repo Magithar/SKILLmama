@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/Claude.ai-skill-orange" alt="Claude.ai"/>
   <img src="https://img.shields.io/badge/OpenAI_Codex-AGENTS.md-412991" alt="OpenAI Codex"/>
   <img src="https://img.shields.io/badge/Antigravity-system_prompt-black" alt="Antigravity"/>
-  <img src="https://img.shields.io/github/stars/Magithar/SKILLmama?style=social" alt="Stars"/>
+  <img src="https://img.shields.io/github/stars/Magithar/SKILLmama?color=yellow" alt="Stars"/>
   <img src="https://img.shields.io/github/issues/Magithar/SKILLmama" alt="Issues"/>
   <img src="https://img.shields.io/github/v/release/Magithar/SKILLmama?include_prereleases&label=release" alt="Release"/>
 </p>
