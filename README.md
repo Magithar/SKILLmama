@@ -24,6 +24,12 @@
 
 ---
 
+<p align="center">
+  📖 <a href="https://dev.to/magithar/stop-guessing-which-library-to-use-i-built-an-ai-capability-discovery-engine-3p7p">Read the full breakdown on Dev.to</a> — scoring formula, 5-tier search, security gate, end-to-end example.
+</p>
+
+---
+
 ## Install
 
 ### Claude Code (CLI)
