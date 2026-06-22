@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  SKILLmama is an AI-native capability discovery engine. Point it at a capability gap — it scans your project architecture, searches across 5 tiers of the ecosystem, scores every candidate against your stack, and returns ranked recommendations with evidence and clickable links.<br/>
+  SKILLmama eliminates the hours spent researching which library, SDK, or tool to use — it scans your project's actual stack, searches across 5 tiers of the ecosystem, and returns the top 3 ranked picks with scored evidence. No more Reddit threads or outdated blog posts; just the right tool for your exact setup, with install commands and links, in seconds.<br/><br/>
   Works with Claude Code, Claude.ai, OpenAI Codex, and Antigravity.
 </p>
 
