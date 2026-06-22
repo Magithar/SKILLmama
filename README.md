@@ -184,6 +184,20 @@ All four adapters run the same pipeline and produce the same output format.
                                 │
                                 ▼
               ┌────────────────────────────────────────┐
+              │   PHASE 3.5 — Security & Quality Gate  │
+              │                                        │
+              │   Hard Gate (per candidate):           │
+              │   🚫 BLOCKED → discard, never score    │
+              │   ⚠️  WARN   → show, user confirms     │
+              │                                        │
+              │   Quality flags (SQP rules):           │
+              │   SQP-1  Vague triggers                │
+              │   SQP-2  Missing user warnings         │
+              │   SQP-3  Policy violations             │
+              └───────────────┬────────────────────────┘
+                              │
+                              ▼
+              ┌────────────────────────────────────────┐
               │   PHASE 4 — Score Each Candidate       │
               │                                        │
               │   Score = (C × 0.40) +                 │
@@ -212,9 +226,24 @@ All four adapters run the same pipeline and produce the same output format.
 
 ---
 
+## Security & Quality Gate
+
+Before scoring, every candidate passes through a two-layer gate (Phase 3.5):
+
+| Layer | What it checks | Action |
+| ----- | -------------- | ------ |
+| Hard Gate | CVE dependencies, data exfiltration, no-disclosure destructive ops, jailbreak instructions | 🚫 BLOCKED (discarded) or ⚠️ WARN (user confirms) |
+| SQP-1 | Vague trigger phrases with no exclusion conditions | Flag in result |
+| SQP-2 | Destructive/sensitive ops with no user-visible warning | Flag in result |
+| SQP-3 | Hardcoded language/locale without user opt-in | Flag in result |
+
+Inspired by [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector) (Apache 2.0) semantic quality policy rules.
+
+---
+
 ## Ranking Formula
 
-Every candidate is scored 1–10 on four dimensions:
+Every candidate that passes the gate is scored 1–10 on four dimensions:
 
 | Factor        | Weight | Signals                                                  |
 | ------------- | ------ | -------------------------------------------------------- |
@@ -250,6 +279,7 @@ Each result card includes:
 - Popularity:    X/10 — [stars/downloads]
 - Maintenance:   X/10 — [last commit / release cadence]
 - Simplicity:    X/10 — [setup effort]
+- Security:      [PASS | ⚠️ SQP-N — finding | 🚫 BLOCKED]
 - Install: `[command]`
 - Links: [skills.sh] · [npm] · [PyPI] · [pkg.go.dev] · [Smithery] · [GitHub]
 ```
@@ -325,6 +355,7 @@ Docker-native, official Python client, active MCP server for AI workflows.
 - Popularity:    8/10  — 17k GitHub stars, 380k PyPI downloads/week
 - Maintenance:  10/10  — committed 2 days ago, weekly releases
 - Simplicity:   9/10  — docker run + pip install, 5-min setup
+- Security:     PASS  — no findings
 - Install: docker run -p 6333:6333 qdrant/qdrant && pip install qdrant-client
 - Links: [skills.sh](https://skills.sh/qdrant) · [PyPI](https://pypi.org/project/qdrant-client) · [Smithery](https://smithery.ai/server/qdrant-mcp-server) · [GitHub](https://github.com/qdrant/qdrant)
 
