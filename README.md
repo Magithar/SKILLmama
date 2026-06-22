@@ -237,7 +237,7 @@ Before scoring, every candidate passes through a two-layer gate (Phase 3.5):
 | SQP-2 | Destructive/sensitive ops with no user-visible warning | Flag in result |
 | SQP-3 | Hardcoded language/locale without user opt-in | Flag in result |
 
-Inspired by [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector) (Apache 2.0) semantic quality policy rules.
+Inspired by [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector) (Apache 2.0) semantic quality policy rules. For deeper static analysis with 64 vulnerability patterns and live CVE lookups, run SkillSpector directly: `pip install skillspector && skillspector scan <repo-url>`.
 
 ---
 
