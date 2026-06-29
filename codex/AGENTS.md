@@ -56,38 +56,33 @@ SEARCH_TERMS: [3-5 terms derived from capability + stack]
 
 ---
 
-## Phase 3 — 5-Tier Search
+## Phase 3 — Library & Package Search
 
 Search each tier using web search. Collect candidates across all tiers before scoring.
 
-### Tier 1 — skills.sh
+### Tier 1 — GitHub
 ```
-Search: site:skills.sh [capability]
-Search: skills.sh [search_term]
-```
-
-### Tier 2 — GitHub (primary source)
-```
-Search: github.com [search_term] stars:>500
-Search: github.com [capability] [language] open source
+Search: site:github.com [search_term] stars:>500
+Search: site:github.com [capability] [language] open source
 ```
 Extract per repo: stars, last commit date, contributor count, release count.
+Also check: does this repo contain a SKILL.md? If yes, tag has_own_skill: true.
 
-### Tier 3 — MCP Ecosystem
+### Tier 2 — MCP Ecosystem
 ```
 Search: MCP server [capability]
 Search: model context protocol [capability]
 Search: site:github.com modelcontextprotocol [capability]
 ```
 
-### Tier 4 — Package Registries
+### Tier 3 — Package Registries
 ```
-Search: npmjs.com [capability] [framework]       # JS/TS projects
-Search: pypi.org [capability]                    # Python projects
+Search: site:npmjs.com [capability] [framework]       # JS/TS projects
+Search: site:pypi.org [capability]                    # Python projects
 ```
 Extract: weekly downloads, latest version date.
 
-### Tier 5 — Curated Templates
+### Tier 4 — Curated Templates
 ```
 Search: [capability] starter template [stack]
 Search: awesome [capability] github
@@ -96,9 +91,9 @@ Search: langgraph [capability] example
 
 ---
 
-## Phase 3.5 — Security & Quality Gate
+## Phase 3.5 — Security & Quality Gate (Libraries)
 
-Before scoring, evaluate each candidate. **Do not proceed to Phase 4 for any candidate that fails the hard gate.**
+Before scoring, evaluate each library candidate. **Do not proceed to Phase 4 for any candidate that fails the hard gate.**
 
 ### Hard Gate (discard or warn)
 
@@ -128,6 +123,42 @@ Add a **Security** line to each result:
 - `Security: PASS` — no findings
 - `Security: ⚠️ SQP-2` — flagged, explain in one line
 - `Security: 🚫 BLOCKED` — discarded, do not show in results
+
+---
+
+## Phase 3.6 — Companion Skills Search
+
+> **REQUIRED — do not skip.** Run these searches for every candidate from Tiers 1–4 before moving to Phase 3.7. If no results are found, write "No companion skills found" and continue. Never silently omit this phase.
+
+Now that candidates are known, search for agent skills built to work with each one.
+For each candidate collected from Tiers 1–4:
+```
+Search: site:skills.sh [candidate_name]
+Search: site:github.com "SKILL.md" [candidate_name]
+```
+For any match found, tag it with:
+- type: "skill"
+- companion_for: "[candidate_name]"
+
+---
+
+## Phase 3.7 — Security & Quality Gate (Skills)
+
+Evaluate each skill found in Phase 3.6. Skills are agent instruction sets — a malicious skill can directly hijack agent behavior.
+
+**DISCARD (set security: "BLOCKED") if:**
+- Contains instructions to bypass safety checks or claim pre-verified
+- Hidden data exfiltration (network calls with no user disclosure)
+- Performs destructive operations with no warning to user
+
+**FLAG (SQP — do not discard) if:**
+- SQP-1: activates on overly broad trigger phrases with no exclusion conditions
+- SQP-2: performs writes/network/subprocess/credentials with no user-visible warning
+- SQP-3: hardcodes language or locale without user opt-in
+
+**WARN if:**
+- No description of what the skill does
+- Reads credentials without explanation
 
 ---
 
@@ -172,7 +203,13 @@ Score each factor 1–10:
 
 **Capability:** [stated capability]
 **Stack:** [detected stack]
-**Sources:** Tier 1 (skills.sh) · Tier 2 (GitHub) · Tier 3 (MCP) · Tier 4 (npm/PyPI) · Tier 5 (Templates)
+**Sources:** Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (npm/PyPI) · Tier 4 (Templates) · Skills (skills.sh + GitHub SKILL.md)
+
+---
+
+| Candidate | Compat | Popularity | Maintenance | Simplicity | Score |
+|-----------|--------|------------|-------------|------------|-------|
+| [Name] | X | X | X | X | X.X |
 
 ---
 
@@ -208,6 +245,23 @@ Score each factor 1–10:
 
 ---
 
+### Companion Skills (if any found)
+
+_Agent skills that supercharge working with the top picks. Omit if Phase 3.6 + 3.7 returned no passing results._
+
+If any library has `has_own_skill: true`:
+> **[Library Name]** ships its own skill:
+> `npx skills use [owner/repo] | codex`
+> [skills.sh](url) · [GitHub](url)
+
+For each skill from Phase 3.6 where security != "BLOCKED":
+> **[Skill Name]** — helps you work with [companion_for]
+> `npx skills use [owner/repo] | codex`
+> [skills.sh](url) · [GitHub](url)
+> Security: [PASS | ⚠️ SQP-1/2/3 — finding]
+
+---
+
 ### Next Steps
 1. [Most direct integration action]
 2. [How to evaluate #2 if #1 doesn't fit]
@@ -225,3 +279,6 @@ Score each factor 1–10:
 - If the user's stack is unclear and it materially affects the result, ask before scoring Compatibility.
 - Prefer tools with MCP support when one exists and fits.
 - Tier order is search priority, not result priority. A great GitHub find beats a mediocre skills.sh result.
+- Skills are never scored against libraries — they always appear in Companion Skills only, never in ranked results.
+- Show Companion Skills section whenever any skill passed Phase 3.7 (security != "BLOCKED").
+- If a library has has_own_skill: true, always surface it in Companion Skills even if Phase 3.6 found nothing else.

@@ -87,7 +87,7 @@ find me a vector database for this project
 | AI System    | File                                                           | How to use                               |
 | ------------ | -------------------------------------------------------------- | ---------------------------------------- |
 | Claude Code  | [.claude/commands/skillmama.md](.claude/commands/skillmama.md) | `/skillmama` slash command               |
-| Claude.ai    | [skillmama/skill.md](skillmama/skill.md)                       | Upload zip via Customize → Skills        |
+| Claude.ai    | [skillmama/SKILL.md](skillmama/SKILL.md)                       | Upload zip via Customize → Skills        |
 | OpenAI Codex | [codex/AGENTS.md](codex/AGENTS.md)                             | Place in repo root as agent instructions |
 | Antigravity  | [antigravity/PROMPT.md](antigravity/PROMPT.md)                 | Load as system prompt                    |
 
@@ -167,15 +167,15 @@ All four adapters run the same pipeline and produce the same output format.
                     ┌─────┴───────────────────────────────────────┐
                     │         Search loop (tiers in order)        │
                     │                                             │
-                    │  Tier 1 ── skills.sh                        │
+                    │  Tier 1 ── GitHub (stars, recency, contrib) │
                     │     ↓                                       │
-                    │  Tier 2 ── GitHub (stars, recency, contrib) │
+                    │  Tier 2 ── MCP Ecosystem                    │
                     │     ↓                                       │
-                    │  Tier 3 ── MCP Ecosystem                    │
+                    │  Tier 3 ── npm / PyPI registries            │
                     │     ↓                                       │
-                    │  Tier 4 ── npm / PyPI registries            │
+                    │  Tier 4 ── Templates & Cookbooks            │
                     │     ↓                                       │
-                    │  Tier 5 ── Templates & Cookbooks            │
+                    │  Skills ── skills.sh + GitHub SKILL.md      │
                     └─────────────────┬───────────────────────────┘
                                       │
                           ◇ 8+ candidates
@@ -266,11 +266,11 @@ Every candidate that passes the gate is scored 1–10 on four dimensions:
 
 | Tier | Source                                          | What it finds                              |
 | ---- | ----------------------------------------------- | ------------------------------------------ |
-| 1    | [skills.sh](https://skills.sh)                  | Reusable skills and capability patterns    |
-| 2    | GitHub                                          | Open-source libraries, frameworks, SDKs    |
-| 3    | [Smithery](https://smithery.ai) / MCP Ecosystem | AI-native tools installable as MCP servers |
-| 4    | npm / PyPI / pkg.go.dev                         | Package registries with download signals   |
-| 5    | Curated Templates                               | LangGraph, OpenHands, cookbook examples    |
+| 1    | GitHub                                          | Open-source libraries, frameworks, SDKs    |
+| 2    | [Smithery](https://smithery.ai) / MCP Ecosystem | AI-native tools installable as MCP servers |
+| 3    | npm / PyPI / pkg.go.dev                         | Package registries with download signals   |
+| 4    | Curated Templates                               | LangGraph, OpenHands, cookbook examples    |
+| —    | [skills.sh](https://skills.sh) (Phase 3.6)      | Companion agent skills for top candidates  |
 
 ---
 
@@ -327,12 +327,12 @@ CONSTRAINTS: containerizable, Python client, active maintenance
 **Step 3 — 5-Tier Search**
 
 ```
-Tier 1 skills.sh   → "qdrant-memory-skill", "chroma-rag-skill"
-Tier 2 GitHub      → qdrant/qdrant (17k★), chroma-core/chroma (14k★),
-                     pgvector/pgvector (11k★), milvus-io/milvus (29k★)
-Tier 3 MCP         → qdrant-mcp-server, chroma-mcp
-Tier 4 PyPI        → qdrant-client (380k/wk), chromadb (620k/wk), pgvector (180k/wk)
-Tier 5 Templates   → LangChain + Qdrant RAG template, FastAPI + Chroma starter
+Tier 1 GitHub    → qdrant/qdrant (17k★), chroma-core/chroma (14k★),
+                   pgvector/pgvector (11k★), milvus-io/milvus (29k★)
+Tier 2 MCP       → qdrant-mcp-server, chroma-mcp
+Tier 3 PyPI      → qdrant-client (380k/wk), chromadb (620k/wk), pgvector (180k/wk)
+Tier 4 Templates → LangChain + Qdrant RAG template, FastAPI + Chroma starter
+Skills (3.6)     → "qdrant-memory-skill", "chroma-rag-skill" on skills.sh
 ```
 
 **Step 4 — Scoring**
@@ -351,7 +351,7 @@ Tier 5 Templates   → LangChain + Qdrant RAG template, FastAPI + Chroma starter
 
 Capability: vector database for RAG
 Stack: Python / FastAPI / PostgreSQL / Docker / OpenAI
-Sources: Tier 1 (skills.sh) · Tier 2 (GitHub) · Tier 3 (MCP) · Tier 4 (PyPI) · Tier 5 (Templates)
+Sources: Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (PyPI) · Tier 4 (Templates) · Skills (skills.sh)
 
 ---
 
@@ -408,7 +408,7 @@ SKILLmama is a **capability oracle**: it tells you what to use and why, with evi
 ```
 SKILLmama/
 ├── skillmama/
-│   └── skill.md               # Claude.ai skill (upload as zip)
+│   └── SKILL.md               # Claude.ai skill (upload as zip)
 ├── .claude/
 │   └── commands/
 │       └── skillmama.md       # Claude Code slash command
