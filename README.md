@@ -174,8 +174,6 @@ All four adapters run the same pipeline and produce the same output format.
                     │  Tier 3 ── npm / PyPI registries            │
                     │     ↓                                       │
                     │  Tier 4 ── Templates & Cookbooks            │
-                    │     ↓                                       │
-                    │  Skills ── skills.sh + GitHub SKILL.md      │
                     └─────────────────┬───────────────────────────┘
                                       │
                           ◇ 8+ candidates
@@ -190,7 +188,7 @@ All four adapters run the same pipeline and produce the same output format.
                                 │
                                 ▼
               ┌────────────────────────────────────────┐
-              │   PHASE 3.5 — Security & Quality Gate  │
+              │   PHASE 3.5 — Security Gate (Libraries)│
               │                                        │
               │   Hard Gate (per candidate):           │
               │   🚫 BLOCKED → discard, never score    │
@@ -200,6 +198,25 @@ All four adapters run the same pipeline and produce the same output format.
               │   SQP-1  Vague triggers                │
               │   SQP-2  Missing user warnings         │
               │   SQP-3  Policy violations             │
+              └───────────────┬────────────────────────┘
+                              │
+                              ▼
+              ┌────────────────────────────────────────┐
+              │   PHASE 3.6 — Companion Skills Search  │
+              │   (REQUIRED — never skip)              │
+              │                                        │
+              │   For each candidate:                  │
+              │   Search: site:skills.sh [name]        │
+              │   Search: github.com "SKILL.md" [name] │
+              └───────────────┬────────────────────────┘
+                              │
+                              ▼
+              ┌────────────────────────────────────────┐
+              │   PHASE 3.7 — Security Gate (Skills)   │
+              │                                        │
+              │   🚫 BLOCKED → discard                 │
+              │   ⚠️  SQP-1/2/3 → flag, keep          │
+              │   ⚠️  WARN → show with caution         │
               └───────────────┬────────────────────────┘
                               │
                               ▼
@@ -226,6 +243,7 @@ All four adapters run the same pipeline and produce the same output format.
               │   #1, #2, #3 — full score breakdown    │
               │   Also Considered — table              │
               │   MCP callout (if found)               │
+              │   Companion Skills (if found)          │
               │   Next Steps (3 actions)               │
               └────────────────────────────────────────┘
 ```
