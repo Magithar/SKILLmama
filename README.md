@@ -385,6 +385,14 @@ Also Considered:
 MCP Option: qdrant-mcp-server — install as MCP tool for direct AI memory integration.
 [Smithery](https://smithery.ai/server/qdrant-mcp-server) · [GitHub](https://github.com/qdrant/mcp-server-qdrant)
 
+---
+
+Companion Skills:
+> qdrant/mcp-server-qdrant ships its own skill:
+> npx skills add qdrant/mcp-server-qdrant
+> [skills.sh](https://skills.sh/qdrant/mcp-server-qdrant) · [GitHub](https://github.com/qdrant/mcp-server-qdrant)
+> Security: PASS
+
 Next Steps:
 1. docker run qdrant/qdrant and pip install qdrant-client to validate locally
 2. Use the LangChain + Qdrant RAG template as a starting point
