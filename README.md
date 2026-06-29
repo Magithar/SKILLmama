@@ -9,6 +9,7 @@
   <img src="https://img.shields.io/github/stars/Magithar/SKILLmama?color=yellow" alt="Stars"/>
   <img src="https://img.shields.io/github/issues/Magithar/SKILLmama" alt="Issues"/>
   <img src="https://img.shields.io/github/v/release/Magithar/SKILLmama?include_prereleases&label=release" alt="Release"/>
+  <a href="https://skills.sh/Magithar/SKILLmama"><img src="https://skills.sh/b/Magithar/SKILLmama" alt="skills.sh"/></a>
 </p>
 
 <p align="center">
@@ -31,6 +32,14 @@
 ---
 
 ## Install
+
+### Any agent (via skills CLI)
+
+```bash
+npx skills add Magithar/SKILLmama
+```
+
+This installs SKILLmama via the [skills.sh](https://skills.sh/Magithar/SKILLmama) ecosystem and makes `/skillmama` available in your agent.
 
 ### Claude Code (CLI)
 
