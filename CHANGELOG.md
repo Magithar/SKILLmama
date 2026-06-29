@@ -4,6 +4,15 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [1.2.0] - 2026-06-29
+
+### Changed
+- **Output format — scoring table header**: scoring table is now prefixed with `**Scoring all candidates against [stack]:**` instead of a bare table, making the detected stack explicit at a glance
+- **Output format — no Sources section**: trailing `Sources:` block removed from all results; links are surfaced inline within each candidate card only
+- **Output format — Phase 3.5 is internal only**: security gate no longer renders as a standalone section in output; findings appear only on each candidate's `Security:` line
+
+---
+
 ## [1.1.0] - 2026-06-22
 
 ### Added

@@ -176,6 +176,8 @@ If a field is unknown, mark it N/A and weight the remaining factors proportional
 **Stack:** [stack]
 **Sources searched:** Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (npm/PyPI) · Tier 4 (Templates) · Skills (skills.sh + GitHub SKILL.md)
 
+**Scoring all candidates against [stack]:**
+
 | Candidate | Compat | Pop | Maint | Simple | **Score** |
 |-----------|--------|-----|-------|--------|-----------|
 | [Name] | X | X | X | X | **X.X** |
@@ -258,3 +260,5 @@ For each companion skill where security != BLOCKED:
 - Skills are never scored against libraries — they always appear in Companion Skills only, never in ranked results.
 - Show Companion Skills section whenever any skill passed Phase 3.7 (security != BLOCKED).
 - If a library has has_own_skill: true, always surface it in Companion Skills even if Phase 3.6 found nothing else.
+- Do NOT append a "Sources:" section at the end of results. Inline links within candidate entries are sufficient — the trailing block is redundant and clutters the output.
+- Do NOT show a Phase 3.5 section in the output. Security is an internal gate only — surface findings inline via the `Security:` line on each candidate in Phase 5.

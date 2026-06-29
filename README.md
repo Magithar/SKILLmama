@@ -294,9 +294,15 @@ Every candidate that passes the gate is scored 1–10 on four dimensions:
 
 ## Output Format
 
-Each result card includes:
+Results open with a scoring table prefixed by the detected stack, then a ranked card per pick:
 
 ```
+**Scoring all candidates against [stack]:**
+
+| Candidate | Compat | Pop | Maint | Simple | Score |
+|-----------|--------|-----|-------|--------|-------|
+| Name      | X      | X   | X     | X      | X.X   |
+
 #1 — [Name] · Score: X.X/10
 [One sentence on why it wins for this stack]
 - Compatibility: X/10 — [reason]
@@ -305,14 +311,17 @@ Each result card includes:
 - Simplicity:    X/10 — [setup effort]
 - Security:      [PASS | ⚠️ SQP-N — finding | 🚫 BLOCKED]
 - Install: `[command]`
-- Links: [skills.sh] · [npm] · [PyPI] · [pkg.go.dev] · [Smithery] · [GitHub]
+- Links: [npm] · [PyPI] · [pkg.go.dev] · [Smithery] · [GitHub]
 ```
 
 Followed by:
 
 - **Also Considered** table with Name · Score · Why not #1 · Links
 - **MCP Option** callout with Smithery + GitHub links
+- **Companion Skills** — installable agent skills for top picks (if found)
 - **Next Steps** — 3 concrete actions
+
+Security findings from the internal gate surface inline on each candidate's `Security:` line — there is no separate gate section in the output.
 
 ---
 
@@ -353,23 +362,25 @@ Tier 4 Templates → LangChain + Qdrant RAG template, FastAPI + Chroma starter
 Skills (3.6)     → "qdrant-memory-skill", "chroma-rag-skill" on skills.sh
 ```
 
-**Step 4 — Scoring**
-
-| Candidate | Compat | Popular | Maint | Simple | **Score** |
-| --------- | ------ | ------- | ----- | ------ | --------- |
-| Qdrant    | 9      | 8       | 10    | 9      | **9.05**  |
-| pgvector  | 10     | 7       | 9     | 7      | **8.65**  |
-| Chroma    | 8      | 8       | 9     | 10     | **8.55**  |
-| Milvus    | 6      | 9       | 10    | 4      | **7.05**  |
-
-**Step 5 — Output**
+**Step 4 — Output**
 
 ```
 ## SKILLmama Results
 
 Capability: vector database for RAG
 Stack: Python / FastAPI / PostgreSQL / Docker / OpenAI
-Sources: Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (PyPI) · Tier 4 (Templates) · Skills (skills.sh)
+Sources searched: Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (PyPI) · Tier 4 (Templates) · Skills (skills.sh + GitHub SKILL.md)
+
+---
+
+**Scoring all candidates against Python / FastAPI / PostgreSQL / Docker / OpenAI:**
+
+| Candidate | Compat | Pop | Maint | Simple | Score    |
+|-----------|--------|-----|-------|--------|----------|
+| Qdrant    | 9      | 8   | 10    | 9      | **9.05** |
+| pgvector  | 10     | 7   | 9     | 7      | **8.65** |
+| Chroma    | 8      | 8   | 9     | 10     | **8.55** |
+| Milvus    | 6      | 9   | 10    | 4      | **7.05** |
 
 ---
 
