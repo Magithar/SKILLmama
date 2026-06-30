@@ -4,6 +4,17 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [1.4.0] - 2026-07-01
+
+### Added
+- **Phase 1.5 — Confirm Constraints** in Flow A across all four adapters (Claude Code, Claude.ai, OpenAI Codex, Antigravity): when a capability is named but no constraints are stated, the skill now scans the project, then asks one informed constraint question and **hard-stops** before searching — bringing Flow A's ambiguity-reduction in line with Flow B
+  - Fires only when the user gave no constraints; skips entirely if they already constrained the search (e.g. "find me an *open-source* job queue")
+  - Question is informed by the Phase 1 scan (references detected stack/tools); falls back to a generic constraint question when no project files are detected
+  - Asks once, never re-prompts; `"none"` reply searches with no filters
+- **README Core Workflow diagram** updated to show Phase 1.5 in the Flow A column
+
+---
+
 ## [1.3.1] - 2026-07-01
 
 ### Fixed

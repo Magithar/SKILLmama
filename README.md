@@ -159,6 +159,16 @@ All four adapters run the same pipeline and produce the same output format.
 │  frameworks, DBs      │                                                   │ user picks capability
 └───────────┬───────────┘                                                   │
             │                                                               │
+            ▼                                                               │
+┌───────────────────────┐                                                   │
+│  PHASE 1.5            │                                                   │
+│  Confirm Constraints  │                                                   │
+│  (only if none        │                                                   │
+│  stated): ask 1       │                                                   │
+│  informed question    │                                                   │
+│  STOP — await reply   │                                                   │
+└───────────┬───────────┘                                                   │
+            │                                                               │
             └───────────────────────────┬───────────────────────────────────┘
                                         │
                                         ▼
@@ -353,15 +363,25 @@ find me a vector database for my FastAPI + Python project
 
 Detected stack: `Python / FastAPI / PostgreSQL / Docker / OpenAI`
 
-**Step 2 — Capability Detection**
+**Step 2 — Confirm Constraints** (Phase 1.5 — no constraints were stated, so SKILLmama asks one informed question and stops)
+
+```
+SKILLmama: I see you're on Python / FastAPI / PostgreSQL / Docker / OpenAI.
+Before I search — any constraints? (e.g. self-hosted, open-source only,
+free tier, must integrate with PostgreSQL). Reply "none" to search with no filters.
+
+User: containerizable, Python client, must stay open-source
+```
+
+**Step 3 — Capability Detection**
 
 ```
 CAPABILITY : vector database for RAG / semantic search
 STACK      : Python / FastAPI / Docker / OpenAI
-CONSTRAINTS: containerizable, Python client, active maintenance
+CONSTRAINTS: containerizable, Python client, open-source
 ```
 
-**Step 3 — 5-Tier Search**
+**Step 4 — 5-Tier Search**
 
 ```
 Tier 1 GitHub    → qdrant/qdrant (17k★), chroma-core/chroma (14k★),
@@ -372,7 +392,7 @@ Tier 4 Templates → LangChain + Qdrant RAG template, FastAPI + Chroma starter
 Skills (3.6)     → "qdrant-memory-skill", "chroma-rag-skill" on skills.sh
 ```
 
-**Step 4 — Output**
+**Step 5 — Output**
 
 ```
 ## SKILLmama Results

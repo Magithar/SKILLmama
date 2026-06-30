@@ -53,6 +53,22 @@ Check for: `package.json`, `pyproject.toml`, `go.mod`, `Dockerfile`, `README.md`
 
 Identify: languages, frameworks, databases, what tools are already present, what's absent.
 
+### Phase 1.5 — Confirm Constraints (one question, then stop)
+
+**Only if the user stated NO constraints in their original request.** If they already constrained the search (e.g. "find me an open-source job queue"), skip this phase and continue to Phase 2.
+
+Ask ONE constraint question, then **STOP** and wait for the reply.
+
+**If Phase 1 detected a stack**, make the question informed by it:
+
+> I see you're on **[detected stack]**. Before I search — any constraints? (e.g. self-hosted, open-source only, free tier, must integrate with **[detected tool]**). Reply "none" to search with no filters.
+
+**If Phase 1 detected nothing** (no project files, or empty scan), ask generically — do not reference a stack:
+
+> I couldn't detect your stack from project files. Before I search — any constraints? (e.g. language/framework, self-hosted, open-source only, free tier). Reply "none" to search broadly.
+
+Set `constraints` from the reply (treat "none" as no filters), then continue to Phase 2. Ask this **once** — never re-prompt.
+
 Then continue to **Phase 2** below.
 
 ---
