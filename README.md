@@ -356,7 +356,7 @@ find me a vector database for my FastAPI + Python project
 **Step 1 — Architecture Scan**
 
 ```
-✓ pyproject.toml    → Python 3.11, FastAPI, SQLAlchemy
+✓ pyproject.toml    → Python 3.11, FastAPI, SQLAlchemy → PostgreSQL
 ✓ Dockerfile        → containerized, no GPU
 ✓ .env.example      → OPENAI_API_KEY present → RAG use case confirmed
 ```
@@ -377,7 +377,7 @@ User: containerizable, Python client, must stay open-source
 
 ```
 CAPABILITY : vector database for RAG / semantic search
-STACK      : Python / FastAPI / Docker / OpenAI
+STACK      : Python / FastAPI / PostgreSQL / Docker / OpenAI
 CONSTRAINTS: containerizable, Python client, open-source
 ```
 
