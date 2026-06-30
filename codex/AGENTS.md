@@ -14,8 +14,21 @@ Activate whenever the user asks:
 - "What capabilities is my project missing?"
 - "Recommend something for [capability]"
 - "Scan my project and tell me what I need"
+- Invoked with no specific capability
 
 ---
+
+## Entry Point — Choose Flow
+
+**If the user named a specific capability** (e.g. "auth", "vector DB", "job queue"):
+→ **Flow A** — go to Phase 0.
+
+**If the user gave no specific capability, or said "scan my project" / "what am I missing":**
+→ **Flow B** — go to Phase B1.
+
+---
+
+# Flow A — Capability Search
 
 ## Phase 0 — Understand the Request
 
@@ -41,7 +54,76 @@ List: src/ app/ lib/ directories
 
 Extract: primary language, frameworks, databases, AI tools, auth systems, what's missing.
 
+Then continue to **Phase 2** below.
+
 ---
+
+# Flow B — Project Scanner
+
+## Phase B1 — Deep Project Scan
+
+Read all of the following that are present:
+
+```
+Read: package.json, pyproject.toml, requirements.txt, go.mod, Cargo.toml, Gemfile
+Read: Dockerfile, docker-compose.yml, .env.example, vercel.json, fly.toml
+Read: README.md
+Find: all .ts/.tsx/.js/.py/.go files (exclude node_modules/.git), head -60
+List: src/ app/ lib/ pages/ api/ (whichever exist)
+Read: 2–4 representative source files (entry point, a route, a model)
+```
+
+Build a **Stack Profile:**
+```
+Language / Framework / Database / Auth / Caching / AI+LLM /
+Queue+Jobs / Search / Storage / Email / Payments / Observability / Testing
+— mark each as detected or "none detected"
+```
+
+## Phase B2 — Gap Analysis
+
+For each category in the Stack Profile marked "none detected", assess whether it's a real gap for this type of app. Assign severity:
+- **High** — typical for this project type, likely needed soon
+- **Medium** — useful but not urgent
+- **Low** — speculative / nice-to-have
+
+Categories to check: Auth, Database/ORM, Caching, Job Queue, Search, File Storage, Email, Observability, AI/LLM, Vector/RAG, Payments, Rate Limiting, Testing, Schema Validation.
+
+## Phase B3 — Ask Clarifying Questions
+
+Present findings and **STOP** — do not proceed until the user replies.
+
+```
+## SKILLmama — Project Scan
+
+Stack detected: [one-line summary]
+
+Capability gaps found:
+
+| # | Gap | Severity | Why it matters for your stack |
+|---|-----|----------|-------------------------------|
+| 1 | ... | High     | ...                           |
+| 2 | ... | Medium   | ...                           |
+
+A few quick questions before I search:
+1. Which gap(s) would you like me to find options for? (reply with numbers, or name something not listed)
+2. Any constraints? (self-hosted, open-source, must have MCP support, etc.)
+3. Anything I missed about your project or plans?
+```
+
+**STOP.** Do not proceed until the user has replied.
+
+Once the user replies:
+- Set `capability` = their chosen gap(s)
+- Set `constraints` = anything from Q2
+- Update Stack Profile with corrections from Q3
+- If multiple gaps chosen, run the shared pipeline once per gap
+
+Then jump directly to **Phase 2** below (skip Phase 0 and Phase 1 — stack is already known).
+
+---
+
+# Shared Pipeline
 
 ## Phase 2 — Capability Gap Detection
 

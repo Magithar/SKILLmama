@@ -17,10 +17,21 @@ Run this pipeline whenever the user wants to:
 - Know what's missing from their project
 - Choose between competing technologies
 - Discover production-ready implementations of a capability
+- Invoked with no specific capability
 
 ---
 
-## Pipeline
+## Entry Point — Choose Flow
+
+**If the user named a specific capability** (e.g. "auth", "vector DB", "job queue"):
+→ **Flow A** — go to Phase 0.
+
+**If the user gave no specific capability, or said "scan my project" / "what am I missing":**
+→ **Flow B** — go to Phase B1.
+
+---
+
+## Flow A — Capability Search
 
 ### Phase 0 — Understand the Request
 
@@ -36,6 +47,67 @@ If the capability query is vague, ask ONE clarifying question before proceeding.
 Check for: `package.json`, `pyproject.toml`, `go.mod`, `Dockerfile`, `README.md`
 
 Identify: languages, frameworks, databases, what tools are already present, what's absent.
+
+Then continue to **Phase 2** below.
+
+---
+
+## Flow B — Project Scanner
+
+### Phase B1 — Deep Project Scan
+
+Read all of the following that are present:
+- Package files: `package.json`, `pyproject.toml`, `requirements.txt`, `go.mod`, `Cargo.toml`, `Gemfile`
+- Config/infra: `Dockerfile`, `docker-compose.yml`, `.env.example`, `vercel.json`, `fly.toml`
+- Docs: `README.md`
+- Source structure: list files in `src/`, `app/`, `lib/`, `pages/`, `api/` — do not read every file
+- Read 2–4 representative source files (entry point, a route, a model)
+
+Build a **Stack Profile** — for each category, note detected or "none detected":
+Language / Framework / Database / Auth / Caching / AI+LLM / Queue+Jobs / Search / Storage / Email / Payments / Observability / Testing
+
+### Phase B2 — Gap Analysis
+
+For each "none detected" category, assess whether it's a real gap for this type of project. Assign:
+- **High** — typical for this project type, likely needed soon
+- **Medium** — useful but not urgent
+- **Low** — speculative
+
+Categories to check: Auth, Database/ORM, Caching, Job Queue, Search, File Storage, Email, Observability, AI/LLM, Vector/RAG, Payments, Rate Limiting, Testing, Schema Validation.
+
+### Phase B3 — Ask Clarifying Questions
+
+Present findings and **STOP** — do not continue until the user replies.
+
+```
+## SKILLmama — Project Scan
+
+Stack detected: [one-line summary]
+
+Capability gaps found:
+
+| # | Gap | Severity | Why it matters for your stack |
+|---|-----|----------|-------------------------------|
+| 1 | ... | High     | ...                           |
+| 2 | ... | Medium   | ...                           |
+
+A few quick questions before I search:
+1. Which gap(s) would you like me to find options for? (reply with numbers, or name something not listed)
+2. Any constraints? (self-hosted, open-source, must have MCP support, etc.)
+3. Anything I missed about your project or plans?
+```
+
+Once the user replies:
+- Set `capability` = their chosen gap(s)
+- Set `constraints` = anything from Q2
+- Update Stack Profile with any corrections from Q3
+- If multiple gaps chosen, run the shared pipeline once per gap
+
+Then jump directly to **Phase 2** below (skip Phase 0 and Phase 1 — stack is already known).
+
+---
+
+## Shared Pipeline
 
 ### Phase 2 — Capability Gap Detection
 

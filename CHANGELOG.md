@@ -4,6 +4,18 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [1.3.0] - 2026-07-01
+
+### Added
+- **Flow B — Project Scanner**: invoking `/skillmama` with no arguments now triggers a full project scan instead of asking for a capability
+  - Phase B1: deep scan reads package files, config, infra, source structure, and 2–4 representative source files to build a Stack Profile
+  - Phase B2: gap analysis identifies missing capability categories (Auth, DB/ORM, Caching, Queue, Search, Storage, Email, Observability, AI/LLM, Vector/RAG, Payments, Rate Limiting, Testing, Schema Validation) with severity ratings (High / Medium / Low)
+  - Phase B3: presents the gap table and asks 3 clarifying questions (which gaps to focus on, constraints, anything missed) — hard stop until user replies
+  - After user responds, jumps directly to Phase 2 (search terms) — Phase 0 and Phase 1 are skipped since the stack is already known
+- **Two-flow entry point** added to all four adapters (Claude Code, Claude.ai, OpenAI Codex, Antigravity): Flow A for named capabilities, Flow B for project scans; both converge at Phase 2
+
+---
+
 ## [1.2.0] - 2026-06-29
 
 ### Changed

@@ -84,9 +84,9 @@ find me a vector database for this project
 ## Usage
 
 ```
+/skillmama                                                    ← scans your project and asks what to find
 /skillmama find me a vector database for my FastAPI project
 /skillmama what auth library should I use for my Next.js app?
-/skillmama scan my project and tell me what's missing
 /skillmama find a .dwg parser for Node.js
 ```
 
@@ -113,12 +113,54 @@ All four adapters run the same pipeline and produce the same output format.
 └─────────────────────────┬───────────────────────────────┘
                           │
                           ▼
+                   ◇ Capability
+                     named?
+                   /         \
+                 YES           NO
+                  │             │
+                  │             ▼
+                  │   ┌─────────────────────────┐
+                  │   │  FLOW B — PROJECT SCAN  │
+                  │   └──────────┬──────────────┘
+                  │              │
+                  │              ▼
+                  │   ┌─────────────────────────┐
+                  │   │  PHASE B1               │
+                  │   │  Deep Project Scan      │
+                  │   │  Build Stack Profile:   │
+                  │   │  lang, framework, DB,   │
+                  │   │  auth, cache, AI/LLM,   │
+                  │   │  queue, search, email…  │
+                  │   └──────────┬──────────────┘
+                  │              │
+                  │              ▼
+                  │   ┌─────────────────────────┐
+                  │   │  PHASE B2               │
+                  │   │  Gap Analysis           │
+                  │   │  Missing categories →   │
+                  │   │  High / Medium / Low    │
+                  │   └──────────┬──────────────┘
+                  │              │
+                  │              ▼
+                  │   ┌─────────────────────────┐
+                  │   │  PHASE B3               │
+                  │   │  Ask 3 questions:       │
+                  │   │  1. Which gap(s)?       │
+                  │   │  2. Constraints?        │
+                  │   │  3. Anything missed?    │
+                  │   │                         │
+                  │   │  ◀ STOP — await reply ▶ │
+                  │   └──────────┬──────────────┘
+                  │              │ user picks capability
+                  │              │
+                  ▼              ▼
               ┌───────────────────────┐
-              │   PHASE 0             │
-              │   Understand Request  │
-              │   Extract: capability,│
-              │   stack, constraints  │
-              └───────────┬───────────┘
+              │   FLOW A             │
+              │   PHASE 0            │
+              │   Parse Request      │
+              │   Extract: capability│
+              │   stack, constraints │
+              └───────────┬──────────┘
                           │
                           ▼
                    ◇ Capability
@@ -137,38 +179,19 @@ All four adapters run the same pipeline and produce the same output format.
               ┌───────────────────────┐
               │   PHASE 1             │
               │   Architecture Scan   │
+              │   (Flow A only —      │
+              │   Flow B already done)│
               └───────────┬───────────┘
                           │
                           ▼
-                   ◇ In a project
-                     repo?
-                   /         \
-                 YES           NO
-                  │             │
-                  ▼             │
-        Read: package.json,     │
-        Dockerfile, README,     │
-        source files            │
-        Extract: lang,          │
-        frameworks, DBs,        │
-        gaps                    │
-                  │             │
-                  └──────┬──────┘
-                         │
-                         ▼
-              ┌───────────────────────┐
-              │   PHASE 2             │
-              │   Capability Gap      │
-              │   Detection           │
-              │                       │
-              │   Define:             │
-              │   CAPABILITY          │
-              │   STACK               │
-              │   CONSTRAINTS         │
-              │   SEARCH_TERMS (3–5)  │
-              └───────────┬───────────┘
-                          │
-                          ▼
+              ┌─────────────────────────────────────────┐
+              │   PHASE 2 — Derive Search Terms         │
+              │   ← Flow A and Flow B converge here →   │
+              │                                         │
+              │   capability + stack → 3–5 search terms │
+              └───────────────┬─────────────────────────┘
+                              │
+                              ▼
               ┌───────────────────────┐
               │   PHASE 3             │
               │   5-Tier Search       │
