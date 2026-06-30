@@ -4,6 +4,14 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [1.3.1] - 2026-07-01
+
+### Fixed
+- **PROMPT.md phase order**: shared pipeline in the Antigravity adapter had phases in wrong order (3.6 → 3.7 → 3.5); corrected to 3.5 → 3.6 → 3.7 to match all other adapters and the documented workflow
+- **README Project Structure**: removed `skillmama.zip` entry that referenced a non-existent file
+
+---
+
 ## [1.3.0] - 2026-07-01
 
 ### Added
