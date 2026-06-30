@@ -27,7 +27,8 @@
 
 <p align="center">
   📖 <a href="https://dev.to/magithar/stop-guessing-which-library-to-use-i-built-an-ai-capability-discovery-engine-3p7p">Part 1 on Dev.to</a> — scoring formula, 5-tier search, end-to-end example.<br/>
-  📖 <a href="https://dev.to/magithar/a-high-score-means-nothing-if-the-tool-is-dangerous-so-i-added-a-security-gate-3hpc">Part 2 on Dev.to</a> — security gate, SQP rules, companion skills.
+  📖 <a href="https://dev.to/magithar/a-high-score-means-nothing-if-the-tool-is-dangerous-so-i-added-a-security-gate-3hpc">Part 2 on Dev.to</a> — security gate, SQP rules, companion skills.<br/>
+  📖 <a href="https://dev.to/magithar/i-got-tired-of-asking-what-am-i-missing-so-i-made-my-ai-ask-first-g8">Part 3 on Dev.to</a> — project scanner, Flow B, gap analysis.
 </p>
 
 ---
