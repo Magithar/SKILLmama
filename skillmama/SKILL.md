@@ -13,9 +13,22 @@ description: AI-Native Capability Discovery Engine — finds, scores, and ranks 
 - "What capabilities is my project missing?"
 - "Recommend something for [capability]"
 - "Scan my project and tell me what I need"
+- `/skillmama` with no arguments
 - Any question about selecting, discovering, or ranking technical tools, libraries, or integrations
 
 ---
+
+## Entry Point — Choose Flow
+
+**If the user named a specific capability** (e.g. "auth", "vector DB", "job queue"):
+→ **Flow A** — go to Phase 0.
+
+**If the user typed `/skillmama` with no arguments, or said "scan my project" / "what am I missing" / gave no specific capability:**
+→ **Flow B** — go to Phase B1.
+
+---
+
+# Flow A — Capability Search
 
 ## Phase 0 — Parse the Request
 
@@ -42,7 +55,117 @@ Extract:
 - AI/ML tools already present
 - auth systems in use
 
+Then continue to **Phase 2** below.
+
 ---
+
+# Flow B — Project Scanner
+
+## Phase B1 — Deep Project Scan
+
+Read all of the following that are present:
+
+**Package & dependency files:**
+  package.json, pyproject.toml, requirements.txt, go.mod, Cargo.toml, composer.json, Gemfile
+
+**Config & infrastructure:**
+  Dockerfile, docker-compose.yml, .env.example, vercel.json, fly.toml, railway.toml
+
+**Project docs:**
+  README.md, CLAUDE.md
+
+**Source structure (list only, do not read every file):**
+  `find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.py" -o -name "*.go" \) | grep -v node_modules | grep -v .git | head -60`
+  `ls -1 src/ app/ lib/ pages/ api/` (whichever exist)
+
+**Read 2–4 representative source files** to understand what the app actually does (entry point, a route handler, a model file).
+
+Build a **Stack Profile:**
+```
+Language:      [primary language(s)]
+Framework:     [e.g. Next.js 14, FastAPI, Express]
+Database:      [e.g. Postgres via Prisma, none detected]
+Auth:          [e.g. NextAuth, none detected]
+Caching:       [e.g. Redis, none detected]
+AI/LLM:        [e.g. OpenAI SDK, none detected]
+Queue/Jobs:    [e.g. BullMQ, none detected]
+Search:        [e.g. Elasticsearch, none detected]
+Storage:       [e.g. S3 via aws-sdk, none detected]
+Email:         [e.g. Resend, none detected]
+Payments:      [e.g. Stripe, none detected]
+Observability: [e.g. Sentry, none detected]
+Testing:       [e.g. Vitest, none detected]
+```
+
+---
+
+## Phase B2 — Gap Analysis
+
+For each common capability category, check the Stack Profile. Only flag if genuinely absent.
+
+Common categories to check:
+- Authentication / authorization
+- Database / ORM layer
+- Caching layer
+- Background jobs / task queue
+- Full-text or semantic search
+- File / object storage
+- Email sending
+- Observability (logging, error tracking, metrics)
+- AI / LLM integration
+- Vector memory / RAG
+- Payment processing
+- Rate limiting / API protection
+- Testing framework
+- Type validation / schema (e.g. Zod, Pydantic)
+
+For each gap, assign severity:
+- **High** — common for this type of app, likely needed soon
+- **Medium** — useful but not critical yet
+- **Low** — nice-to-have or speculative
+
+---
+
+## Phase B3 — Ask Clarifying Questions
+
+Present findings and **STOP** — do not proceed until the user replies.
+
+---
+
+## SKILLmama — Project Scan
+
+**Stack detected:** [one-line summary, e.g. "TypeScript / Next.js 14 / Postgres / no auth"]
+
+**Capability gaps found:**
+
+| # | Gap | Severity | Why it matters for your stack |
+|---|-----|----------|-------------------------------|
+| 1 | [gap] | High | [one sentence] |
+| 2 | [gap] | Medium | [one sentence] |
+| 3 | [gap] | Low | [one sentence] |
+
+**A few quick questions before I search:**
+
+1. Which gap(s) would you like me to find options for? (reply with numbers, e.g. "1 and 3", or name something not on the list)
+2. Any constraints? (e.g. self-hosted only, open-source preferred, must have MCP support)
+3. Anything I missed about your project or plans?
+
+---
+
+**STOP.** Do not proceed until the user has replied.
+
+Once the user replies, set:
+- `capability` = their chosen gap(s)
+- `constraints` = anything from Q2
+- Update the Stack Profile with any corrections from Q3
+
+If they picked multiple gaps, run the shared pipeline once per gap and present each as its own SKILLmama Results block.
+
+Then jump directly to **Phase 2** below (stack is already known — skip Phase 0 and Phase 1).
+
+---
+
+# Shared Pipeline
 
 ## Phase 2 — Derive Search Terms
 
