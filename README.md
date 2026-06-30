@@ -225,7 +225,7 @@ All four adapters run the same pipeline and produce the same output format.
               │   PHASE 3.7 — Security Gate (Skills)   │
               │                                        │
               │   🚫 BLOCKED → discard                 │
-              │   ⚠️  SQP-1/2/3 → flag, keep          │
+              │   ⚠️  SQP-1/2/3 → flag, keep           │  
               │   ⚠️  WARN → show with caution         │
               └───────────────┬────────────────────────┘
                               │
