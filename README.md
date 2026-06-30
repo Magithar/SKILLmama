@@ -109,96 +109,72 @@ All four adapters run the same pipeline and produce the same output format.
 ## Core Workflow
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                      USER REQUEST                       │
-└─────────────────────────┬───────────────────────────────┘
-                          │
-                          ▼
-                   ◇ Capability
-                     named?
-                   /         \
-                 YES           NO
-                  │             │
-                  │             ▼
-                  │   ┌─────────────────────────┐
-                  │   │  FLOW B — PROJECT SCAN  │
-                  │   └──────────┬──────────────┘
-                  │              │
-                  │              ▼
-                  │   ┌─────────────────────────┐
-                  │   │  PHASE B1               │
-                  │   │  Deep Project Scan      │
-                  │   │  Build Stack Profile:   │
-                  │   │  lang, framework, DB,   │
-                  │   │  auth, cache, AI/LLM,   │
-                  │   │  queue, search, email…  │
-                  │   └──────────┬──────────────┘
-                  │              │
-                  │              ▼
-                  │   ┌─────────────────────────┐
-                  │   │  PHASE B2               │
-                  │   │  Gap Analysis           │
-                  │   │  Missing categories →   │
-                  │   │  High / Medium / Low    │
-                  │   └──────────┬──────────────┘
-                  │              │
-                  │              ▼
-                  │   ┌─────────────────────────┐
-                  │   │  PHASE B3               │
-                  │   │  Ask 3 questions:       │
-                  │   │  1. Which gap(s)?       │
-                  │   │  2. Constraints?        │
-                  │   │  3. Anything missed?    │
-                  │   │                         │
-                  │   │  ◀ STOP — await reply ▶ │
-                  │   └──────────┬──────────────┘
-                  │              │ user picks capability
-                  │              │
-                  ▼              ▼
-              ┌───────────────────────┐
-              │   FLOW A             │
-              │   PHASE 0            │
-              │   Parse Request      │
-              │   Extract: capability│
-              │   stack, constraints │
-              └───────────┬──────────┘
-                          │
-                          ▼
-                   ◇ Capability
-                     vague?
-                   /         \
-                 YES           NO
-                  │             │
-                  ▼             │
-          Ask 1 clarifying      │
-          question, await       │
-          user response         │
-                  │             │
-                  └──────┬──────┘
-                         │
-                         ▼
-              ┌───────────────────────┐
-              │   PHASE 1             │
-              │   Architecture Scan   │
-              │   (Flow A only —      │
-              │   Flow B already done)│
-              └───────────┬───────────┘
-                          │
-                          ▼
-              ┌─────────────────────────────────────────┐
-              │   PHASE 2 — Derive Search Terms         │
-              │   ← Flow A and Flow B converge here →   │
-              │                                         │
-              │   capability + stack → 3–5 search terms │
-              └───────────────┬─────────────────────────┘
-                              │
-                              ▼
-              ┌───────────────────────┐
-              │   PHASE 3             │
-              │   5-Tier Search       │
-              └───────────┬───────────┘
-                          │
-                    ┌─────┴───────────────────────────────────────┐
+                    ┌─────────────────────────────────────────────────────────┐
+                    │                      USER REQUEST                       │
+                    └──────────────────────────┬──────────────────────────────┘
+                                               │
+                                               ▼
+                                        ◇ Capability
+                                          named?
+                                        /         \
+                                      YES           NO
+                                       │             │
+             ──────────────────────────┘             └──────────────────────────
+            │                                                                   │
+            ▼                                                                   ▼
+┌───────────────────────┐                                         ┌─────────────────────────┐
+│  FLOW A               │                                         │  FLOW B                 │
+│  Capability Search    │                                         │  Project Scanner        │
+└───────────┬───────────┘                                         └──────────┬──────────────┘
+            │                                                                │
+            ▼                                                                ▼
+┌───────────────────────┐                                         ┌─────────────────────────┐
+│  PHASE 0              │                                         │  PHASE B1               │
+│  Parse Request        │                                         │  Deep Project Scan      │
+│  Extract: capability, │                                         │  Build Stack Profile:   │
+│  stack, constraints   │                                         │  lang, framework, DB,   │
+└───────────┬───────────┘                                         │  auth, cache, AI/LLM,   │
+            │                                                     │  queue, search, email…  │
+            ▼                                                     └──────────┬──────────────┘
+     ◇ Capability                                                            │
+       vague?                                                                ▼
+      /       \                                                   ┌─────────────────────────┐
+    YES        NO                                                 │  PHASE B2               │
+     │          │                                                 │  Gap Analysis           │
+     ▼          │                                                 │  Missing categories →   │
+  Ask 1         │                                                 │  High / Medium / Low    │
+  clarifying    │                                                 └──────────┬──────────────┘
+  question      │                                                            │
+     │          │                                                            ▼
+     └────┬─────┘                                                ┌─────────────────────────┐
+          │                                                      │  PHASE B3               │
+          ▼                                                      │  Ask 3 questions:       │
+┌───────────────────────┐                                        │  1. Which gap(s)?       │
+│  PHASE 1              │                                        │  2. Constraints?        │
+│  Architecture Scan    │                                        │  3. Anything missed?    │
+│  Read: package files, │                                        │                         │
+│  Dockerfile, README,  │                                        │  ◀ STOP — await reply ▶ │
+│  source files         │                                        └──────────┬──────────────┘
+│  Extract: lang,       │                                                   │
+│  frameworks, DBs      │                                                   │ user picks capability
+└───────────┬───────────┘                                                   │
+            │                                                               │
+            └───────────────────────────┬───────────────────────────────────┘
+                                        │
+                                        ▼
+                         ┌──────────────────────────────┐
+                         │   PHASE 2                    │
+                         │   Derive Search Terms        │
+                         │   capability + stack →       │
+                         │   3–5 search terms           │
+                         └──────────────┬───────────────┘
+                                        │
+                                        ▼
+                         ┌──────────────────────────────┐
+                         │   PHASE 3 — 5-Tier Search    │
+                         └──────────────┬───────────────┘
+                                        │
+                    ┌───────────────────┴─────────────────────────┐
                     │         Search loop (tiers in order)        │
                     │                                             │
                     │  Tier 1 ── GitHub (stars, recency, contrib) │
@@ -487,6 +463,5 @@ SKILLmama/
 │   └── AGENTS.md              # OpenAI Codex agent instructions
 ├── antigravity/
 │   └── PROMPT.md              # Antigravity system prompt
-├── skillmama.zip              # Pre-built zip for Claude.ai upload
 └── README.md
 ```
