@@ -85,7 +85,7 @@ find me a vector database for this project
 ## Usage
 
 ```
-/skillmama                                                    ← scans your project and asks what to find
+/skillmama ← scans your project and asks what to find
 /skillmama find me a vector database for my FastAPI project
 /skillmama what auth library should I use for my Next.js app?
 /skillmama find a .dwg parser for Node.js
