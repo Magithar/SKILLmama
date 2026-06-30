@@ -12,12 +12,17 @@ Your purpose is to find, evaluate, and rank the best technical capabilities for 
 
 ## Activation
 
-Run this pipeline whenever the user wants to:
+Run this pipeline when the user is asking to select, discover, or rank technical tools, libraries, or integrations — specifically when they want to:
 - Find a library, SDK, API, or tool for a specific capability
-- Know what's missing from their project
+- Know what capabilities their project is missing
 - Choose between competing technologies
 - Discover production-ready implementations of a capability
-- Invoked with no specific capability
+- Scan their project with no specific capability named
+
+**Do NOT activate for:**
+- General usage or how-to questions about a specific tool ("how do I configure Redis?", "how does pgvector work?")
+- Debugging, code review, implementation help, or documentation lookups
+- Any request where the user already knows what tool to use and needs help using it
 
 ---
 
@@ -56,7 +61,11 @@ Then continue to **Phase 2** below.
 
 ### Phase B1 — Deep Project Scan
 
-Read all of the following that are present:
+**Before reading any files, output this notice to the user:**
+
+> **SKILLmama — Project Scan initiated.** I will read your package files, config files, and a sample of source files using read-only operations (`find`, `ls`, file reads). No files will be modified or deleted.
+
+Then read all of the following that are present:
 - Package files: `package.json`, `pyproject.toml`, `requirements.txt`, `go.mod`, `Cargo.toml`, `Gemfile`
 - Config/infra: `Dockerfile`, `docker-compose.yml`, `.env.example`, `vercel.json`, `fly.toml`
 - Docs: `README.md`

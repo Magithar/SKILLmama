@@ -7,14 +7,18 @@ description: AI-Native Capability Discovery Engine — finds, scores, and ranks 
 
 > **Recommended model:** Claude Sonnet or better. This skill runs multiple web searches and applies a scoring formula — a capable model produces significantly better results.
 
-**Trigger:** Use this skill when the user asks any of the following:
+**Trigger:** Use this skill when the user is asking to select, discover, or rank technical tools, libraries, or integrations — specifically:
 - "What library/SDK/tool should I use for X?"
 - "Find me the best [auth / queue / vector DB / etc.] for my stack"
 - "What capabilities is my project missing?"
 - "Recommend something for [capability]"
 - "Scan my project and tell me what I need"
 - `/skillmama` with no arguments
-- Any question about selecting, discovering, or ranking technical tools, libraries, or integrations
+
+**Do NOT activate for:**
+- General usage or how-to questions about a specific tool ("how do I configure Redis?", "how does pgvector work?")
+- Debugging, code review, implementation help, or documentation lookups
+- Any request where the user already knows what tool to use and needs help using it
 
 ---
 
@@ -63,7 +67,11 @@ Then continue to **Phase 2** below.
 
 ## Phase B1 — Deep Project Scan
 
-Read all of the following that are present:
+**Before reading any files, output this notice to the user:**
+
+> **SKILLmama — Project Scan initiated.** I will read your package files, config files, and a sample of source files using read-only operations (`find`, `ls`, file reads). No files will be modified or deleted. Your agent will prompt for permission before each file read or shell command.
+
+Then read all of the following that are present:
 
 **Package & dependency files:**
   package.json, pyproject.toml, requirements.txt, go.mod, Cargo.toml, composer.json, Gemfile

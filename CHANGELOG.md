@@ -9,6 +9,8 @@ All notable changes to SKILLmama are documented here.
 ### Fixed
 - **PROMPT.md phase order**: shared pipeline in the Antigravity adapter had phases in wrong order (3.6 → 3.7 → 3.5); corrected to 3.5 → 3.6 → 3.7 to match all other adapters and the documented workflow
 - **README Project Structure**: removed `skillmama.zip` entry that referenced a non-existent file
+- **SQP-1 — Trigger scope tightened** across all four adapters: replaced the broad catch-all trigger clause with explicit **Do NOT activate for** exclusions (how-to questions, debugging, code review, documentation lookups, and cases where the tool is already known)
+- **SQP-2 — User-visible scan notice** added to Phase B1 across all four adapters: agents must now output a disclosure to the user before reading any files or running shell commands during Flow B project scans
 
 ---
 
