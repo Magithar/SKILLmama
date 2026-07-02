@@ -181,8 +181,10 @@ Add a Security line to each result: `PASS`, `⚠️ SQP-N — [finding]`, or `�
 Now that candidates are known, search for agent skills built to work with each one.
 For each candidate from Tiers 1–4:
   Search: site:skills.sh [candidate_name]
+  Search: site:terminalskills.io/skills [candidate_name]
   Search: site:github.com "SKILL.md" [candidate_name]
 Tag matches with: type: "skill", companion_for: "[candidate_name]"
+If found on terminalskills.io, record its reliability rating (SAFE / SUSPICIOUS / MALICIOUS) — treat SUSPICIOUS or MALICIOUS as an automatic Phase 3.7 DISCARD.
 
 ### Phase 3.7 — Security & Quality Gate (Skills)
 
@@ -243,7 +245,7 @@ Always show the scores. Never present a recommendation without evidence.
 
 Capability: [X]
 Stack: [Y]
-Sources searched: Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (npm/PyPI) · Tier 4 (Templates) · Skills (skills.sh + GitHub SKILL.md)
+Sources searched: Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (npm/PyPI) · Tier 4 (Templates) · Skills (skills.sh + TerminalSkills.io + GitHub SKILL.md)
 
 ---
 
@@ -281,12 +283,12 @@ MCP Option: [Name] — [one line]
 Companion Skills: (omit if Phase 3.6 + 3.7 returned no passing results)
 If any library has has_own_skill: true:
 > [Library Name] ships its own skill:
-> npx skills use [owner/repo] | antigravity
-> [skills.sh](url) · [GitHub](url)
+> npx skills use [owner/repo] | antigravity  (or: terminal-skills install [skill-name])
+> [skills.sh](url) · [TerminalSkills.io](url) · [GitHub](url)
 For each skill from Phase 3.6 where security != "BLOCKED":
 > [Skill Name] — helps you work with [companion_for]
-> npx skills use [owner/repo] | antigravity
-> Security: [PASS | ⚠️ SQP-1/2/3]
+> npx skills use [owner/repo] | antigravity  (or: terminal-skills install [skill-name])
+> Security: [PASS | ⚠️ SQP-1/2/3] — TerminalSkills.io rating: [SAFE, if listed]
 
 Next Steps:
 
@@ -312,6 +314,7 @@ _Otherwise use the install command from the result above._
 - If the user's stack is unclear and it materially affects the result, ask before scoring Compatibility.
 - If a capability has an MCP server, always surface it.
 - Tier order is search priority only. Score determines the final ranking.
+- If a skill's TerminalSkills.io reliability rating is SUSPICIOUS or MALICIOUS, discard it in Phase 3.7 regardless of other signals.
 - Skills are never scored against libraries — they always appear in Companion Skills only, never in ranked results.
 - Show Companion Skills section whenever any skill passed Phase 3.7 (security != "BLOCKED").
 - If a library has has_own_skill: true, always surface it in Companion Skills even if Phase 3.6 found nothing else.

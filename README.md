@@ -228,6 +228,7 @@ All four adapters run the same pipeline and produce the same output format.
               │                                        │
               │   For each candidate:                  │
               │   Search: site:skills.sh [name]        │
+              │   Search: terminalskills.io/skills [name]│
               │   Search: github.com "SKILL.md" [name] │
               └───────────────┬────────────────────────┘
                               │
@@ -309,7 +310,7 @@ Every candidate that passes the gate is scored 1–10 on four dimensions:
 | 2    | [Smithery](https://smithery.ai) / MCP Ecosystem | AI-native tools installable as MCP servers |
 | 3    | npm / PyPI / pkg.go.dev                         | Package registries with download signals   |
 | 4    | Curated Templates                               | LangGraph, OpenHands, cookbook examples    |
-| —    | [skills.sh](https://skills.sh) (Phase 3.6)      | Companion agent skills for top candidates  |
+| —    | [skills.sh](https://skills.sh) / [TerminalSkills.io](https://terminalskills.io) (Phase 3.6) | Companion agent skills for top candidates |
 
 ---
 
@@ -390,7 +391,7 @@ Tier 1 GitHub    → qdrant/qdrant (17k★), chroma-core/chroma (14k★),
 Tier 2 MCP       → qdrant-mcp-server, chroma-mcp
 Tier 3 PyPI      → qdrant-client (380k/wk), chromadb (620k/wk), pgvector (180k/wk)
 Tier 4 Templates → LangChain + Qdrant RAG template, FastAPI + Chroma starter
-Skills (3.6)     → "qdrant-memory-skill", "chroma-rag-skill" on skills.sh
+Skills (3.6)     → "qdrant-memory-skill", "chroma-rag-skill" on skills.sh + TerminalSkills.io
 ```
 
 **Step 5 — Output**
@@ -400,7 +401,7 @@ Skills (3.6)     → "qdrant-memory-skill", "chroma-rag-skill" on skills.sh
 
 Capability: vector database for RAG
 Stack: Python / FastAPI / PostgreSQL / Docker / OpenAI
-Sources searched: Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (PyPI) · Tier 4 (Templates) · Skills (skills.sh + GitHub SKILL.md)
+Sources searched: Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (PyPI) · Tier 4 (Templates) · Skills (skills.sh + TerminalSkills.io + GitHub SKILL.md)
 
 ---
 

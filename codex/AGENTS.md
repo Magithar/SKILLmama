@@ -243,11 +243,13 @@ Now that candidates are known, search for agent skills built to work with each o
 For each candidate collected from Tiers 1–4:
 ```
 Search: site:skills.sh [candidate_name]
+Search: site:terminalskills.io/skills [candidate_name]
 Search: site:github.com "SKILL.md" [candidate_name]
 ```
 For any match found, tag it with:
 - type: "skill"
 - companion_for: "[candidate_name]"
+- If found on terminalskills.io, record its reliability rating (SAFE / SUSPICIOUS / MALICIOUS) — treat SUSPICIOUS or MALICIOUS as an automatic Phase 3.7 DISCARD.
 
 ---
 
@@ -312,7 +314,7 @@ Score each factor 1–10:
 
 **Capability:** [stated capability]
 **Stack:** [detected stack]
-**Sources:** Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (npm/PyPI) · Tier 4 (Templates) · Skills (skills.sh + GitHub SKILL.md)
+**Sources:** Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (npm/PyPI) · Tier 4 (Templates) · Skills (skills.sh + TerminalSkills.io + GitHub SKILL.md)
 
 ---
 
@@ -362,14 +364,14 @@ _Agent skills that supercharge working with the top picks. Omit if Phase 3.6 + 3
 
 If any library has `has_own_skill: true`:
 > **[Library Name]** ships its own skill:
-> `npx skills use [owner/repo] | codex`
-> [skills.sh](url) · [GitHub](url)
+> `npx skills use [owner/repo] | codex` or `terminal-skills install [skill-name]`
+> [skills.sh](url) · [TerminalSkills.io](url) · [GitHub](url)
 
 For each skill from Phase 3.6 where security != "BLOCKED":
 > **[Skill Name]** — helps you work with [companion_for]
-> `npx skills use [owner/repo] | codex`
-> [skills.sh](url) · [GitHub](url)
-> Security: [PASS | ⚠️ SQP-1/2/3 — finding]
+> `npx skills use [owner/repo] | codex` or `terminal-skills install [skill-name]`
+> [skills.sh](url) · [TerminalSkills.io](url) · [GitHub](url)
+> Security: [PASS | ⚠️ SQP-1/2/3 — finding] — TerminalSkills.io rating: [SAFE, if listed]
 
 ---
 
@@ -389,7 +391,8 @@ For each skill from Phase 3.6 where security != "BLOCKED":
 - If two candidates tie within 0.5 points, explain the tiebreaker.
 - If the user's stack is unclear and it materially affects the result, ask before scoring Compatibility.
 - Prefer tools with MCP support when one exists and fits.
-- Tier order is search priority, not result priority. A great GitHub find beats a mediocre skills.sh result.
+- Tier order is search priority, not result priority. A great GitHub find beats a mediocre skills.sh or TerminalSkills.io result.
+- If a skill's TerminalSkills.io reliability rating is SUSPICIOUS or MALICIOUS, discard it in Phase 3.7 regardless of other signals.
 - Skills are never scored against libraries — they always appear in Companion Skills only, never in ranked results.
 - Show Companion Skills section whenever any skill passed Phase 3.7 (security != "BLOCKED").
 - If a library has has_own_skill: true, always surface it in Companion Skills even if Phase 3.6 found nothing else.

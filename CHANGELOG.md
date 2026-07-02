@@ -4,6 +4,15 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [1.4.1] - 2026-07-03
+
+### Added
+- **TerminalSkills.io as a companion-skills source** in Phase 3.6 across all four adapters (Claude Code, Claude.ai, OpenAI Codex, Antigravity) and the README: searched alongside skills.sh and GitHub `SKILL.md`
+  - Its SAFE / SUSPICIOUS / MALICIOUS reliability rating now feeds Phase 3.7 — SUSPICIOUS or MALICIOUS is an automatic discard
+  - Companion Skills output and install-command examples updated to include `terminal-skills install [skill-name]`
+
+---
+
 ## [1.4.0] - 2026-07-01
 
 ### Added
