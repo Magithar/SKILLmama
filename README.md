@@ -222,15 +222,15 @@ All four adapters run the same pipeline and produce the same output format.
               └───────────────┬────────────────────────┘
                               │
                               ▼
-              ┌────────────────────────────────────────┐
-              │   PHASE 3.6 — Companion Skills Search  │
-              │   (REQUIRED — never skip)              │
-              │                                        │
-              │   For each candidate:                  │
-              │   Search: site:skills.sh [name]        │
+              ┌──────────────────────────────────────────┐
+              │   PHASE 3.6 — Companion Skills Search    │
+              │   (REQUIRED — never skip)                │
+              │                                          │
+              │   For each candidate:                    │
+              │   Search: site:skills.sh [name]          │
               │   Search: terminalskills.io/skills [name]│
-              │   Search: github.com "SKILL.md" [name] │
-              └───────────────┬────────────────────────┘
+              │   Search: github.com "SKILL.md" [name]   │
+              └───────────────┬──────────────────────────┘
                               │
                               ▼
               ┌────────────────────────────────────────┐
