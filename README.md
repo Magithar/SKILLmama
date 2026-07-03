@@ -42,18 +42,24 @@
 npx skills add Magithar/SKILLmama
 ```
 
-This installs SKILLmama via the [skills.sh](https://skills.sh/Magithar/SKILLmama) ecosystem and makes `/skillmama` available in your agent.
+Run interactively, this prompts you to pick your agent and installs correctly. This installs SKILLmama via the [skills.sh](https://skills.sh/Magithar/SKILLmama) ecosystem.
 
 ### Claude Code (CLI)
 
-Copy the skill file into your project's `.claude/commands/` folder:
+```bash
+npx skills add Magithar/SKILLmama -a claude-code
+```
+
+The explicit `-a claude-code` flag is required for Claude Code — without it, non-interactive installs (e.g. running the command via an agent's own shell tool) can silently skip the step that wires the skill into `.claude/skills/`, and `/skillmama` won't appear.
+
+Alternatively, copy the skill file manually into your project's `.claude/commands/` folder:
 
 ```bash
 mkdir -p /your-project/.claude/commands
 cp .claude/commands/skillmama.md /your-project/.claude/commands/skillmama.md
 ```
 
-Then type `/skillmama` in any Claude Code session inside that project.
+Then type `/skillmama` (or `/SKILLmama`, matching skill name casing) in any Claude Code session inside that project.
 
 ### Claude.ai (Web / Desktop)
 
