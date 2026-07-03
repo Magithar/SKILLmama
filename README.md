@@ -42,7 +42,7 @@
 npx skills add Magithar/SKILLmama
 ```
 
-Run interactively, this prompts you to pick your agent and installs correctly. This installs SKILLmama via the [skills.sh](https://skills.sh/Magithar/SKILLmama) ecosystem.
+When run interactively, it prompts you to pick your agent and installs correctly. This installs SKILLmama via the [skills.sh](https://skills.sh/Magithar/SKILLmama) ecosystem.
 
 ### Claude Code (CLI)
 
@@ -50,7 +50,7 @@ Run interactively, this prompts you to pick your agent and installs correctly. T
 npx skills add Magithar/SKILLmama -a claude-code
 ```
 
-The explicit `-a claude-code` flag is required for Claude Code — without it, non-interactive installs (e.g. running the command via an agent's own shell tool) can silently skip the step that wires the skill into `.claude/skills/`, and `/skillmama` won't appear.
+The explicit `-a claude-code` flag is required for Claude Code. Without it, non-interactive installs (e.g. running the command via an agent's own shell tool) can silently skip the step that wires the skill into `.claude/skills/`, and `/skillmama` won't appear.
 
 Alternatively, copy the skill file manually into your project's `.claude/commands/` folder:
 
