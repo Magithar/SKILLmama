@@ -4,6 +4,13 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [1.4.2] - 2026-07-03
+
+### Fixed
+- **Claude Code install command**: `npx skills add Magithar/SKILLmama` silently fails to register `/skillmama` when run non-interactively (e.g. via an agent's own shell tool), because the skills.sh CLI skips wiring the skill into `.claude/skills/` without an explicit agent flag. The Claude Code install instructions in the README now use `npx skills add Magithar/SKILLmama -a claude-code`, verified via clean uninstall/reinstall
+
+---
+
 ## [1.4.1] - 2026-07-03
 
 ### Added
