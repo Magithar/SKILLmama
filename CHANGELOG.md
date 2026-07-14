@@ -4,6 +4,30 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [1.4.3] - 2026-07-14
+
+### Added
+- **SkillsMP as a companion-skills source** in Phase 3.6 across all four adapters (Claude Code, Claude.ai, OpenAI Codex, Antigravity) and the README: searched alongside skills.sh, TerminalSkills.io, and GitHub `SKILL.md`
+  - SkillsMP auto-indexes public GitHub repos with no vetting, so a match is treated as a pointer to verify the underlying repo, not a trust signal — unlike TerminalSkills.io's rated results
+  - Companion Skills output examples updated to include a SkillsMP link
+- **Verified Compatibility scoring** in Phase 4 across all four adapters: before scoring a candidate's Compatibility factor, the skill now checks locally whether its required API keys, CLI tools, or config actually exist (`.env.example`, `which [cli]`, config files) instead of relying purely on inferred stack fit
+  - Missing required dependencies are flagged inline on the candidate's Compatibility line (e.g. "⚠️ requires `REDIS_URL` — not found in .env.example") rather than silently scoring high
+  - Dependencies that can't be verified either way (e.g. hosted services) are left unpenalized and noted as unverified
+- **`ALREADY PRESENT` duplicate guard** in Phase 4 across all four adapters: candidates whose package name already appears in the detected stack's dependencies are excluded from scoring and surfaced in Also Considered instead of being re-recommended
+
+### Fixed
+- **Multi-agent pipeline drift**: `codex/AGENTS.md` and `antigravity/PROMPT.md` had diverged from `skillmama/SKILL.md` in wording (leftover from a two-stage Haiku-search/Sonnet-score architecture that was since dropped). Consolidated all three to run identical Phases 0–5, scoring, and Rules — only legitimately agent-specific bits differ now (title framing, trigger wording, and per-agent `npx skills use [owner/repo] | <agent>` install syntax in Companion Skills)
+- **Claude-specific language in the universal CLI-install file**: `npx skills add` only discovers files literally named `SKILL.md`, so `skillmama/SKILL.md` is what actually gets installed for every agent via `-a codex` / `-a antigravity`, not just Claude. Generalized its "Recommended model: Claude Sonnet" note and `README.md, CLAUDE.md` file-list line to be agent-neutral
+- **Antigravity skill discovery**: confirmed via live testing that `npx skills add -a antigravity` installs to `~/.agents/skills/`, a path Antigravity never reads — the skill was silently invisible to the app. Root-caused against Antigravity's official docs: the real global path is `~/.gemini/config/skills/`. README now documents a working manual install (curl one-liner or local `cp`, no CLI dependency) with confirmed-working usage via explicit invocation (`SKILLmama <request>`); filed corroborating repro on the upstream bug ([vercel-labs/skills#1470](https://github.com/vercel-labs/skills/issues/1470))
+- **Codex CLI install status downgraded to unverified**: `npx skills add -a codex` was never live-tested against a real Codex client this cycle — README now marks it ⚠️ rather than claiming it works, pending an actual test
+- **`.claude/commands/skillmama.md` was missing SkillsMP entirely**: the SkillsMP addition above was supposed to land in all four adapters, but this file never got it (0 mentions vs. 5 in the other three). Caught during a full project audit; patched all 4 locations (Phase 3.6 search + note, Sources searched line, both Companion Skills link lines) to match
+
+### Changed
+- **README restructured with a "See it in action" demo section**: added a screen-recorded GIF of SKILLmama running live inside Antigravity (asking a capability question, Phase 1.5 constraint question firing correctly), placed after the intro paragraph and linked from the nav row — visitors now see proof the tool works before the Install section
+- **New `assets/` folder**: `logo.png` moved there (via `git mv`, history preserved) alongside the new demo GIF, replacing the previous repo-root image layout
+
+---
+
 ## [1.4.2] - 2026-07-03
 
 ### Fixed
