@@ -1,4 +1,4 @@
-<p align="center"><img src="logo.png" alt="SKILLmama" width="350"/></p>
+<p align="center"><img src="assets/logo.png" alt="SKILLmama" width="350"/></p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-Apache_2.0-blue.svg" alt="License"/>
@@ -20,8 +20,14 @@
 ---
 
 <p align="center">
-  <a href="#install">Install</a> • <a href="#usage">Usage</a> • <a href="#ai-adapters">AI Adapters</a> • <a href="#core-workflow">Core Workflow</a> • <a href="#ranking-formula">Ranking Formula</a> • <a href="#5-tier-search-hierarchy">5-Tier Search</a> • <a href="#output-format">Output Format</a> • <a href="#end-to-end-example">Example</a> • <a href="#project-structure">Project Structure</a>
+  <a href="#see-it-in-action">Demo</a> • <a href="#install">Install</a> • <a href="#usage">Usage</a> • <a href="#ai-adapters">AI Adapters</a> • <a href="#core-workflow">Core Workflow</a> • <a href="#ranking-formula">Ranking Formula</a> • <a href="#5-tier-search-hierarchy">5-Tier Search</a> • <a href="#output-format">Output Format</a> • <a href="#end-to-end-example">Example</a> • <a href="#project-structure">Project Structure</a>
 </p>
+
+---
+
+## See it in action
+
+![SKILLmama running inside Antigravity](assets/skillmama-antigravity-demo.gif)
 
 ---
 
@@ -73,15 +79,45 @@ Then type `/skillmama` (or `/SKILLmama`, matching skill name casing) in any Clau
 
 ### OpenAI Codex
 
-Place `codex/AGENTS.md` in your repo root, then run naturally:
+**Manual (recommended)** — place `codex/AGENTS.md` in your repo root, then run naturally:
 
 ```bash
 codex "find me the best job queue for this project"
 ```
 
+> `npx skills add Magithar/SKILLmama -a codex` installs successfully — the `skills` CLI only discovers files literally named `SKILL.md`, so it installs `skillmama/SKILL.md` into `.agents/skills/skillmama/` rather than `codex/AGENTS.md` directly. Both files run the same pipeline, so this should be safe, though it hasn't been live-tested against a real Codex client (see AI Adapters below). One cosmetic quirk either way: the installed file's trigger list still mentions the `/skillmama` slash command, which doesn't exist in Codex — harmless, just ignore that line.
+
 ### Antigravity
 
-Load `antigravity/PROMPT.md` as the system prompt, then ask naturally:
+**Recommended — install as a native global skill (confirmed working via live testing).** No need to clone this repo first:
+
+```bash
+mkdir -p ~/.gemini/config/skills/skillmama
+curl -sL https://raw.githubusercontent.com/Magithar/SKILLmama/main/skillmama/SKILL.md -o ~/.gemini/config/skills/skillmama/SKILL.md
+```
+
+Already have this repo cloned? Use the local copy instead so you always get your working tree's version, not `main`:
+
+```bash
+mkdir -p ~/.gemini/config/skills/skillmama
+cp skillmama/SKILL.md ~/.gemini/config/skills/skillmama/SKILL.md
+```
+
+Fully restart Antigravity (this path is read at startup), then ask **"Which skills are installed?"** to confirm — SKILLmama should appear under Global & Built-in Skills and in the `/` command picker.
+
+**Usage — invoke explicitly**, confirmed working via live testing: type `/` and select **SKILLmama** from the picker (or type `SKILLmama` before your request), then your capability question:
+
+```
+SKILLmama find me the best vector database for a Python project
+```
+
+This triggered the real pipeline in testing — a Phase 1.5 constraint question ("do you have any specific constraints or preferences? ... Reply 'none' to search with no filters"), not a generic answer. Plain natural-language prompts with no explicit `SKILLmama` invocation were not confirmed to auto-trigger the skill — invoke it explicitly for reliable results.
+
+> Per [Antigravity's official Agent Skills docs](https://antigravity.google/docs/skills), the agent is also supposed to auto-trigger relevant skills from context alone, without explicit invocation — driven by the skill's `description:` frontmatter. We haven't verified that mode here (only explicit invocation was tested), so treat auto-trigger as unconfirmed and invoke explicitly for now.
+
+> ⚠️ `npx skills add Magithar/SKILLmama -a antigravity` installs successfully but to the **wrong path** (`~/.agents/skills/`), which Antigravity never reads — confirmed by live testing (installed, restarted, asked a capability question, got a generic answer with no SKILLmama pipeline behavior). `~/.gemini/config/skills/` is Antigravity's real global skills directory, confirmed against the [official docs](https://antigravity.google/docs/skills) and by re-testing after moving the file there. Use the manual copy above until the CLI is updated to target the correct path.
+
+**Fallback — load `antigravity/PROMPT.md` as the system prompt**, then ask naturally:
 
 ```
 find me a vector database for this project
@@ -102,14 +138,14 @@ find me a vector database for this project
 
 ## AI Adapters
 
-| AI System    | File                                                           | How to use                               |
-| ------------ | -------------------------------------------------------------- | ---------------------------------------- |
-| Claude Code  | [.claude/commands/skillmama.md](.claude/commands/skillmama.md) | `/skillmama` slash command               |
-| Claude.ai    | [skillmama/SKILL.md](skillmama/SKILL.md)                       | Upload zip via Customize → Skills        |
-| OpenAI Codex | [codex/AGENTS.md](codex/AGENTS.md)                             | Place in repo root as agent instructions |
-| Antigravity  | [antigravity/PROMPT.md](antigravity/PROMPT.md)                 | Load as system prompt                    |
+| AI System    | File                                                            | `npx skills add`                    | How to use                                               |
+| ------------ | ---------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------- |
+| Claude Code  | [.claude/commands/skillmama.md](.claude/commands/skillmama.md) | ✅ Works — installs to `.claude/skills/` | `/skillmama` slash command — CLI wires it automatically |
+| Claude.ai    | [skillmama/SKILL.md](skillmama/SKILL.md)                       | N/A (not CLI-installable)              | Upload zip via Customize → Skills                        |
+| OpenAI Codex | [codex/AGENTS.md](codex/AGENTS.md)                              | ⚠️ Installs, but unverified — not live-tested against a real Codex client | Place file in repo root manually (recommended until verified) |
+| Antigravity  | [antigravity/PROMPT.md](antigravity/PROMPT.md)                 | ❌ Wrong path — use `~/.gemini/config/skills/` instead (manual copy, confirmed working) | Manual copy to `~/.gemini/config/skills/skillmama/`, then invoke explicitly: `SKILLmama <request>` (confirmed working) |
 
-All four adapters run the same pipeline and produce the same output format.
+All four adapters run the same pipeline and produce the same output format. The `skills` CLI only discovers files literally named `SKILL.md`, so `-a codex` and `-a antigravity` install `skillmama/SKILL.md` into `.agents/skills/skillmama/` instead of `codex/AGENTS.md` / `antigravity/PROMPT.md` directly — both files now run identical pipeline logic, so the content itself is no longer wrong. Codex hasn't been live-tested, but Antigravity has: `-a antigravity` installs to `~/.agents/skills/`, which Antigravity never reads — confirmed by live testing (installed, restarted, asked a capability question, got a generic non-pipeline answer). Antigravity's real global skills path is `~/.gemini/config/skills/`; copying the file there manually and restarting was confirmed working (skill appeared in the app's own "Which skills are installed?" answer and its `/` command picker). See the Antigravity install section above for exact steps.
 
 ---
 
@@ -235,6 +271,7 @@ All four adapters run the same pipeline and produce the same output format.
               │   For each candidate:                    │
               │   Search: site:skills.sh [name]          │
               │   Search: terminalskills.io/skills [name]│
+              │   Search: site:skillsmp.com [name]       │
               │   Search: github.com "SKILL.md" [name]   │
               └───────────────┬──────────────────────────┘
                               │
@@ -316,7 +353,7 @@ Every candidate that passes the gate is scored 1–10 on four dimensions:
 | 2    | [Smithery](https://smithery.ai) / MCP Ecosystem | AI-native tools installable as MCP servers |
 | 3    | npm / PyPI / pkg.go.dev                         | Package registries with download signals   |
 | 4    | Curated Templates                               | LangGraph, OpenHands, cookbook examples    |
-| —    | [skills.sh](https://skills.sh) / [TerminalSkills.io](https://terminalskills.io) (Phase 3.6) | Companion agent skills for top candidates |
+| —    | [skills.sh](https://skills.sh) / [TerminalSkills.io](https://terminalskills.io) / [SkillsMP](https://skillsmp.com) (Phase 3.6) | Companion agent skills for top candidates |
 
 ---
 
@@ -397,7 +434,7 @@ Tier 1 GitHub    → qdrant/qdrant (17k★), chroma-core/chroma (14k★),
 Tier 2 MCP       → qdrant-mcp-server, chroma-mcp
 Tier 3 PyPI      → qdrant-client (380k/wk), chromadb (620k/wk), pgvector (180k/wk)
 Tier 4 Templates → LangChain + Qdrant RAG template, FastAPI + Chroma starter
-Skills (3.6)     → "qdrant-memory-skill", "chroma-rag-skill" on skills.sh + TerminalSkills.io
+Skills (3.6)     → "qdrant-memory-skill", "chroma-rag-skill" on skills.sh + TerminalSkills.io + SkillsMP
 ```
 
 **Step 5 — Output**
@@ -407,7 +444,7 @@ Skills (3.6)     → "qdrant-memory-skill", "chroma-rag-skill" on skills.sh + Te
 
 Capability: vector database for RAG
 Stack: Python / FastAPI / PostgreSQL / Docker / OpenAI
-Sources searched: Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (PyPI) · Tier 4 (Templates) · Skills (skills.sh + TerminalSkills.io + GitHub SKILL.md)
+Sources searched: Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (PyPI) · Tier 4 (Templates) · Skills (skills.sh + TerminalSkills.io + SkillsMP + GitHub SKILL.md)
 
 ---
 
