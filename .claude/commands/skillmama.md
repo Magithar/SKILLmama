@@ -254,9 +254,10 @@ FLAG (set sqp, add security_note, do NOT discard) if:
 For each candidate collected from Tiers 1–4:
   WebSearch: site:skills.sh [candidate_name]
   WebSearch: site:terminalskills.io/skills [candidate_name]
+  WebSearch: site:skillsmp.com [candidate_name]
   WebSearch: site:github.com "SKILL.md" [candidate_name]
 
-For any match found, note it as a companion skill for that candidate. If found on terminalskills.io, note its reliability rating (SAFE / SUSPICIOUS / MALICIOUS) — treat SUSPICIOUS or MALICIOUS as an automatic Phase 3.7 DISCARD.
+For any match found, note it as a companion skill for that candidate. If found on terminalskills.io, note its reliability rating (SAFE / SUSPICIOUS / MALICIOUS) — treat SUSPICIOUS or MALICIOUS as an automatic Phase 3.7 DISCARD. skillsmp.com has no vetting or reliability rating (auto-indexed from public GitHub repos) — treat a skillsmp.com match as a pointer to go verify the underlying GitHub repo directly, not as a trust signal on its own.
 
 ---
 
@@ -284,6 +285,8 @@ WARN if:
 
 Skip any candidate marked BLOCKED from Phase 3.5.
 
+Skip any candidate whose package name already appears in the Stack Profile's detected dependencies — mark it `ALREADY PRESENT` instead of scoring it. Don't re-recommend something the project already has installed.
+
 ```
 Total Score = (Compatibility × 0.40) + (Popularity × 0.30) + (Maintenance × 0.15) + (Simplicity × 0.15)
 ```
@@ -291,10 +294,15 @@ Total Score = (Compatibility × 0.40) + (Popularity × 0.30) + (Maintenance × 0
 Each factor scored 1–10:
 
 **Compatibility (40%)** — fit to detected stack
-- 10: Native SDK for their language/framework
-- 7–9: Well-documented integration, community adapters
-- 4–6: Works but requires significant glue code
-- 1–3: Different paradigm, major adaptation needed
+
+Before scoring, verify — don't just infer. For each candidate still in play, check what it actually requires (API key, CLI, running service, env var) against the local environment: read `.env.example` for the key name, check `which [cli]` for a required tool, look for a config file the service needs. This is the same read-only posture as Phase B1 — no writes.
+
+- 10: Native SDK for their language/framework, all required deps verified present
+- 7–9: Well-documented integration, community adapters, deps verified present
+- 4–6: Works but requires significant glue code, OR a required dep is missing (add a note, e.g. "⚠️ requires `REDIS_URL` — not found in .env.example")
+- 1–3: Different paradigm, major adaptation needed, OR a critical dep is missing with no local substitute
+
+If a required dependency can't be verified either way (e.g. no way to check a hosted service from project files), don't penalize — note it as unverified instead.
 
 **Popularity (30%)** — from github_stars + weekly_downloads
 - 10: >10k stars OR >1M weekly downloads
@@ -324,7 +332,7 @@ If a field is unknown, mark it N/A and weight the remaining factors proportional
 
 **Capability:** [capability]
 **Stack:** [stack]
-**Sources searched:** Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (npm/PyPI) · Tier 4 (Templates) · Skills (skills.sh + TerminalSkills.io + GitHub SKILL.md)
+**Sources searched:** Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (npm/PyPI) · Tier 4 (Templates) · Skills (skills.sh + TerminalSkills.io + SkillsMP + GitHub SKILL.md)
 
 **Scoring all candidates against [stack]:**
 
@@ -338,7 +346,7 @@ If a field is unknown, mark it N/A and weight the remaining factors proportional
 
 **#1 — [Name]** · Score: X.X/10
 > [One sentence: what it is and why it wins for this stack]
-- Compatibility: X/10 — [reason]
+- Compatibility: X/10 — [reason] [⚠️ note if a required dep was verified missing]
 - Popularity: X/10 — [stars/downloads]
 - Maintenance: X/10 — [last commit / release cadence]
 - Simplicity: X/10 — [setup effort]
@@ -362,6 +370,7 @@ If a field is unknown, mark it N/A and weight the remaining factors proportional
 | Name | Score | Why not #1 | Links |
 |------|-------|------------|-------|
 | [Name] | X.X | [brief reason] | [gh](url) · [npm](url) |
+| [Name] | ALREADY PRESENT | Already in your stack (found in [package.json / etc.]) | [gh](url) |
 
 ---
 
@@ -381,12 +390,12 @@ _Omit this section if Phase 3.6 + 3.7 returned no passing results._
 If any library has has_own_skill: true:
 > **[Library Name]** ships its own skill:
 > `npx skills add [owner/repo]` or `terminal-skills install [skill-name]`
-> [skills.sh](url) · [TerminalSkills.io](url) · [GitHub](url)
+> [skills.sh](url) · [TerminalSkills.io](url) · [SkillsMP](url) · [GitHub](url)
 
 For each companion skill where security != BLOCKED:
 > **[Skill Name]** — helps you work with [library]
 > `npx skills add [owner/repo]` or `terminal-skills install [skill-name]`
-> [skills.sh](url) · [TerminalSkills.io](url) · [GitHub](url)
+> [skills.sh](url) · [TerminalSkills.io](url) · [SkillsMP](url) · [GitHub](url)
 > Security: [PASS | ⚠️ SQP-1/2/3 — finding] — TerminalSkills.io rating: [SAFE, if listed]
 
 ---
@@ -413,3 +422,5 @@ For each companion skill where security != BLOCKED:
 - If a library has has_own_skill: true, always surface it in Companion Skills even if Phase 3.6 found nothing else.
 - Do NOT append a "Sources:" section at the end of results. Inline links within candidate entries are sufficient — the trailing block is redundant and clutters the output.
 - Do NOT show a Phase 3.5 section in the output. Security is an internal gate only — surface findings inline via the Security: line on each candidate in Phase 5.
+- Never score a candidate that's already a detected dependency in the Stack Profile — surface it as `ALREADY PRESENT` in Also Considered instead.
+- Compatibility scores must reflect verified local environment checks (env vars, CLI, config files), not just inferred stack fit — flag missing required deps with a note rather than silently scoring high.
