@@ -528,5 +528,11 @@ SKILLmama/
 │   └── AGENTS.md              # OpenAI Codex agent instructions
 ├── antigravity/
 │   └── PROMPT.md              # Antigravity system prompt
+├── evals/
+│   └── skillmama-ablation.md  # Manual trigger/pipeline eval + result log
 └── README.md
 ```
+
+## Evals
+
+SKILLmama ships a manual eval harness at [`evals/skillmama-ablation.md`](evals/skillmama-ablation.md): 5 prompts that should trigger the skill, 5 that shouldn't, run skill-on vs. skill-off. It's checked after any change to the Trigger rules or the core phases — the log has already caught and fixed two real bugs (a silent empty scan when the working directory didn't match the stated stack, and Maintenance scores presented as verified when they were actually estimated).
