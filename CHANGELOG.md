@@ -4,10 +4,20 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [1.4.5] - 2026-07-16
+
+### Added
+- **Deployment-target detection**: Phase 1/B1 across all four adapters now also read `render.yaml`, `SETUP.md`, and `DEPLOY.md`/`DEPLOYMENT.md`, and extract a detected deployment target (Render, Vercel, Fly.io, Railway, self-hosted Docker) into the Stack Profile's new `Deployment:` field
+
+### Fixed
+- **Deployment persistence blind spot**: Phase 4's Compatibility scoring verified local project dependencies (env vars, CLI, config files) but never checked whether the *hosting platform* actually persists local disk across restarts — so an "easy, zero-infra" candidate that stores data in-process (e.g. an embedded vector DB) could be recommended as a top pick even when the target platform's storage is ephemeral and would silently lose that data on every deploy or restart. Found via a genuine paired skill-off/skill-on ablation run in `evals/skillmama-ablation.md` (Run 5): an unassisted baseline agent caught this by reading a project's `SETUP.md`, while SKILLmama's pipeline missed it. Phase 4 now runs a **Deployment Persistence Check** for any local/in-process/on-disk candidate — checking `fly.toml` `[[mounts]]`, `railway.toml` volumes, `render.yaml` `disk:` blocks, and `docker-compose.yml` `volumes:` mappings (Vercel/serverless is always treated as ephemeral) — and caps Compatibility at 4–6 with an explicit warning when the detected platform has no persistent storage configured, instead of scoring the candidate as if storage just works
+
+---
+
 ## [1.4.4] - 2026-07-16
 
 ### Added
-- **`evals/skillmama-ablation.md`**: a manual eval harness — 5 prompts that should trigger SKILLmama, 5 that shouldn't (mapped directly to the Trigger / Do-NOT-activate rules), plus a result log. Prompted by "Don't Ship Skills Without Evals" (Philipp Schmid, Google DeepMind) and the SkillsBench methodology of comparing skill-on vs. skill-off behavior
+- **`evals/skillmama-ablation.md`**: a manual eval harness — 5 prompts that should trigger SKILLmama, 5 that shouldn't (mapped directly to the Trigger / Do-NOT-activate rules), plus a result log. Prompted by "Don't Ship Skills Without Evals" (Philipp Schmid, Google DeepMind) and the paired skill-on/skill-off ablation methodology from [SkillsBench](https://arxiv.org/abs/2602.12670) (Li et al.)
 - Trigger-classification and full-pipeline runs logged against the eval set, including one live end-to-end run against a real external project (`nutri-bot`, a FastAPI/Redis/Telegram app) to validate output quality on a non-trivial stack
 
 ### Fixed

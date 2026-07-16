@@ -535,6 +535,6 @@ SKILLmama/
 
 ## Evals
 
-SKILLmama ships a manual eval harness at [`evals/skillmama-ablation.md`](evals/skillmama-ablation.md): 5 prompts that should trigger the skill, 5 that shouldn't, run skill-on vs. skill-off. It's checked after any change to the Trigger rules or the core phases — the log has already caught and fixed two real bugs (a silent empty scan when the working directory didn't match the stated stack, and Maintenance scores presented as verified when they were actually estimated).
+SKILLmama ships a manual eval harness at [`evals/skillmama-ablation.md`](evals/skillmama-ablation.md): 5 prompts that should trigger the skill, 5 that shouldn't, run skill-on vs. skill-off. It's checked after any change to the Trigger rules or the core phases — the log has already caught and fixed three real bugs: a silent empty scan when the working directory didn't match the stated stack, Maintenance scores presented as verified when they were actually estimated, and a deployment-persistence blind spot (recommending an in-process store without checking whether the target hosting platform's disk actually survives a restart) — the last one found via a genuine paired skill-off/skill-on ablation run, not just inference.
 
-Inspired by [Philipp Schmid](https://github.com/philschmid)'s (Google DeepMind) talk "Don't Ship Skills Without Evals," and the skill-on/skill-off ablation methodology behind [SkillsBench](https://www.skillsbench.ai/).
+Inspired by [Philipp Schmid](https://github.com/philschmid)'s (Google DeepMind) talk "Don't Ship Skills Without Evals," and the paired skill-on/skill-off ablation methodology from [SkillsBench](https://arxiv.org/abs/2602.12670) (Li et al.), also live at [skillsbench.ai](https://www.skillsbench.ai/).

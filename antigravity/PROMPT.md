@@ -45,7 +45,8 @@ If the capability is genuinely ambiguous, ask one clarifying question and stop.
 Read these files if present:
   package.json / pyproject.toml / go.mod / Cargo.toml / composer.json
   Dockerfile, docker-compose.yml, .env.example
-  README.md
+  vercel.json, fly.toml, railway.toml, render.yaml
+  README.md, SETUP.md, DEPLOY.md / DEPLOYMENT.md
 
 Extract:
 - primary language(s)
@@ -53,6 +54,7 @@ Extract:
 - databases / storage
 - AI/ML tools already present
 - auth systems in use
+- deployment target, if identifiable (e.g. Render, Vercel, Fly.io, Railway, self-hosted Docker) — from config files above or explicit mentions in README/SETUP/DEPLOY docs
 
 **If the user stated a stack inline** (e.g. "my FastAPI app") **and Phase 1 finds no trace of it** (no matching language/framework files in the scanned directory, or the directory looks unrelated — e.g. it's this pipeline's own repo, a docs repo, empty), do not silently proceed on an empty scan. Say so and ask which directory to scan:
 
@@ -96,10 +98,10 @@ Then read all of the following that are present:
   package.json, pyproject.toml, requirements.txt, go.mod, Cargo.toml, composer.json, Gemfile
 
 **Config & infrastructure:**
-  Dockerfile, docker-compose.yml, .env.example, vercel.json, fly.toml, railway.toml
+  Dockerfile, docker-compose.yml, .env.example, vercel.json, fly.toml, railway.toml, render.yaml
 
 **Project docs:**
-  README.md
+  README.md, SETUP.md, DEPLOY.md / DEPLOYMENT.md
 
 **Source structure (list only, do not read every file):**
   `find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.py" -o -name "*.go" \) | grep -v node_modules | grep -v .git | head -60`
@@ -122,6 +124,7 @@ Email:         [e.g. Resend, none detected]
 Payments:      [e.g. Stripe, none detected]
 Observability: [e.g. Sentry, none detected]
 Testing:       [e.g. Vitest, none detected]
+Deployment:    [e.g. Render (web service, no persistent disk found), Vercel (serverless), self-hosted Docker w/ volumes, undetected]
 ```
 
 ---
@@ -304,6 +307,18 @@ Before scoring, verify — don't just infer. For each candidate still in play, c
 - 1–3: Different paradigm, major adaptation needed, OR a critical dep is missing with no local substitute
 
 If a required dependency can't be verified either way (e.g. no way to check a hosted service from project files), don't penalize — note it as unverified instead.
+
+**Deployment Persistence Check** — for any candidate whose normal operation stores data locally, in-process, or on-disk (embedded databases, in-process vector stores, SQLite, local file caches — anything that isn't a separately-hosted service reached over the network):
+
+- If Phase 1/B1 detected a deployment target, check whether that target actually persists local disk across restarts/redeploys:
+  - `fly.toml` → persistent only if it has a `[[mounts]]` section
+  - `railway.toml`/`railway.json` → persistent only if a volume is configured
+  - `render.yaml` → persistent only if it has a `disk:` block; Render's default web service disk is ephemeral
+  - `vercel.json` present, or the stack is otherwise serverless/functions-based → always ephemeral, regardless of config
+  - `docker-compose.yml` → persistent only if the service has a `volumes:` mapping to the data path the candidate would use
+- If a deployment target was detected and no persistent volume/disk was found for it, this candidate's local storage will not survive a restart on that platform. Cap Compatibility at the 4–6 band regardless of how well the library otherwise fits, and add an explicit note, e.g. "⚠️ in-process storage — no persistent disk found in `render.yaml`; data will be lost on restart/redeploy."
+- If no deployment target could be identified at all (no config files, no mention in README/SETUP/DEPLOY docs), don't penalize — note deployment persistence as unverified.
+- This check does not apply to candidates that are separately-hosted services (e.g. a managed cloud DB reached via API) — those aren't affected by the app's own deployment target.
 
 **Popularity (30%)** — from github_stars + weekly_downloads
 - 10: >10k stars OR >1M weekly downloads

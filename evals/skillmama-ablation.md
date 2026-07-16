@@ -113,3 +113,30 @@ Same method as Run 1 (independent fresh-context classification, no pipeline exec
 | 10 | NO-TRIGGER | NO-TRIGGER | — | PASS |
 
 **Result: 10/10 PASS, no regression.**
+
+---
+
+**Run 5 — 2026-07-16 — real paired skill-off vs. skill-on ablation, prompt #1**
+
+Prior runs never actually executed the skill-off condition (Run 2's log entry literally says "not run"), so the eval wasn't a true paired ablation despite citing that methodology. This run fixes that: same prompt, same project (`nutri-bot`), skill-off run by a fresh agent with file-read access but no SKILLmama pipeline, no web search, no structured scoring — just its own judgment.
+
+**Skill-off recommendation:** pgvector or Upstash Vector — explicitly *rejected* Chroma/FAISS in-process stores, because it read `nutri-bot/SETUP.md`'s Render deployment section and reasoned that Render's free/small web dynos have ephemeral disk, so an in-process vector store would silently lose data on restart. Also tied embedding-model choice to the existing Gemini dependency, and asked what the RAG is actually for before committing. Self-disclosed: no live verification, pure training-data judgment, 5 options seriously compared.
+
+**Skill-on recommendation (from Run 3):** Chroma #1 — recommended specifically *for* being in-process/zero-infra, the exact property skill-off flagged as a deployment risk on this hosting platform. Verified real GitHub stars/PyPI downloads/commit dates, ran the security gate, found the official Qdrant companion-skill repo — grounding skill-off didn't have.
+
+**Finding:** skill-on is substantially more grounded (verified popularity/maintenance data, security screening, MCP/companion-skill discovery) but has a real blind spot — Phase 4's Compatibility check verifies *local project* dependencies (env vars, CLI, config files) but never checks *hosting-platform* constraints (ephemeral vs. persistent disk, dyno restarts) that would make an "easy, zero-infra" pick fail silently in production. Skill-off caught this by reading `SETUP.md`; SKILLmama's own file list (Phase 1/B1) doesn't read deployment docs like `SETUP.md` at all — it reads `Dockerfile, docker-compose.yml, .env.example, vercel.json, fly.toml, railway.toml` but has no equivalent for Render, and doesn't extract "does deployed storage persist across restarts" from any of those even when present.
+
+**Not yet fixed** — this is a real, higher-effort gap (requires reading deployment config/docs and reasoning about storage persistence, not just checking presence/absence of a file) rather than a quick one-line patch like the two fixes from Run 2. Logged here as a known limitation; worth a dedicated SKILL.md change (e.g. a "Deployment Persistence Check" sub-step in Phase 4 Compatibility) rather than folding into this session's fixes.
+
+---
+
+**Run 6 — 2026-07-16 — Deployment Persistence Check fix, live re-test**
+
+Fixed and propagated to all 4 files (`skillmama/SKILL.md`, `codex/AGENTS.md`, `antigravity/PROMPT.md`, `.claude/commands/skillmama.md`):
+- Phase 1/B1 file lists now also read `render.yaml`, `SETUP.md`, `DEPLOY.md`/`DEPLOYMENT.md`, and extract a detected deployment target
+- Stack Profile template gained a `Deployment:` field
+- Phase 4 Compatibility gained a **Deployment Persistence Check** sub-step: for any candidate that stores data locally/in-process/on-disk, check whether the detected deployment target actually persists local disk (`fly.toml` `[[mounts]]`, `railway.toml` volumes, `render.yaml` `disk:` block, `docker-compose.yml` `volumes:` mapping; Vercel/serverless always ephemeral). If a deployment target is detected with no persistent volume, cap Compatibility at 4–6 and add an explicit warning rather than scoring the candidate as if storage just works.
+
+Re-ran prompt #1 against `nutri-bot` end-to-end. Result: Phase 1 correctly detected "Render Web Service (Free tier)" from `SETUP.md` (no `render.yaml` exists, so this came from the doc-reading fallback, confirming that fallback path works too, not just the config-file path). Chroma's Compatibility dropped from 8 (Run 3, uncaught) to 5, with the explicit persistence warning — matching what the skill-off baseline in Run 5 caught by reading the same file. Final score gap between Chroma (7.85) and Qdrant (7.41) narrowed to 0.44, triggering the tiebreaker-explanation rule; output now recommends Qdrant Cloud as the safer default if the corpus grows, Chroma only if it's cheaply rebuildable on cold start.
+
+**Result: PASS.** The gap identified in Run 5 is now caught and surfaced in the actual pipeline output, not just in a side-by-side comparison. All 3 fixes from this session (directory-mismatch check, Maintenance verification, Deployment Persistence Check) are now live across all 4 adapters and confirmed working via live re-runs.
