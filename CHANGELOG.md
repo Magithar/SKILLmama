@@ -4,6 +4,18 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [1.4.4] - 2026-07-16
+
+### Added
+- **`evals/skillmama-ablation.md`**: a manual eval harness — 5 prompts that should trigger SKILLmama, 5 that shouldn't (mapped directly to the Trigger / Do-NOT-activate rules), plus a result log. Prompted by "Don't Ship Skills Without Evals" (Philipp Schmid, Google DeepMind) and the SkillsBench methodology of comparing skill-on vs. skill-off behavior
+- Trigger-classification and full-pipeline runs logged against the eval set, including one live end-to-end run against a real external project (`nutri-bot`, a FastAPI/Redis/Telegram app) to validate output quality on a non-trivial stack
+
+### Fixed
+- **Silent empty scan on directory/stack mismatch**: Phase 1 across all four adapters (`skillmama/SKILL.md`, `codex/AGENTS.md`, `antigravity/PROMPT.md`, `.claude/commands/skillmama.md`) previously scanned whatever directory the agent happened to be in with no check against the user-stated stack — if they didn't match (e.g. invoked from an unrelated repo), it silently completed an empty scan instead of flagging it. Found live during eval testing: running from SKILLmama's own repo while asking about "my FastAPI app" produced an empty, misleading scan. Phase 1 now detects the mismatch and asks which directory to scan
+- **Maintenance scores estimated instead of verified**: Phase 4's Compatibility factor already required per-candidate local verification (env vars, CLI, config files), but Maintenance had no equivalent rule — last-commit dates were sometimes estimated from general knowledge of a project rather than checked. Maintenance now requires the same per-candidate verification, falling back to `N/A (unverified)` in the Phase 5 output (with the total score renormalized across the remaining factors) rather than presenting a guess with false confidence
+
+---
+
 ## [1.4.3] - 2026-07-14
 
 ### Added

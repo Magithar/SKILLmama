@@ -54,6 +54,12 @@ Extract:
 - AI/ML tools already present
 - auth systems in use
 
+**If the user stated a stack inline** (e.g. "my FastAPI app") **and Phase 1 finds no trace of it** (no matching language/framework files in the scanned directory, or the directory looks unrelated — e.g. it's this pipeline's own repo, a docs repo, empty), do not silently proceed on an empty scan. Say so and ask which directory to scan:
+
+> I didn't find [stated stack] in this directory — this doesn't look like that project. Want me to scan a different folder, or should I search based on what you told me with no local verification?
+
+Proceed with the user-stated stack either way once they answer (or confirm searching stack-only is fine).
+
 ---
 
 ## Phase 1.5 — Confirm Constraints (one question, then stop)
@@ -306,6 +312,9 @@ If a required dependency can't be verified either way (e.g. no way to check a ho
 - 1–3: <100 stars OR <10k downloads
 
 **Maintenance (15%)** — from last commit date
+
+Verify per candidate, don't estimate from general knowledge of the org/project. Check the repo's releases/commits page (or the "Updated" date from Tier 1's GitHub search) for each candidate still in play before scoring. If a specific last-commit date genuinely can't be found, mark that candidate's Maintenance `N/A (unverified)` in the Phase 5 table rather than assigning a number — do not present an estimated score with the same confidence as a verified one.
+
 - 10: ≤30 days, active releases
 - 7–9: ≤90 days
 - 4–6: ≤180 days
