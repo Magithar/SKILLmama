@@ -536,3 +536,5 @@ SKILLmama/
 ## Evals
 
 SKILLmama ships a manual eval harness at [`evals/skillmama-ablation.md`](evals/skillmama-ablation.md): 5 prompts that should trigger the skill, 5 that shouldn't, run skill-on vs. skill-off. It's checked after any change to the Trigger rules or the core phases — the log has already caught and fixed two real bugs (a silent empty scan when the working directory didn't match the stated stack, and Maintenance scores presented as verified when they were actually estimated).
+
+Inspired by [Philipp Schmid](https://github.com/philschmid)'s (Google DeepMind) talk "Don't Ship Skills Without Evals," and the skill-on/skill-off ablation methodology behind [SkillsBench](https://www.skillsbench.ai/).
