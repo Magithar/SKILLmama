@@ -145,7 +145,12 @@ find me a vector database for this project
 | OpenAI Codex | [codex/AGENTS.md](codex/AGENTS.md)                              | ⚠️ Installs, but unverified — not live-tested against a real Codex client | Place file in repo root manually (recommended until verified) |
 | Antigravity  | [antigravity/PROMPT.md](antigravity/PROMPT.md)                 | ❌ Wrong path — use `~/.gemini/config/skills/` instead (manual copy, confirmed working) | Manual copy to `~/.gemini/config/skills/skillmama/`, then invoke explicitly: `SKILLmama <request>` (confirmed working) |
 
-All four adapters run the same pipeline and produce the same output format. The `skills` CLI only discovers files literally named `SKILL.md`, so `-a codex` and `-a antigravity` install `skillmama/SKILL.md` into `.agents/skills/skillmama/` instead of `codex/AGENTS.md` / `antigravity/PROMPT.md` directly — both files now run identical pipeline logic, so the content itself is no longer wrong. Codex hasn't been live-tested, but Antigravity has: `-a antigravity` installs to `~/.agents/skills/`, which Antigravity never reads — confirmed by live testing (installed, restarted, asked a capability question, got a generic non-pipeline answer). Antigravity's real global skills path is `~/.gemini/config/skills/`; copying the file there manually and restarting was confirmed working (skill appeared in the app's own "Which skills are installed?" answer and its `/` command picker). See the Antigravity install section above for exact steps.
+All four adapters run the same pipeline and produce identical output. A few notes on the `npx skills add` path:
+
+- The `skills` CLI only recognizes files named `SKILL.md`, so `-a codex` and `-a antigravity` both install `skillmama/SKILL.md` into `.agents/skills/skillmama/` rather than `codex/AGENTS.md` or `antigravity/PROMPT.md`. Harmless in principle, since every file shares the same pipeline logic.
+- For Antigravity, it breaks in practice: Antigravity only reads `~/.gemini/config/skills/`, not `.agents/skills/`. Confirmed by testing — after a CLI install and restart, a capability question got a generic, non-pipeline answer.
+- Fix: copy the file manually to `~/.gemini/config/skills/skillmama/` and restart. Confirmed working — the skill then appeared in Antigravity's own "Which skills are installed?" answer and its `/` command picker. See the Antigravity install steps above.
+- Codex hasn't been live-tested yet.
 
 ---
 
