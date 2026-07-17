@@ -4,6 +4,21 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [1.4.6] - 2026-07-17
+
+### Changed
+- **Security & Quality Gate CVE check now queries live data instead of an unsourced rule**: the old hard rule ("Has a dependency with a known CVE") named no data source, so in practice it depended on whatever a web search happened to surface. Phase 3.5 now runs a real [OSV.dev](https://osv.dev) query against the exact version being recommended, across npm, PyPI, Go, and crates.io. A CRITICAL/HIGH advisory with no fix available blocks the candidate; a CRITICAL/HIGH advisory with a fix warns and names the fixed version; MODERATE/LOW is summarized rather than discarded. Verified against real advisories (lodash, requests, event-stream) before shipping, including a PyPI-specific trap: `PYSEC-*` records report `severity: UNKNOWN` and duplicate a `GHSA-*` record for the same flaw (e.g. `requests` 2.19.0's HIGH-severity credential leak reads as UNKNOWN unless deduped via `aliases`)
+
+### Added
+- **npm publisher-continuity check**: a maintainer prompted this directly — "known CVEs is one bar, this maintainer won't quietly change hands in 8 months is a much harder one and honestly the one that's bitten people more." Phase 3.5 now compares who published recent versions of a candidate and flags it (WARN, never an automatic discard) if publish rights passed from one human to a different human within the last 12 months, naming both publishers and the date. Tested point-in-time against the event-stream incident: the check fires as of 2018-10-01, roughly 7 weeks before the malicious-code advisory was publicly disclosed on 2018-11-26 — the exact case where advisory-based scanning alone comes too late
+  - The rule went through three broken iterations before shipping, each caught by testing against real npm data rather than assumed correct: (1) any human-to-human change flags healthy team rotations (express, lodash, chalk) as false handoffs; (2) requiring the prior publisher to never publish again is accurate but fires on ~58% of long-lived packages, since nearly every one has an old handoff somewhere in its history — recency-limiting to the most recent handoff within 12 months brings this down to a measured 7.1% across a 98-package sweep; (3) a generalized bot-detection regex (to replace the hardcoded `GitHub Actions`-style exclusion list) was measured head-to-head against the hardcoded list and scored identically, so it was dropped as complexity with no benefit
+  - Known limits, stated in the gate itself and the README: npm only (PyPI exposes no per-release uploader identity, so Python candidates report `N/A (unsupported ecosystem)`); catches handoffs, not account takeovers where the attacker publishes under the real maintainer's name (e.g. ua-parser-js, rc, coa — those are only caught by the OSV check, and only post-disclosure); an unreachable registry reports `N/A (unverified)` rather than passing silently
+
+### Fixed
+- **README oversold the security gate**: the gate table advertised "CVE dependencies" as a check without saying what powered it, and a footnote pointed users to a third-party tool for "live CVE lookups" as if SKILLmama didn't do them. The table and a new "Known limits" section now describe both checks accurately, including what they don't cover
+
+---
+
 ## [1.4.5] - 2026-07-16
 
 ### Added

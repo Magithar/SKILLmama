@@ -316,16 +316,26 @@ All four adapters run the same pipeline and produce identical output. A few note
 
 ## Security & Quality Gate
 
-Before scoring, every candidate passes through a two-layer gate (Phase 3.5):
+Before scoring, every candidate passes through the gate (Phase 3.5). The first two layers query live data rather than relying on the model's recall:
 
 | Layer | What it checks | Action |
 | ----- | -------------- | ------ |
-| Hard Gate | CVE dependencies, data exfiltration, no-disclosure destructive ops, jailbreak instructions | 🚫 BLOCKED (discarded) or ⚠️ WARN (user confirms) |
+| Advisories | Live [OSV.dev](https://osv.dev) lookup for the exact version being recommended, across npm, PyPI, Go, and crates.io | 🚫 BLOCKED if CRITICAL/HIGH with no fix available, ⚠️ WARN if a fix exists (the fixed version is named) or if MODERATE/LOW |
+| Publisher continuity | Whether npm publish rights changed hands between releases, the [event-stream](https://blog.npmjs.org/post/180565383195/details-about-the-event-stream-incident) failure mode that advisory scanning misses | ⚠️ WARN naming both publishers and the date, never an automatic discard. CI bots are not counted as a handoff |
+| Hard Gate | Data exfiltration, no-disclosure destructive ops, jailbreak instructions | 🚫 BLOCKED (discarded) or ⚠️ WARN (user confirms) |
 | SQP-1 | Vague trigger phrases with no exclusion conditions | Flag in result |
 | SQP-2 | Destructive/sensitive ops with no user-visible warning | Flag in result |
 | SQP-3 | Hardcoded language/locale without user opt-in | Flag in result |
 
-Inspired by [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector) (Apache 2.0) semantic quality policy rules. For deeper static analysis with 64 vulnerability patterns and live CVE lookups, run SkillSpector directly: `pip install skillspector && skillspector scan <repo-url>`.
+**Known limits.** Stated plainly, because a gate that oversells what it checks is worse than no gate:
+
+- **Publisher continuity is npm-only.** PyPI exposes no per-release uploader identity, so Python candidates report `N/A (unsupported ecosystem)` rather than implying the check ran.
+- **It catches handoffs, not account takeovers.** In the ua-parser-js, rc, and coa compromises the attacker published under the real maintainer's name, so this check reads clean. Only the advisory lookup catches those, and only after disclosure.
+- **Only recent handoffs are reported** (under 12 months, most recent only). Nearly every long-lived package has an old handoff, so reporting all of them fires on roughly 70% of popular packages and trains you to ignore the warning.
+- **Advisory lookup covers the direct package,** not the full transitive dependency tree.
+- **Unreachable service means `N/A (unverified)`,** never a silent pass.
+
+SQP rules are inspired by [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector) (Apache 2.0). For deeper static analysis with 64 vulnerability patterns, run SkillSpector directly: `pip install skillspector && skillspector scan <repo-url>`.
 
 ---
 
