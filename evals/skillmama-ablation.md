@@ -140,3 +140,44 @@ Fixed and propagated to all 4 files (`skillmama/SKILL.md`, `codex/AGENTS.md`, `a
 Re-ran prompt #1 against `nutri-bot` end-to-end. Result: Phase 1 correctly detected "Render Web Service (Free tier)" from `SETUP.md` (no `render.yaml` exists, so this came from the doc-reading fallback, confirming that fallback path works too, not just the config-file path). Chroma's Compatibility dropped from 8 (Run 3, uncaught) to 5, with the explicit persistence warning — matching what the skill-off baseline in Run 5 caught by reading the same file. Final score gap between Chroma (7.85) and Qdrant (7.41) narrowed to 0.44, triggering the tiebreaker-explanation rule; output now recommends Qdrant Cloud as the safer default if the corpus grows, Chroma only if it's cheaply rebuildable on cold start.
 
 **Result: PASS.** The gap identified in Run 5 is now caught and surfaced in the actual pipeline output, not just in a side-by-side comparison. All 3 fixes from this session (directory-mismatch check, Maintenance verification, Deployment Persistence Check) are now live across all 4 adapters and confirmed working via live re-runs.
+
+---
+
+**Run 7 — 2026-07-17 — v1.4.6 OSV.dev + publisher-continuity gate, live re-test**
+
+Since Run 6, v1.4.6 replaced Phase 3.5's unsourced CVE rule with a live OSV.dev advisory query (all ecosystems) and an npm publisher-continuity check. Neither had been exercised end-to-end. Re-ran prompt #1 against `nutri-bot` from scratch: fresh Phase 1 scan, fresh Tier 1 searches, and for the first time, real `curl` calls to OSV.dev for each candidate's recommended version.
+
+**Phase 1 (unchanged):** Stack and deployment detection reproduced Run 6 exactly — FastAPI/Redis/no vector DB, Render Web Service (Free tier) via `SETUP.md`, no `render.yaml`.
+
+**Fresh Tier 1 data (stars/last-commit all re-verified live, not carried over from Run 6):**
+- Chroma: 28.2k stars, last commit 2026-07-07
+- Qdrant: 33.3k stars (up from Run 6), `qdrant-client` 6.06M downloads last week, main repo updated 2026-07-17 (today) — Maintenance now verified 10/10, resolving Run 6's `N/A (unverified)`.
+- pgvector: 22.2k stars, last commit 2026-07-11 (more recent than Run 6's 2026-06-10) — Maintenance now 10/10, up from Run 6's 8.
+
+**Phase 3.5, Check 1 (OSV.dev) — this is what actually changed the outcome:**
+
+```
+curl -X POST https://api.osv.dev/v1/query -d '{"package":{"name":"chromadb","ecosystem":"PyPI"},"version":"1.5.9"}'
+```
+
+returned `GHSA-f4j7-r4q5-qw2c` / `CVE-2026-45829` — a **CRITICAL** (CVSS 4.0, AV:N/AC:L/PR:N/UI:N) pre-authentication code injection vulnerability in ChromaDB's server mode (`trust_remote_code` on the collections endpoint), affecting every release from 1.0.0 through the current latest (1.5.9, published 2026-05-05). Cross-checked directly against the GitHub Advisory API: `first_patched_version: null` — confirmed no fixed version exists at all, not just that one hadn't been searched for.
+
+Per the Phase 3.5 hard rule ("OSV returns a CRITICAL or HIGH advisory... with no `fixed` version available" → DISCARD), **Chroma is BLOCKED** — the same library that scored #1 in Runs 2, 3, 5, and 6 of this eval never reaches Phase 4 in this run. `qdrant-client` 1.18.0 and `pgvector` (Python binding) 0.5.0 both returned `{}` from OSV — clean.
+
+**Check 2 (npm publisher-continuity):** N/A for all three — these are Python/PyPI candidates, and the check is npm-only by design (PyPI has no per-release uploader field). Correctly reported as `N/A (unsupported ecosystem)` rather than silently skipped.
+
+**Phase 4 scoring (Chroma excluded per "skip any candidate marked BLOCKED"):**
+
+| Candidate | Compat | Pop | Maint | Simple | Score |
+|-----------|--------|-----|-------|--------|-------|
+| Qdrant | 6 | 10 | 10 | 6 | **7.80** |
+| pgvector | 3 | 10 | 10 | 3 | **6.15** |
+| Chroma | — | — | — | — | **BLOCKED** (CVE-2026-45829, CRITICAL, unpatched) |
+
+**Result: recommendation flips.** Qdrant is now the clean #1 with no tiebreaker needed (1.65-point gap to pgvector) instead of the previous Chroma/Qdrant near-tie (0.44 points in Run 6). This isn't a scoring-formula artifact — it's the eval catching a real, current, unpatched CRITICAL CVE in the library every prior run of this eval recommended first. Companion-skill search reconfirmed the official `qdrant/mcp-server-qdrant` MCP server and `qdrant/skills` repo; both pass Phase 3.7 clean.
+
+**Caveat found in this run, fixed same day (still within v1.4.6, unreleased):** the OSV advisory is specific to Chroma's server mode with `trust_remote_code=true` — an opt-in flag most embedded/in-process usage (the exact mode this recommendation was for, per the Deployment Persistence Check's framing) never enables. Phase 3.5's DISCARD rule didn't distinguish "vulnerable in this candidate's relevant deployment mode" from "vulnerable in some mode" — it discarded on any CRITICAL/HIGH with no fix, full stop, with no way for the user to tell which case they were in. Rather than narrow the block (still the conservative, correct default — don't recommend an unpatched CRITICAL and rely on the user researching the exception), the DISCARD rule now also sets `security_note` to the advisory's stated trigger condition verbatim from OSV, so the block is unconditional but no longer silent about *why*. For this candidate that reads: "Pre-authentication code injection — triggered via a malicious model repository with `trust_remote_code` set to true on `/api/v2/tenants/{tenant}/databases/{db}/collections`." See `skill-on-vs-skill-off-comparison.md` for the updated Chroma block showing this note in context.
+
+| Date | Prompt # | Skill-off behavior | Skill-on behavior | Verdict |
+|------|----------|---------------------|--------------------|---------|
+| 2026-07-17 | 1 | not re-run this pass (see `skill-on-vs-skill-off-comparison.md` for the standing skill-off baseline from Run 5) | Chroma BLOCKED on a live unpatched CRITICAL CVE, now with the trigger condition quoted in `security_note`; Qdrant #1 (7.80), pgvector #2 (6.15) | PASS — new v1.4.6 checks fire correctly, no regressions in Phase 1/Maintenance/Deployment-Persistence logic from Runs 2–6 |

@@ -325,7 +325,7 @@ Before scoring, every candidate passes through the gate (Phase 3.5). The first t
 
 | Layer | What it checks | Action |
 | ----- | -------------- | ------ |
-| Advisories | Live [OSV.dev](https://osv.dev) lookup for the exact version being recommended, across npm, PyPI, Go, and crates.io | 🚫 BLOCKED if CRITICAL/HIGH with no fix available, ⚠️ WARN if a fix exists (the fixed version is named) or if MODERATE/LOW |
+| Advisories | Live [OSV.dev](https://osv.dev) lookup for the exact version being recommended, across npm, PyPI, Go, and crates.io | 🚫 BLOCKED if CRITICAL/HIGH with no fix available (the advisory's trigger condition, if OSV states one — a specific mode, flag, or endpoint — is quoted verbatim so you can judge whether your own usage is exposed), ⚠️ WARN if a fix exists (the fixed version is named) or if MODERATE/LOW |
 | Publisher continuity | Whether npm publish rights changed hands between releases, the [event-stream](https://blog.npmjs.org/post/180565383195/details-about-the-event-stream-incident) failure mode that advisory scanning misses | ⚠️ WARN naming both publishers and the date, never an automatic discard. CI bots are not counted as a handoff |
 | Hard Gate | Data exfiltration, no-disclosure destructive ops, jailbreak instructions | 🚫 BLOCKED (discarded) or ⚠️ WARN (user confirms) |
 | SQP-1 | Vague trigger phrases with no exclusion conditions | Flag in result |
