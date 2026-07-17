@@ -30,7 +30,11 @@
 **[Part 1](https://dev.to/magithar/stop-guessing-which-library-to-use-i-built-an-ai-capability-discovery-engine-3p7p)** — scoring formula, 5-tier search, end-to-end example.<br/>
 **[Part 2](https://dev.to/magithar/a-high-score-means-nothing-if-the-tool-is-dangerous-so-i-added-a-security-gate-3hpc)** — security gate, SQP rules, companion skills.<br/>
 **[Part 3](https://dev.to/magithar/i-got-tired-of-asking-what-am-i-missing-so-i-made-my-ai-ask-first-g8)** — project scanner, Flow B, gap analysis.<br/>
-**[Part 4](https://dev.to/magithar/a-reader-pointed-out-my-ask-first-principle-only-covered-half-my-tool-so-i-fixed-it-345c)** — Phase 1.5, constraint confirmation in Flow A.
+**[Part 4](https://dev.to/magithar/a-reader-pointed-out-my-ask-first-principle-only-covered-half-my-tool-so-i-fixed-it-345c)** — Phase 1.5, constraint confirmation in Flow A.<br/>
+**[Part 5](https://dev.to/magithar/the-bug-was-in-my-own-instructions-not-my-code-255p)** — tested my own install instructions, found they were wrong.<br/>
+**[Part 6](https://dev.to/magithar/i-watched-a-talk-called-dont-ship-skills-without-evals-then-checked-if-mine-had-any-1k0e)** — eval harness, trigger-classification tests, bugs found by testing instead of assuming.<br/>
+**[Part 7](https://dev.to/magithar/i-asked-the-same-question-with-and-without-my-own-skill-the-version-without-it-won-on-one-thing-5gjn)** — paired skill-on/skill-off ablation, the deployment persistence check it exposed, and the live CVE it later caught.<br/>
+**[Part 8](https://dev.to/magithar/a-reader-asked-what-my-security-check-actually-verifies-the-honest-answer-sent-me-back-to-the-1fif)** — building the live OSV.dev and npm publisher-continuity checks, and the real CVE that proved them.
 
 ---
 
