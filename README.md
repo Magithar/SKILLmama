@@ -2,11 +2,6 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-Apache_2.0-blue.svg" alt="License"/>
-  <img src="https://img.shields.io/badge/Claude_Code-slash_command-8A2BE2" alt="Claude Code"/>
-  <img src="https://img.shields.io/badge/Claude.ai-skill-orange" alt="Claude.ai"/>
-  <img src="https://img.shields.io/badge/OpenAI_Codex-AGENTS.md-412991" alt="OpenAI Codex"/>
-  <img src="https://img.shields.io/badge/Antigravity-system_prompt-black" alt="Antigravity"/>
-  <img src="https://img.shields.io/github/stars/Magithar/SKILLmama?color=yellow" alt="Stars"/>
   <img src="https://img.shields.io/github/issues/Magithar/SKILLmama" alt="Issues"/>
   <img src="https://img.shields.io/github/v/release/Magithar/SKILLmama?include_prereleases&label=release" alt="Release"/>
   <a href="https://skills.sh/Magithar/SKILLmama"><img src="https://skills.sh/b/Magithar/SKILLmama" alt="skills.sh"/></a>
