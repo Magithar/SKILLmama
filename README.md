@@ -252,6 +252,11 @@ All four adapters run the same pipeline and produce identical output. A few note
               ┌────────────────────────────────────────┐
               │   PHASE 3.5 — Security Gate (Libraries)│
               │                                        │
+              │   Live checks (per candidate):         │
+              │   OSV.dev advisory lookup (npm/PyPI/   │
+              │     Go/crates.io, exact version)       │
+              │   npm publisher-continuity check       │
+              │                                        │
               │   Hard Gate (per candidate):           │
               │   🚫 BLOCKED → discard, never score    │
               │   ⚠️  WARN   → show, user confirms     │
@@ -331,7 +336,7 @@ Before scoring, every candidate passes through the gate (Phase 3.5). The first t
 
 - **Publisher continuity is npm-only.** PyPI exposes no per-release uploader identity, so Python candidates report `N/A (unsupported ecosystem)` rather than implying the check ran.
 - **It catches handoffs, not account takeovers.** In the ua-parser-js, rc, and coa compromises the attacker published under the real maintainer's name, so this check reads clean. Only the advisory lookup catches those, and only after disclosure.
-- **Only recent handoffs are reported** (under 12 months, most recent only). Nearly every long-lived package has an old handoff, so reporting all of them fires on roughly 70% of popular packages and trains you to ignore the warning.
+- **Only recent handoffs are reported** (under 12 months, most recent only). Measured across 98 popular npm packages: 51% carry a stale handoff somewhere in their history, so reporting all of them would fire on more than half of npm and train you to ignore the warning. With the recency filter, 7%.
 - **Advisory lookup covers the direct package,** not the full transitive dependency tree.
 - **Unreachable service means `N/A (unverified)`,** never a silent pass.
 
