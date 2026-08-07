@@ -54,13 +54,12 @@
 
 ### Optional — install and verify in one command
 
-[`skill-land`](https://github.com/Magithar/skills/tree/main/tools/skill-land) does every agent at
-once and **exits non-zero if the file didn't land**:
+[`skill-land`](https://www.npmjs.com/package/skill-land) does every agent at once and
+**exits non-zero if the file didn't land**:
 
 ```bash
-git clone https://github.com/Magithar/skills
-node skills/tools/skill-land/skill-land.mjs Magithar/SKILLmama --for claude-code,codex,antigravity
-node skills/tools/skill-land/skill-land.mjs Magithar/SKILLmama --for codex --verify
+npx skill-land Magithar/SKILLmama --for claude-code,codex,antigravity
+npx skill-land Magithar/SKILLmama --for codex --verify
 ```
 
 Not required. The copy commands below work on their own.
@@ -375,7 +374,7 @@ skillspector scan <repo-url>
 > Earlier versions of this README said `pip install skillspector`. That package does not exist on
 > PyPI (404); SkillSpector installs from git via `uv`. Corrected 2026-08-08.
 
-[`skill-land`](https://github.com/Magithar/skills/tree/main/tools/skill-land) runs this scan
+[`skill-land`](https://www.npmjs.com/package/skill-land) runs this scan
 before writing a skill to disk and reports the findings. It does **not** block on them: measured
 against 18 known-good installed skills, SkillSpector's static mode returns `DO_NOT_INSTALL` for
 44% of them. Pass `--strict` if you want it to refuse.
