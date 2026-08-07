@@ -305,6 +305,10 @@ FLAG (set sqp, add security_note, do NOT discard) if:
 - SQP-2: performs writes/network/subprocess/credentials with no user warning
 - SQP-3: hardcodes language/locale without offering user a choice
 
+**A candidate can match several rules at once.** DISCARD wins outright over WARN and FLAG — a
+candidate is never downgraded to WARN or FLAG because a lesser rule also matched. WARN and FLAG
+are independent of each other; report both if both apply.
+
 ---
 
 ## Phase 3.6 — Companion Skills Search
@@ -338,6 +342,10 @@ FLAG (do NOT discard) if:
 WARN if:
 - No description of what the skill does
 - Reads credentials without explanation
+
+**A candidate can match several rules at once.** DISCARD wins outright: it is never softened to a
+FLAG because a lesser rule also matched. WARN and FLAG may both apply to the same candidate;
+report both.
 
 ---
 
