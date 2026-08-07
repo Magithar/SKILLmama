@@ -40,30 +40,44 @@
 
 ## Install
 
-### Any agent (via skills CLI)
+> **Known upstream bug — read this first.** For **Codex** and **Antigravity**, `npx skills add ... -g`
+> prints `Done!` and exits 0 while writing to `~/.agents/skills/`, which neither agent reads.
+> Verified against `skills@1.5.22` (latest) on 2026-08-08. Root cause is
+> [`isUniversalAgent()`](https://github.com/vercel-labs/skills/blob/main/src/installer.ts):
+> agents whose *project* dir is `.agents/skills` get misclassified, and their `globalSkillsDir`
+> is discarded. Tracked in [#1060](https://github.com/vercel-labs/skills/issues/1060) and
+> [#1470](https://github.com/vercel-labs/skills/issues/1470); fix pending in
+> [PR #1483](https://github.com/vercel-labs/skills/pull/1483). **13 agents are affected.**
+>
+> Until that merges, copy the file yourself using the per-agent instructions below. Each one is
+> two lines and lands in the directory that agent actually reads.
+
+### Optional — install and verify in one command
+
+[`skill-land`](https://github.com/Magithar/skills/tree/main/tools/skill-land) does every agent at
+once and **exits non-zero if the file didn't land**:
 
 ```bash
-npx skills add Magithar/SKILLmama
+git clone https://github.com/Magithar/skills
+node skills/tools/skill-land/skill-land.mjs Magithar/SKILLmama --for claude-code,codex,antigravity
+node skills/tools/skill-land/skill-land.mjs Magithar/SKILLmama --for codex --verify
 ```
 
-When run interactively, it prompts you to pick your agent and installs correctly. This installs SKILLmama via the [skills.sh](https://skills.sh/Magithar/SKILLmama) ecosystem.
+Not required. The copy commands below work on their own.
 
-### Claude Code (CLI)
+### Claude Code
+
+The upstream CLI works correctly for Claude Code:
 
 ```bash
-npx skills add Magithar/SKILLmama -a claude-code
+npx skills add Magithar/SKILLmama -a claude-code -g
 ```
 
-The explicit `-a claude-code` flag is required for Claude Code. Without it, non-interactive installs (e.g. running the command via an agent's own shell tool) can silently skip the step that wires the skill into `.claude/skills/`, and `/skillmama` won't appear.
+Installs to `~/.claude/skills/skillmama/`. Pass `-a claude-code` explicitly: without it the CLI
+auto-detects the *calling* agent from the environment, so running it from inside another agent's
+shell installs to that agent instead.
 
-Alternatively, copy the skill file manually into your project's `.claude/commands/` folder:
-
-```bash
-mkdir -p /your-project/.claude/commands
-cp .claude/commands/skillmama.md /your-project/.claude/commands/skillmama.md
-```
-
-Then type `/skillmama` (or `/SKILLmama`, matching skill name casing) in any Claude Code session inside that project.
+Then type `/skillmama` in any Claude Code session.
 
 ### Claude.ai (Web / Desktop)
 
@@ -77,31 +91,35 @@ Then type `/skillmama` (or `/SKILLmama`, matching skill name casing) in any Clau
 
 ### OpenAI Codex
 
-**Manual (recommended)** — place `codex/AGENTS.md` in your repo root, then run naturally:
+Codex has a native global skills directory, `~/.codex/skills/`. The upstream CLI does **not**
+write there (see the bug notice above), so copy it yourself:
 
 ```bash
-codex "find me the best job queue for this project"
+mkdir -p ~/.codex/skills/skillmama
+curl -sL https://raw.githubusercontent.com/Magithar/SKILLmama/main/skillmama/SKILL.md \
+  -o ~/.codex/skills/skillmama/SKILL.md
 ```
 
-> `npx skills add Magithar/SKILLmama -a codex` installs successfully — the `skills` CLI only discovers files literally named `SKILL.md`, so it installs `skillmama/SKILL.md` into `.agents/skills/skillmama/` rather than `codex/AGENTS.md` directly. Both files run the same pipeline, so this should be safe, though it hasn't been live-tested against a real Codex client (see AI Adapters below). One cosmetic quirk either way: the installed file's trigger list still mentions the `/skillmama` slash command, which doesn't exist in Codex — harmless, just ignore that line.
+Then ask naturally: `codex "find me the best job queue for this project"`.
 
 ### Antigravity
 
-**Recommended — install as a native global skill (confirmed working via live testing).** No need to clone this repo first:
+Global skills live in `~/.gemini/config/skills/`, which is shared by all three Antigravity
+surfaces (2.0, IDE, and the `agy` CLI) since Google consolidated their config. Confirmed by live
+testing here and independently in
+[#1470](https://github.com/vercel-labs/skills/issues/1470#issuecomment-list), including extraction
+from the `agy` binary's own embedded docs.
 
 ```bash
 mkdir -p ~/.gemini/config/skills/skillmama
-curl -sL https://raw.githubusercontent.com/Magithar/SKILLmama/main/skillmama/SKILL.md -o ~/.gemini/config/skills/skillmama/SKILL.md
+curl -sL https://raw.githubusercontent.com/Magithar/SKILLmama/main/skillmama/SKILL.md \
+  -o ~/.gemini/config/skills/skillmama/SKILL.md
 ```
 
-Already have this repo cloned? Use the local copy instead so you always get your working tree's version, not `main`:
+**Fully restart Antigravity** (skills load at startup), then ask **"Which skills are installed?"**
+to confirm. SKILLmama should appear in the list and in the `/` command picker.
 
-```bash
-mkdir -p ~/.gemini/config/skills/skillmama
-cp skillmama/SKILL.md ~/.gemini/config/skills/skillmama/SKILL.md
-```
-
-Fully restart Antigravity (this path is read at startup), then ask **"Which skills are installed?"** to confirm — SKILLmama should appear under Global & Built-in Skills and in the `/` command picker.
+For a project-scoped install instead, put it in `<workspace>/.agents/skills/skillmama/SKILL.md`.
 
 **Usage — invoke explicitly**, confirmed working via live testing: type `/` and select **SKILLmama** from the picker (or type `SKILLmama` before your request), then your capability question:
 
@@ -113,13 +131,9 @@ This triggered the real pipeline in testing — a Phase 1.5 constraint question 
 
 > Per [Antigravity's official Agent Skills docs](https://antigravity.google/docs/skills), the agent is also supposed to auto-trigger relevant skills from context alone, without explicit invocation — driven by the skill's `description:` frontmatter. We haven't verified that mode here (only explicit invocation was tested), so treat auto-trigger as unconfirmed and invoke explicitly for now.
 
-> ⚠️ `npx skills add Magithar/SKILLmama -a antigravity` installs successfully but to the **wrong path** (`~/.agents/skills/`), which Antigravity never reads — confirmed by live testing (installed, restarted, asked a capability question, got a generic answer with no SKILLmama pipeline behavior). `~/.gemini/config/skills/` is Antigravity's real global skills directory, confirmed against the [official docs](https://antigravity.google/docs/skills) and by re-testing after moving the file there. Use the manual copy above until the CLI is updated to target the correct path.
-
-**Fallback — load `antigravity/PROMPT.md` as the system prompt**, then ask naturally:
-
-```
-find me a vector database for this project
-```
+> ⚠️ `npx skills add Magithar/SKILLmama -a antigravity -g` reports success but writes to
+> `~/.agents/skills/`, which Antigravity never reads. Still reproduces on `skills@1.5.22`
+> (2026-08-08). See the bug notice at the top of Install.
 
 ---
 
@@ -136,19 +150,26 @@ find me a vector database for this project
 
 ## AI Adapters
 
-| AI System    | File                                                            | `npx skills add`                    | How to use                                               |
-| ------------ | ---------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------- |
-| Claude Code  | [.claude/commands/skillmama.md](.claude/commands/skillmama.md) | ✅ Works — installs to `.claude/skills/` | `/skillmama` slash command — CLI wires it automatically |
-| Claude.ai    | [skillmama/SKILL.md](skillmama/SKILL.md)                       | N/A (not CLI-installable)              | Upload zip via Customize → Skills                        |
-| OpenAI Codex | [codex/AGENTS.md](codex/AGENTS.md)                              | ⚠️ Installs, but unverified — not live-tested against a real Codex client | Place file in repo root manually (recommended until verified) |
-| Antigravity  | [antigravity/PROMPT.md](antigravity/PROMPT.md)                 | ❌ Wrong path — use `~/.gemini/config/skills/` instead (manual copy, confirmed working) | Manual copy to `~/.gemini/config/skills/skillmama/`, then invoke explicitly: `SKILLmama <request>` (confirmed working) |
+One file, [skillmama/SKILL.md](skillmama/SKILL.md), runs on every platform. Only the install
+location differs.
 
-All four adapters run the same pipeline and produce identical output. A few notes on the `npx skills add` path:
+| AI System    | Global skill directory              | `npx skills add -g` | `skill-land` |
+| ------------ | ----------------------------------- | ------------------- | ----------------- |
+| Claude Code  | `~/.claude/skills/skillmama/`       | ✅ correct           | ✅                 |
+| OpenAI Codex | `~/.codex/skills/skillmama/`        | ❌ writes to `~/.agents/skills/` | ✅     |
+| Antigravity  | `~/.gemini/config/skills/skillmama/`| ❌ writes to `~/.agents/skills/` | ✅     |
+| Claude.ai    | n/a, upload only                    | n/a                 | n/a               |
 
-- The `skills` CLI only recognizes files named `SKILL.md`, so `-a codex` and `-a antigravity` both install `skillmama/SKILL.md` into `.agents/skills/skillmama/` rather than `codex/AGENTS.md` or `antigravity/PROMPT.md`. Harmless in principle, since every file shares the same pipeline logic.
-- For Antigravity, it breaks in practice: Antigravity only reads `~/.gemini/config/skills/`, not `.agents/skills/`. Confirmed by testing — after a CLI install and restart, a capability question got a generic, non-pipeline answer.
-- Fix: copy the file manually to `~/.gemini/config/skills/skillmama/` and restart. Confirmed working — the skill then appeared in Antigravity's own "Which skills are installed?" answer and its `/` command picker. See the Antigravity install steps above.
-- Codex hasn't been live-tested yet.
+Project-scoped installs go in `.claude/skills/` for Claude Code and `.agents/skills/` for Codex
+and Antigravity.
+
+Notes:
+
+- The ❌ rows are the upstream bug described at the top of [Install](#install), not a problem with
+  this skill. Verified against `skills@1.5.22` on 2026-08-08.
+- The `skills` CLI only discovers files named `SKILL.md`. Repos that ship per-platform variants
+  under other names are invisible to it.
+- Claude.ai is not CLI-installable. Zip the `skillmama/` folder and upload via Customize → Skills.
 
 ---
 
@@ -344,7 +365,27 @@ Before scoring, every candidate passes through the gate (Phase 3.5). The first t
 - **Advisory lookup covers the direct package,** not the full transitive dependency tree.
 - **Unreachable service means `N/A (unverified)`,** never a silent pass.
 
-SQP rules are inspired by [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector) (Apache 2.0). For deeper static analysis with 64 vulnerability patterns, run SkillSpector directly: `pip install skillspector && skillspector scan <repo-url>`.
+SQP rules are inspired by [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector) (Apache 2.0). For deeper static analysis with 64 vulnerability patterns, run SkillSpector directly:
+
+```bash
+uv tool install git+https://github.com/NVIDIA/skillspector.git
+skillspector scan <repo-url>
+```
+
+> Earlier versions of this README said `pip install skillspector`. That package does not exist on
+> PyPI (404); SkillSpector installs from git via `uv`. Corrected 2026-08-08.
+
+[`skill-land`](https://github.com/Magithar/skills/tree/main/tools/skill-land) runs this scan
+before writing a skill to disk and reports the findings. It does **not** block on them: measured
+against 18 known-good installed skills, SkillSpector's static mode returns `DO_NOT_INSTALL` for
+44% of them. Pass `--strict` if you want it to refuse.
+
+This skill scores `7 / LOW / SAFE`. It previously scored `100 / CRITICAL / DO_NOT_INSTALL`, because
+its own Phase 3.7 DISCARD criteria contained phrases like *"instructions to bypass safety checks"*
+and the static matcher read the checklist as the attack. Four criteria were reworded to say the
+same thing in different words. No rule was weakened, and adding a user-consent section was tested
+and made the score **worse**, not better: describing a safeguard trips the same patterns as
+describing the danger.
 
 ---
 
@@ -538,18 +579,24 @@ SKILLmama is a **capability oracle**: it tells you what to use and why, with evi
 ```
 SKILLmama/
 ├── skillmama/
-│   └── SKILL.md               # Claude.ai skill (upload as zip)
+│   └── SKILL.md               # the skill — one file, runs on every platform
 ├── .claude/
-│   └── commands/
-│       └── skillmama.md       # Claude Code slash command
-├── codex/
-│   └── AGENTS.md              # OpenAI Codex agent instructions
-├── antigravity/
-│   └── PROMPT.md              # Antigravity system prompt
+│   └── skills/skillmama/
+│       └── SKILL.md           # symlink → ../../../skillmama/SKILL.md
 ├── evals/
 │   └── skillmama-ablation.md  # Manual trigger/pipeline eval + result log
 └── README.md
 ```
+
+**One source of truth.** Until v1.4.7 this repo carried four hand-maintained copies
+(`codex/AGENTS.md`, `antigravity/PROMPT.md`, `.claude/commands/skillmama.md`) which had
+[quietly drifted apart](CHANGELOG.md) more than once. Every platform reads a plain `SKILL.md`,
+so the copies were removed and the Claude Code entry is a symlink. Drift is now impossible
+rather than merely discouraged.
+
+> Note for Windows contributors: git needs `core.symlinks=true` (and Developer Mode) to check
+> out `.claude/skills/skillmama/SKILL.md` as a real symlink. Without it you'll get a text file
+> containing the target path. It only affects the repo-local slash command, not installs.
 
 ## Evals
 
