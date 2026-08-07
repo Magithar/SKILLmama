@@ -1,6 +1,6 @@
 {
   "name": "skillmama",
-  "version": "1.4.6",
+  "version": "1.5.0",
   "description": "AI-Native Capability Discovery Engine. Finds, scores and ranks the best libraries, SDKs and tools for your stack using a 5-tier search and a deterministic ranking formula (Compatibility 40% / Popularity 30% / Maintenance 15% / Simplicity 15%).",
   "author": { "name": "Magithar", "url": "https://github.com/Magithar" },
   "homepage": "https://github.com/Magithar/SKILLmama",
