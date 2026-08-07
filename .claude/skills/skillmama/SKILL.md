@@ -1,0 +1,1 @@
+../../../skillmama/SKILL.md
