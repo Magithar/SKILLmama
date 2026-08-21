@@ -1,5 +1,3 @@
-import type { SecurityVerdict } from "./security.js";
-
 /**
  * Search result representation (Phase 3 in skillmama/SKILL.md).
  * The shape is stable; the tier-ordering *logic* (e.g. "prefer Tier 1
@@ -21,9 +19,20 @@ export interface Candidate {
   lastCommitDate?: string;
 }
 
+/**
+ * Third-party reliability rating where one exists (terminalskills.io).
+ * Deliberately a different vocabulary than the Phase 3.5 gate's GateVerdict:
+ * these words are terminalskills.io's rating, an INPUT to the companion-skill
+ * gate (SUSPICIOUS/MALICIOUS is an automatic discard there), never its output.
+ */
+export type CompanionSkillRating = "SAFE" | "SUSPICIOUS" | "MALICIOUS";
+
 export interface CompanionSkill {
   name: string;
   url: string;
   pairsWith: string;
-  verdict: SecurityVerdict;
+  /** Optional on purpose: skillsmp.com matches carry no rating (auto-indexed,
+   *  unvetted) — SKILL.md treats them as pointers to go verify the underlying
+   *  repo directly, not as trust signals. */
+  rating?: CompanionSkillRating;
 }
