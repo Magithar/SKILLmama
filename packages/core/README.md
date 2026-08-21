@@ -49,8 +49,9 @@ pure deterministic code.
 
 ```
 src/
-  contracts/   shared types (StackProfile, Candidate, SecurityCheckResult, CandidateScore)
-  mechanical/  functions where the work is genuinely deterministic (file parsing)
+  contracts/   shared types (StackProfile, Candidate, SecurityEvidence/
+               SecurityCheckResult, SearchPlan/TierResult, ScoringFactors/CandidateScore)
+  mechanical/  functions where the work is genuinely deterministic (file parsing, scoring arithmetic)
   reasoning/   functions that wrap web search + LLM/tool judgment — stubs only
 fixtures/      sample projects + expected StackProfile output, used by test/fixtures.test.js
 ```

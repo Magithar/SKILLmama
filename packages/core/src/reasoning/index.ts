@@ -1,6 +1,5 @@
 import type { CapabilityRequest } from "../contracts/project.js";
-import type { Candidate, CompanionSkill } from "../contracts/candidate.js";
-import type {
+import type { Candidate, CompanionSkill } from "../contracts/candidate.js";import type {
   ContentFinding,
   SecurityCheckResult,
   SecurityEvidence,
@@ -15,7 +14,22 @@ import { NotImplementedError } from "../errors.js";
  * both. Kept separate from mechanical/ so that assumption is never lost.
  */
 
-/** Phase 3 — search Tiers 1-4 for candidates matching a request. */
+/**
+ * Phase 2 + 3 — search Tiers 1-4 for candidates matching a request.
+ *
+ * Orchestrates the three-stage pipeline defined in contracts/search.ts:
+ *   A. Plan (reasoning): request → SearchPlan (3-5 terms, constraints).
+ *   B. Execute (tool-backed): run each tier's WebSearch recipes →
+ *      TierResult[]. Needs a web-search tool; cannot be honest as a
+ *      plain HTTP client while SKILL.md's tiers are WebSearch recipes.
+ *   C. Normalize (mechanical): hits → Candidate[] with tier provenance,
+ *      deduplicated across tiers by URL/name.
+ *
+ * Deliberately NOT implementable as pure deterministic code end-to-end:
+ * stages A and B are judgment/tool work. An implementation that only
+ * queries npm and skips Tiers 1/2/4 is not a partial implementation —
+ * it is a different, wrong behavior.
+ */
 export function findCandidates(
   _request: CapabilityRequest
 ): Promise<Candidate[]> {

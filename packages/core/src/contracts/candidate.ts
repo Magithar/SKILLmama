@@ -17,6 +17,10 @@ export interface Candidate {
   githubStars?: number;
   weeklyDownloads?: number;
   lastCommitDate?: string;
+  /** Tier 1 tags this when the repo ships its own SKILL.md; Phase 5 must
+   *  surface such libraries under Companion Skills even when Phase 3.6
+   *  found nothing else. */
+  hasOwnSkill?: boolean;
 }
 
 /**
