@@ -16,6 +16,8 @@ const expectedExports = [
   "dependencyDetectors",
   "fileDetectors",
   "stackCategories",
+  // companion-skill provenance registry
+  "companionSkillSources",
 ];
 
 test("public API exposes exactly the intended contract", () => {
@@ -49,3 +51,14 @@ for (const [name, call] of stubCalls) {
     assert.throws(call, core.NotImplementedError);
   });
 }
+
+// 3. Companion-skill provenance registry — every source SKILL.md Phase 3.6
+// searches must be covered by the contract, with no extras.
+test("companionSkillSources covers exactly the Phase 3.6 sources", () => {
+  assert.deepEqual([...core.companionSkillSources].sort(), [
+    "github-skill-md",
+    "skills-sh",
+    "skillsmp",
+    "terminalskills-io",
+  ]);
+});

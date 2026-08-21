@@ -54,7 +54,27 @@ export function verifyCandidate(
   throw new NotImplementedError("verifyCandidate");
 }
 
-/** Phase 3.6 / 3.7 — companion skill search + its own security gate. */
+/**
+ * Phase 3.6 (+ 3.7) — companion skills for a candidate.
+ *
+ * Stage A (tool-backed): run SKILL.md 3.6's four fixed WebSearch recipes
+ * per candidate — site:skills.sh, site:terminalskills.io/skills,
+ * site:skillsmp.com, and site:github.com "SKILL.md" — recording which
+ * source each match came from (CompanionSkill.source).
+ * Stage B (mechanical): normalize matches to CompanionSkill[], carrying
+ * the rating only where the source provides one.
+ * Stage C (reasoning): apply the Phase 3.7 gate; only survivors are
+ * returned — discarded skills never surface in Phase 5 output. DISCARD
+ * wins outright over WARN/FLAG, same precedence as libraries.
+ *
+ * Per-source trust rules live on CompanionSkillSource: rating is metadata
+ * a source may provide; provenance determines how the result may be
+ * trusted. Neither substitutes for the other.
+ *
+ * REQUIRED phase per SKILL.md — an empty array means "searched all four
+ * sources, nothing found", never "skipped". Silently omitting this phase
+ * is the named failure mode.
+ */
 export function findCompanionSkills(
   _candidate: Candidate
 ): Promise<CompanionSkill[]> {
