@@ -10,7 +10,9 @@ not published, and not used by that skill today.
 
 ## What's actually implemented
 
-Only `analyzeProject()`, in [`src/mechanical/index.ts`](src/mechanical/index.ts).
+Two functions so far.
+
+**`analyzeProject()`**, in [`src/mechanical/index.ts`](src/mechanical/index.ts).
 It is a **Structured Project Scan**, not full project understanding: it reads
 the top-level entries of a project directory and parses a fixed set of
 dependency manifests (`package.json`, `pyproject.toml`, `Cargo.toml`,
@@ -24,13 +26,24 @@ reproduce SKILL.md's deeper Phase B1 source-sampling analysis. Those stay
 LLM-interpreted behavior that SKILL.md owns directly — see the doc comment
 above `analyzeProject()` for the full scope statement.
 
-Everything else — `findCandidates`, `verifyCandidate`, `findCompanionSkills`,
-`scoreCandidate` — is an unimplemented stub that throws `NotImplementedError`.
+**`scoreCandidate(candidate, factors)`**, also in
+[`src/mechanical/index.ts`](src/mechanical/index.ts). The deterministic
+slice of Phase 4: given four factors already scored 1–10 per SKILL.md's
+bands, it computes the weighted total
+(`compatibility×0.40 + popularity×0.30 + maintenance×0.15 + simplicity×0.15`),
+renormalizes proportionally when a factor is `"N/A"`, rounds half-up to one
+decimal with boundary-tolerant handling, and refuses out-of-range input
+loudly. It does **not** produce the factors — Compatibility/Simplicity are
+LLM judgment over verified local evidence, and Popularity/Maintenance
+band-mapping starts from live data whose point-within-band selection is
+still judgment. Callers also filter BLOCKED and ALREADY PRESENT candidates
+first, per Phase 4's preamble.
+
+Everything else — `findCandidates`, `verifyCandidate`, `findCompanionSkills`
+— is an unimplemented stub that throws `NotImplementedError`.
 Their contracts document *why*: the search/security-gate functions in
 `reasoning/` wrap web search and LLM judgment and are unlikely to ever become
-pure deterministic code, while `scoreCandidate`'s arithmetic is deterministic
-but depends on input factors (GitHub stars, download counts) this package
-doesn't yet fetch.
+pure deterministic code.
 
 ## Layout
 
@@ -48,6 +61,6 @@ fixtures/      sample projects + expected StackProfile output, used by test/fixt
 npm test
 ```
 
-Runs `tsc` then the `node:test` suite (unit tests for detectors/parsers, a
+Runs `tsc` then the `node:test` suite (unit tests for detectors/parsers/scoring, a
 public-API export boundary test, and fixture-driven tests for
 `analyzeProject()`).

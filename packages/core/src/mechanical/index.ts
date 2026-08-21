@@ -2,8 +2,10 @@ import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import type { StackProfile } from "../contracts/project.js";
 import type { Candidate } from "../contracts/candidate.js";
-import type { CandidateScore } from "../contracts/scoring.js";
-import { NotImplementedError } from "../errors.js";
+import type {
+  CandidateScore,
+  ScoringFactors,
+} from "../contracts/scoring.js";
 import {
   dependencyDetectors,
   fileDetectors,
@@ -140,12 +142,89 @@ export async function analyzeProject(projectPath: string): Promise<StackProfile>
 
 /**
  * Phase 4 — deterministic weighted score for a candidate.
- * Note: the math is deterministic; the four input factors it consumes
- * are not guaranteed to be — see contracts/scoring.ts.
+ *
+ * Pure arithmetic over four factors already scored 1-10 per SKILL.md's
+ * bands (see contracts/scoring.ts for why factor production stays outside
+ * this package). Policies, all from SKILL.md Phase 4:
+ *
+ *  - Weights: compatibility 0.40, popularity 0.30, maintenance 0.15,
+ *    simplicity 0.15.
+ *  - "If a field is unknown, mark it N/A and weight the remaining factors
+ *    proportionally": N/A factors are excluded and the surviving weights
+ *    are renormalized, so a 3-factor candidate competes on equal terms —
+ *    its total is not silently deflated by a missing zero. Every exclusion
+ *    is recorded in notes; a fully-weighted score carries no notes.
+ *  - All four N/A ⇒ totalScore is "N/A". No verified input, no number.
+ *  - Factors must be numbers in [1, 10] or exactly "N/A" — anything else
+ *    throws loudly instead of entering the arithmetic.
+ *  - The total is rounded to one decimal (Phase 5 renders X.X), half-up.
+ *    Rounding is boundary-tolerant: a quotient within 1e-9 of an exact .X5
+ *    boundary is treated as the boundary and rounds up, so floating-point
+ *    accumulation noise cannot flip an exact 5.15 between 5.1 and 5.2 —
+ *    while genuinely mid-interval values (6.5454... -> 6.5) are never
+ *    double-rounded across the boundary.
+ *
+ * Not this function's job (callers filter first, per Phase 4's preamble):
+ * skipping BLOCKED candidates and marking ALREADY PRESENT ones.
  */
+const HALF_BOUNDARY_EPS = 1e-9;
+
+function roundHalfUp1dp(value: number): number {
+  const scaled = value * 10;
+  const lower = Math.floor(scaled);
+  const frac = scaled - lower;
+  const roundUp = frac >= 0.5 - HALF_BOUNDARY_EPS;
+  return (lower + (roundUp ? 1 : 0)) / 10;
+}
 export function scoreCandidate(
-  _candidate: Candidate,
-  _stack: StackProfile
-): Promise<CandidateScore> {
-  throw new NotImplementedError("scoreCandidate");
+  candidate: Candidate,
+  factors: ScoringFactors
+): CandidateScore {
+  if (!candidate || typeof candidate !== "object") {
+    throw new Error("scoreCandidate: candidate must be an object");
+  }
+
+  const FACTOR_WEIGHTS = [
+    ["compatibility", 0.4],
+    ["popularity", 0.3],
+    ["maintenance", 0.15],
+    ["simplicity", 0.15],
+  ] as const;
+
+  let weightedSum = 0;
+  let weightSum = 0;
+  const notes: string[] = [];
+
+  for (const [factor, weight] of FACTOR_WEIGHTS) {
+    const value = factors[factor];
+    if (value === "N/A") {
+      notes.push(`${factor}: N/A — excluded, remaining factors renormalized`);
+      continue;
+    }
+    if (
+      typeof value !== "number" ||
+      !Number.isFinite(value) ||
+      value < 1 ||
+      value > 10
+    ) {
+      throw new Error(
+        `scoreCandidate: ${factor} must be a number in [1, 10] or "N/A", got ${JSON.stringify(value)}`
+      );
+    }
+    weightedSum += value * weight;
+    weightSum += weight;
+  }
+
+  const totalScore =
+    weightSum === 0 ? "N/A" : roundHalfUp1dp(weightedSum / weightSum);
+
+  return {
+    candidate,
+    compatibility: factors.compatibility,
+    popularity: factors.popularity,
+    maintenance: factors.maintenance,
+    simplicity: factors.simplicity,
+    totalScore,
+    ...(notes.length > 0 ? { notes } : {}),
+  };
 }
