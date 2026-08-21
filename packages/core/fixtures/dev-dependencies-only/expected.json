@@ -1,0 +1,21 @@
+{
+  "languages": ["nodejs", "typescript"],
+  "frameworks": ["tailwindcss"],
+  "databases": [],
+  "aiTools": [],
+  "authSystems": [],
+  "caching": [],
+  "queues": [],
+  "search": [],
+  "storage": [],
+  "email": [],
+  "payments": [],
+  "observability": [],
+  "testing": ["playwright", "vitest"],
+  "matchedDependencies": {
+    "playwright": ["@playwright/test"],
+    "tailwindcss": ["tailwindcss"],
+    "typescript": ["typescript"],
+    "vitest": ["vitest"]
+  }
+}

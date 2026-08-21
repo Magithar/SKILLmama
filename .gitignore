@@ -2,3 +2,5 @@
 .DS_Store
 .vscode/
 .gstack/
+node_modules/
+dist/

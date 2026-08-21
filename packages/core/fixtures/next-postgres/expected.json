@@ -1,0 +1,25 @@
+{
+  "languages": ["nodejs"],
+  "frameworks": ["nextjs"],
+  "databases": ["postgresql"],
+  "aiTools": [],
+  "authSystems": [],
+  "caching": [],
+  "queues": [],
+  "search": [],
+  "storage": [],
+  "email": [],
+  "payments": ["stripe"],
+  "observability": [],
+  "testing": ["vitest"],
+  "matchedDependencies": {
+    "nextjs": ["next"],
+    "postgresql": ["pg"],
+    "stripe": ["stripe"],
+    "vitest": ["vitest"]
+  },
+  "deploymentTarget": {
+    "value": "flyio",
+    "source": "fly.toml"
+  }
+}

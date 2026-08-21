@@ -1,0 +1,21 @@
+{
+  "languages": ["python"],
+  "frameworks": ["fastapi"],
+  "databases": ["postgresql", "sqlalchemy"],
+  "aiTools": [],
+  "authSystems": [],
+  "caching": [],
+  "queues": [],
+  "search": [],
+  "storage": [],
+  "email": [],
+  "payments": [],
+  "observability": [],
+  "testing": ["pytest"],
+  "matchedDependencies": {
+    "fastapi": ["fastapi"],
+    "postgresql": ["psycopg2-binary"],
+    "pytest": ["pytest"],
+    "sqlalchemy": ["sqlalchemy"]
+  }
+}

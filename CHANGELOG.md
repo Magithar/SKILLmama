@@ -4,6 +4,28 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [1.6.0] - 2026-08-21
+
+### Added
+- **`packages/core` — SKILLmama's first deterministic code artifact**: a new npm workspace (package name `skillmama`, currently `"private": true` and unpublished) that starts extracting the mechanical slice of the pipeline from `skillmama/SKILL.md` into testable code. The skill remains the sole source of truth for full behavior; the package implements only what is genuinely deterministic and fails loudly everywhere else
+  - **Contracts** (`src/contracts/`): `StackProfile` (the structured scan result, with `matchedDependencies` provenance and `deploymentTarget`), `Candidate`/`CompanionSkill`, `SecurityCheckResult`, and `CandidateScore`. Every type documents what it deliberately does *not* represent — e.g. `SecurityVerdict` states outright that SKILL.md's gate is LLM reasoning, not a checklist that reduces to a function
+  - **`analyzeProject()` implemented** (`src/mechanical/index.ts`): a Structured Project Scan — reads only the top-level entries of a project directory, parses seven dependency manifests (`package.json`, `pyproject.toml`, `Cargo.toml`, `requirements.txt`, `go.mod`, `Gemfile`, `composer.json`) across all dependency sections each format supports, plus presence-only detectors for five deployment configs (`fly.toml`, `render.yaml`, `vercel.json`, `railway.toml`/`.json`). Output is fully deterministic: sorted, deduplicated, fixture-pinned. It deliberately does not read README/SETUP/DEPLOY prose or infer technology from source code — those stay LLM-interpreted behavior owned by SKILL.md
+  - **Detector registry** (`src/mechanical/detectors.ts`): data-only mapping from raw manifest names to canonical IDs (e.g. `pg`/`postgres`/`postgres.js` → `postgresql`) with six written policies so canonical IDs cannot drift casually; compile-time checks force the registry to stay in sync with the `StackProfile` contract
+  - **Manifest parsers** (`src/mechanical/parsers.ts`): internal module (not exported through the package boundary) handling PEP 508/621/735 and Poetry layouts, Cargo rename syntax, go.mod require blocks, and Gemfile DSL; a malformed manifest throws with cause instead of silently degrading the scan
+  - **Everything else throws `NotImplementedError`**: `findCandidates`, `verifyCandidate`, `findCompanionSkills`, and `scoreCandidate` are typed stubs kept separate in `src/reasoning/` so the assumption that they need web search + LLM judgment is never lost. A public-API boundary test pins the exact export list, so nothing can leak into the surface silently
+  - **41 tests passing**: unit tests for detectors/parsers, the export-boundary test, and fixture-driven tests (`fixtures/` contains six sample projects with expected `StackProfile` output). Only runtime dependency is `smol-toml`; clean `npm ci` installs with zero vulnerabilities
+- **`scripts/check-skill-untouched.sh`**: smoke test asserting `skillmama/SKILL.md` is unchanged relative to the last commit and byte-identical to its `.claude/skills/skillmama/` install copy — drift between the two copies was the failure mode behind fixes 1.4.3 and 1.4.6, and this makes the invariant mechanically enforced rather than caught in review
+- **npm workspace root**: private `package.json` with `workspaces: ["packages/*"]` and a committed lockfile
+
+### Changed
+- `.gitignore` now excludes `node_modules/` and `dist/`
+
+### Notes
+- The unscoped npm name `skillmama` was chosen over `@skillmama/core`: one package, one brand, simpler install; the scoped name implied an org with multiple packages that doesn't exist. Name confirmed available on the registry; the package stays `"private": true` until a publish decision is made
+- This work did not touch `skillmama/SKILL.md` — verified by the new guard script
+
+---
+
 ## [1.5.0] - 2026-08-08
 
 ### Changed

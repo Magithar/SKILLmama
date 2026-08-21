@@ -1,0 +1,11 @@
+{
+  "name": "fixture-multi-alias",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "pg": "^8.12.0",
+    "postgres": "^3.4.4",
+    "ioredis": "^5.4.1",
+    "totally-unknown-package": "^1.0.0"
+  }
+}

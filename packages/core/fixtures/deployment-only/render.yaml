@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: fixture-deployment-only
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start

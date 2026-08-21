@@ -1,0 +1,32 @@
+{
+  "name": "skillmama",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Deterministic core of SKILLmama's capability-discovery pipeline: structured project scanning (StackProfile). skillmama/SKILL.md remains the source of truth for full behavior.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Magithar/SKILLmama.git",
+    "directory": "packages/core"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/index.test.js test/detectors.test.js test/fixtures.test.js test/parsers.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "smol-toml": "^1.8.0"
+  }
+}

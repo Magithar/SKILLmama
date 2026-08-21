@@ -1,0 +1,19 @@
+{
+  "languages": ["nodejs"],
+  "frameworks": [],
+  "databases": ["postgresql"],
+  "aiTools": [],
+  "authSystems": [],
+  "caching": ["redis"],
+  "queues": [],
+  "search": [],
+  "storage": [],
+  "email": [],
+  "payments": [],
+  "observability": [],
+  "testing": [],
+  "matchedDependencies": {
+    "postgresql": ["pg", "postgres"],
+    "redis": ["ioredis"]
+  }
+}

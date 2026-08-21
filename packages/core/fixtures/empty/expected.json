@@ -1,0 +1,16 @@
+{
+  "languages": [],
+  "frameworks": [],
+  "databases": [],
+  "aiTools": [],
+  "authSystems": [],
+  "caching": [],
+  "queues": [],
+  "search": [],
+  "storage": [],
+  "email": [],
+  "payments": [],
+  "observability": [],
+  "testing": [],
+  "matchedDependencies": {}
+}
