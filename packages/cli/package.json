@@ -1,0 +1,28 @@
+{
+  "name": "skillmama-cli",
+  "version": "0.0.1",
+  "private": true,
+  "description": "CLI for the skillmama package — first real consumer of analyzeProject(). Runs `skillmama scan [dir]` to produce a structured StackProfile of a project directory.",
+  "type": "module",
+  "bin": {
+    "skillmama": "dist/main.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18.3"
+  },
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/render.test.js test/e2e.test.js"
+  },
+  "dependencies": {
+    "skillmama": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "typescript": "^5.6.0"
+  }
+}
