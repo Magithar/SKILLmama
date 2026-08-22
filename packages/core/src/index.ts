@@ -2,9 +2,10 @@
  * skillmama — package boundary only.
  *
  * skillmama/SKILL.md remains the sole source of truth for SKILLmama's
- * actual behavior. Only analyzeProject() is implemented so far; every
- * other exported function throws NotImplementedError so a caller fails
- * loudly instead of silently getting empty or fake data.
+ * actual behavior. Implemented so far: analyzeProject(), scoreCandidate(),
+ * and gatherSecurityEvidence() (Phase 3.5 Stage 1); every other pipeline
+ * function throws NotImplementedError so a caller fails loudly instead of
+ * silently getting empty or fake data.
  *
  * Layout:
  *   contracts/  — shared types

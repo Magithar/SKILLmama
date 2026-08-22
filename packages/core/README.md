@@ -10,7 +10,7 @@ not published, and not used by that skill today.
 
 ## What's actually implemented
 
-Two functions so far.
+Three functions so far.
 
 **`analyzeProject()`**, in [`src/mechanical/index.ts`](src/mechanical/index.ts).
 It is a **Structured Project Scan**, not full project understanding: it reads
@@ -39,6 +39,29 @@ band-mapping starts from live data whose point-within-band selection is
 still judgment. Callers also filter BLOCKED and ALREADY PRESENT candidates
 first, per Phase 4's preamble.
 
+**`gatherSecurityEvidence(target, options)`**, in
+[`src/mechanical/security.ts`](src/mechanical/security.ts) — Phase 3.5
+Stage 1, the evidence half of the security gate. Both live-data checks
+SKILL.md runs are plain HTTP APIs, so this one is genuinely deterministic:
+the [OSV.dev](https://osv.dev) advisory query (severity off
+`database_specific.severity`, `hasFix` from any `fixed` event, PYSEC-*/
+GHSA-* twins deduped on aliases with severity read off the GHSA twin) and
+the npm publisher-continuity check — a faithful port of SKILL.md Check 2's
+reference script with all four load-bearing rules: sort by publish time not
+packument key order; a handoff means the old guard never publishes again;
+only the most recent handoff under 12 months is ever reported; bot and
+unknown publishers are dropped before detection. Transport failure degrades
+to `{ status: "unverified", reason: "unreachable" }` per SKILL.md's "never
+let an unverified candidate read as having passed", while a reachable
+registry returning garbage throws loudly instead of reading clean.
+Non-npm ecosystems report publisher continuity as
+`unsupported-ecosystem` so a Python candidate can never imply it was
+checked. It deliberately does **not** judge: turning evidence into a
+GateVerdict stays with verifyCandidate() (stage 2, LLM reasoning). The two
+pure normalizers (`normalizeOsvQueryResponse`, `detectPublisherHandoff`)
+are exported and fixture-tested directly; tests inject a fetch stub, so the
+suite never touches the network.
+
 Everything else — `findCandidates`, `verifyCandidate`, `findCompanionSkills`
 — is an unimplemented stub that throws `NotImplementedError`.
 Their contracts document *why*: the search/security-gate functions in
@@ -51,7 +74,8 @@ pure deterministic code.
 src/
   contracts/   shared types (StackProfile, Candidate, SecurityEvidence/
                SecurityCheckResult, SearchPlan/TierResult, ScoringFactors/CandidateScore)
-  mechanical/  functions where the work is genuinely deterministic (file parsing, scoring arithmetic)
+  mechanical/  functions where the work is genuinely deterministic (file parsing,
+               scoring arithmetic, plain-HTTP security-evidence gathering)
   reasoning/   functions that wrap web search + LLM/tool judgment — stubs only
 fixtures/      sample projects + expected StackProfile output, used by test/fixtures.test.js
 ```
@@ -62,6 +86,7 @@ fixtures/      sample projects + expected StackProfile output, used by test/fixt
 npm test
 ```
 
-Runs `tsc` then the `node:test` suite (unit tests for detectors/parsers/scoring, a
-public-API export boundary test, and fixture-driven tests for
-`analyzeProject()`).
+Runs `tsc` then the `node:test` suite (unit tests for detectors/parsers/scoring/
+security, a public-API export boundary test, and fixture-driven tests for
+`analyzeProject()`). The security tests inject a fetch stub — nothing here
+touches the network.

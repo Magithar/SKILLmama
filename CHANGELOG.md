@@ -4,6 +4,21 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [1.7.0] - 2026-08-22
+
+### Added
+- **`gatherSecurityEvidence()` implemented** (`packages/core/src/mechanical/security.ts`): Phase 3.5 Stage 1, the evidence half of the security gate, is now code rather than a contract. Both live-data checks SKILL.md runs turn out to be plain HTTP APIs, so this slice is genuinely deterministic and fixture-testable
+  - **OSV.dev advisory check**: queries `api.osv.dev/v1/query` at exactly the version the caller intends to recommend (SKILL.md's "query the version you intend to recommend, not the latest" trap — the function never resolves "latest" itself), reads severity off `vulns[].database_specific.severity` case-normalized with anything unrecognized mapped to UNKNOWN rather than guessed, sets `hasFix` from any `affected[].ranges[].events[]` `fixed` event, and handles the PyPI trap: PYSEC-* records duplicating a GHSA-* record for the same flaw are deduped on shared id/aliases (transitively — A~B, B~C is one flaw) with severity read off the GHSA twin instead of reporting a false UNKNOWN
+  - **npm publisher-continuity check**: faithful port of SKILL.md Check 2's reference script with all four load-bearing rules intact — versions sort by publish time, never packument key order; a handoff requires the old guard to *never* publish again once the newcomer arrives (any human-to-human change fires on express/lodash/chalk-shaped team rotation); only the most recent qualifying handoff survives, and only under 12 months old (the measured 51%→7% false-positive rule) — stale ones return null, never a record; bot and unknown publishers are dropped before detection via SKILL.md's literal list, kept exact because a regex generalization measured identically across 98 packages. The pure detector (`detectPublisherHandoff`) is exported and takes `today` as an explicit parameter so results are reproducible rather than clock-dependent
+  - **Honest degradation policy, split the same way as `analyzeProject()`'s**: transport-level failure (network error, non-2xx, unparseable body) degrades that one check to `{ status: "unverified", reason: "unreachable" }` per SKILL.md's "never let an unverified candidate read as having passed" — and one check failing never takes the other down; but a reachable registry returning garbage throws loudly instead of silently reading clean, since "unreachable" would be a lie and silence would be a false PASS. Non-npm ecosystems yield `reason: "unsupported-ecosystem"` without touching the npm registry, so a Python candidate can never imply publisher continuity was checked
+  - **Boundary kept honest**: this module gathers evidence only — turning it into a GateVerdict (CRITICAL/HIGH with no fix → BLOCKED, etc.) stays with `verifyCandidate()`, which remains an unimplemented reasoning-layer stub. The two pure normalizers (`normalizeOsvQueryResponse`, `detectPublisherHandoff`) are exported for direct fixture testing; orchestration tests inject a fetch stub keyed by URL, so the test suite never touches the network
+- **33 new tests** (`test/security.test.js`): OSV normalization (severity rescue, transitive alias clusters, hasFix, malformed-record tolerance), handoff detection (team rotation vs genuine handoff, recency boundary, backport ordering, CI migration, most-recent-wins, loud failure on invalid input), and orchestration (canonical evidence order, version-verbatim query bodies, scoped-name URL encoding, per-check degradation independence). Core suite now 92 tests; full workspace green including the CLI e2e suite
+
+### Notes
+- This work did not touch `skillmama/SKILL.md` — verified by the guard script
+
+---
+
 ## [1.6.0] - 2026-08-21
 
 ### Added

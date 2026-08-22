@@ -9,6 +9,10 @@ const expectedExports = [
   "NotImplementedError",
   "analyzeProject",
   "scoreCandidate",
+  "gatherSecurityEvidence",
+  "normalizeOsvQueryResponse",
+  "detectPublisherHandoff",
+  "NPM_BOT_PUBLISHERS",
   "findCandidates",
   "verifyCandidate",
   "findCompanionSkills",
@@ -37,9 +41,10 @@ test("public API exposes exactly the intended contract", () => {
 
 // 2. Stub behavior — every still-unimplemented pipeline function throws
 // NotImplementedError. This is the explicit "no fake implementation, no
-// silent success" contract. analyzeProject() and scoreCandidate() are
-// implemented; their behavior is pinned by fixtures.test.js, parsers.test.js,
-// and scoring.test.js instead.
+// silent success" contract. analyzeProject(), scoreCandidate(), and
+// gatherSecurityEvidence() are implemented; their behavior is pinned by
+// fixtures.test.js, parsers.test.js, scoring.test.js, and security.test.js
+// instead.
 const stubCalls = [
   ["findCandidates", () => core.findCandidates({ capability: "x" })],
   ["verifyCandidate", () => core.verifyCandidate({})],

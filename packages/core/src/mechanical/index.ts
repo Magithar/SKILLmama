@@ -16,11 +16,14 @@ import {
 import { manifestParsers } from "./parsers.js";
 
 export * from "./detectors.js";
+export * from "./security.js";
 
 /**
  * Functions in this file are the ones where the underlying capability is
- * genuinely mechanical (file parsing, arithmetic). analyzeProject() is
- * implemented; the remaining pipeline functions are still unimplemented.
+ * genuinely mechanical (file parsing, arithmetic, plain-HTTP evidence
+ * checks). analyzeProject(), scoreCandidate(), and the Phase 3.5 Stage 1
+ * evidence gatherer (security.ts) are implemented; the remaining pipeline
+ * functions are still unimplemented.
  */
 
 function addTo<K>(map: Map<K, Set<string>>, key: K, value: string): void {
