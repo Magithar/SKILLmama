@@ -36,6 +36,22 @@ All notable changes to SKILLmama are documented here.
   gap, archived-beats-recency, and a gathered-evidence-to-band end-to-end pass. Fetch is
   stubbed throughout; the suite still never touches the network. Core is at 152 tests
 
+- **SKILL.md conformance tests** (`packages/core/test/skill-conformance.test.js`):
+  `check-skill-untouched.sh` guarded SKILL.md against copy drift, but nothing guarded
+  SKILL.md's prose against the code reimplementing the same phase — the two could diverge
+  silently and the suite would stay green. This parses SKILL.md at test time and asserts
+  the package agrees with what it actually says: the 40/30/15/15 weights (verified
+  functionally over several factor tuples, not by reading a constant), both band tables
+  probed on **both sides** of every stated edge, the literal npm bot-publisher list, the
+  tier headings and their query recipes, and Phase 3.6's four fixed companion searches.
+  Tier recipes are expanded to concrete strings and compared exactly rather than
+  wildcard-matched: the first version used regex wildcards for `[placeholders]`, and a
+  wildcard silently swallowed a dropped literal word. Mutation-tested against ten separate
+  SKILL.md edits — moved weight, moved band edge on either table, removed bot, renamed
+  tier, changed `stars:>500`, dropped word in a recipe, changed companion query — all ten
+  now fail the suite. SKILL.md stays the source of truth: a failure means the code needs
+  updating, never the test
+
 ### Notes
 - Compatibility and Simplicity deliberately get no equivalent. Their bands are written in
   terms of "well-documented", "significant glue code", "minimal config" — properties only

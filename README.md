@@ -661,13 +661,20 @@ Implemented in core:
 
 ```bash
 npm install
-npm test                       # 152 core tests + 13 CLI tests
+npm test                       # 161 core tests + 13 CLI tests
 npx skillmama scan .           # or: --json
 ```
 
-`scripts/check-skill-untouched.sh` asserts `skillmama/SKILL.md` is unchanged and
-byte-identical to its `.claude/skills/` install copy. Copy drift caused two past
-bugs, so the invariant is now checked mechanically instead of in review.
+Two guards keep `packages/` honest about SKILL.md:
+
+- `scripts/check-skill-untouched.sh` asserts `skillmama/SKILL.md` is unchanged and
+  byte-identical to its `.claude/skills/` install copy. Copy drift caused two past
+  bugs, so the invariant is checked mechanically instead of in review.
+- `packages/core/test/skill-conformance.test.js` parses SKILL.md at test time and
+  asserts the code agrees with what it says — the weights, both band tables, the
+  literal bot-publisher list, the tier headings and query recipes, and the four
+  fixed companion searches. Mutation-tested against ten separate SKILL.md edits.
+  SKILL.md stays the source of truth; a failure means the code needs updating.
 
 ---
 

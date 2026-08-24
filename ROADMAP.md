@@ -16,6 +16,11 @@ or parked. P0 is empty — nothing currently blocks a release.
 
 ## Done since the last revision
 
+Task 13 is done, and promoted out of P3 on the way: SKILL.md's prose and the
+package's code for the same phase are now checked against each other by
+`packages/core/test/skill-conformance.test.js`, which parses SKILL.md at test
+time. Mutation-tested against ten separate SKILL.md edits, all caught.
+
 Task 5 is done: Phase 4's two live-data scoring factors are implemented
 (`gatherFactorEvidence()`, `mapPopularityBand()`, `mapMaintenanceBand()` in
 `packages/core/src/mechanical/factors.ts`). `scoreCandidate()` no longer takes
@@ -55,8 +60,7 @@ never run against a clean tree. Fixed and verified green.
 
 | # | Task | Notes |
 | --- | --- | --- |
-| 13 | An eval covering the packages | 165 tests cover the deterministic functions. Nothing checks that SKILL.md's prose pipeline and the package's implementation of the same phase actually agree — the drift risk the guard script does not cover. |
-| 14 | `analyzeProject()`'s accepted v1 limits | npm alias / workspace / `file:` / GitHub specifiers read by key only, `go.mod replace` not followed, `requirements.txt -r` includes not followed, no recursion below the top level. All deliberate; revisit only if a real scan gets them wrong. |
+| 13 | `analyzeProject()`'s accepted v1 limits | npm alias / workspace / `file:` / GitHub specifiers read by key only, `go.mod replace` not followed, `requirements.txt -r` includes not followed, no recursion below the top level. All deliberate; revisit only if a real scan gets them wrong. |
 
 ---
 

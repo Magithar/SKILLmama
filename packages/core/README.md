@@ -192,3 +192,19 @@ Runs `tsc` then the `node:test` suite (unit tests for detectors/parsers/scoring/
 security/search/factors/pipeline, a public-API export boundary test, and
 fixture-driven tests for `analyzeProject()`). The security, factors, and pipeline
 tests inject fetch/search stubs — nothing here touches the network.
+
+`test/skill-conformance.test.js` is the one that keeps this package honest.
+`scripts/check-skill-untouched.sh` guards `skillmama/SKILL.md` against copy
+drift; nothing guarded SKILL.md's *prose* against the code reimplementing the
+same phase, so the two could diverge silently. That test parses SKILL.md at test
+time and asserts the package agrees with what it actually says: the 40/30/15/15
+weights, both band tables (probed on both sides of every stated edge), the
+literal npm bot-publisher list, the tier headings and their query recipes
+(expanded to concrete strings and compared exactly, so a dropped literal word
+cannot slip through a wildcard), and Phase 3.6's four fixed companion searches.
+It was mutation-tested: ten separate edits to SKILL.md — a moved weight, a moved
+band edge on either table, a removed bot, a reworded tier heading, a changed
+`stars:>500` filter, a dropped word in a recipe, a changed companion query — each
+produce a failure. SKILL.md stays the source of truth: when one of these fails,
+the question is what changed in SKILL.md and whether the code still matches,
+never how to make the test pass.
