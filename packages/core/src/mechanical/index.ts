@@ -17,13 +17,17 @@ import { manifestParsers } from "./parsers.js";
 
 export * from "./detectors.js";
 export * from "./security.js";
+export * from "./search.js";
+export * from "./companions.js";
 
 /**
  * Functions in this file are the ones where the underlying capability is
  * genuinely mechanical (file parsing, arithmetic, plain-HTTP evidence
- * checks). analyzeProject(), scoreCandidate(), and the Phase 3.5 Stage 1
- * evidence gatherer (security.ts) are implemented; the remaining pipeline
- * functions are still unimplemented.
+ * checks, fixed decision tables over typed inputs). analyzeProject(),
+ * scoreCandidate(), the Phase 3.5 pair (gatherSecurityEvidence() +
+ * resolveSecurityVerdict()/verifyCandidate()), and Phase 3 Stage C
+ * (normalizeSearchHits()) are implemented; findCandidates()'s stages
+ * A/B and findCompanionSkills() remain reasoning-layer stubs.
  */
 
 function addTo<K>(map: Map<K, Set<string>>, key: K, value: string): void {

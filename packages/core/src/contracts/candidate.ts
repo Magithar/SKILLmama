@@ -79,4 +79,11 @@ export interface CompanionSkill {
    *  skillsmp explicitly does not). Absence here never implies anything
    *  about vetting — check source. */
   rating?: CompanionSkillRating;
+  /** Phase 3.7 gate outputs, present on a SURVIVING skill only when the
+   *  gate had something to report (WARN/FLAG); a skill without these from
+   *  a gated run passed clean, while a skill that never went through the
+   *  gate carries no claim at all. DISCARD-class skills are filtered out
+   *  by findCompanionSkills() entirely and never appear here. */
+  notes?: string[];
+  sqpFlags?: string[];
 }

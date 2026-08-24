@@ -17,7 +17,8 @@ import type { SearchTier } from "./candidate.js";
  *
  *   Stage C — NORMALIZE (mechanical): hits → Candidate[] with tier
  *   provenance, deduplicated across tiers by URL/name. Genuinely
- *   deterministic once Stage B has judged which hits count.
+ *   deterministic once Stage B has judged which hits count. Implemented
+ *   in mechanical/search.ts as normalizeSearchHits().
  */
 
 /**

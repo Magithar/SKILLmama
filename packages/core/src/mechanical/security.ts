@@ -1,9 +1,13 @@
 import type {
   AdvisorySeverity,
+  ContentFinding,
+  GateVerdict,
   OsvAdvisory,
   PublisherHandoff,
+  SecurityCheckResult,
   SecurityEvidence,
 } from "../contracts/security.js";
+import type { Candidate } from "../contracts/candidate.js";
 
 /**
  * Phase 3.5 Stage 1 — EVIDENCE gathering, implemented.
@@ -432,4 +436,224 @@ export async function gatherSecurityEvidence(
   ]);
 
   return [osvEvidence, continuityEvidence];
+}
+
+/**
+ * Phase 3.5 Stage 2 — the evidence/finding -> verdict mapping, implemented.
+ *
+ * The rule classes in SKILL.md Phase 3.5 are a fixed decision table over
+ * its inputs, so given SecurityEvidence[] (Stage 1, above) and
+ * ContentFinding[] (produced upstream by an LLM reading the candidate's
+ * docs/code), emitting the verdict is genuinely mechanical:
+ *
+ *   BLOCKED — any DISCARD-weight finding; or any OSV CRITICAL/HIGH advisory
+ *   with no `fixed` version. DISCARD wins outright over WARN and FLAG: a
+ *   candidate is never downgraded because lesser rules also matched.
+ *
+ *   WARN — OSV CRITICAL/HIGH WITH a fix ("recommend the fixed version");
+ *   MODERATE/LOW advisories ("summarize rather than discard"); a recent
+ *   publisher handoff ("name both publishers and the version and date,
+ *   let the user judge"); WARN-weight findings. Also the floor when any
+ *   check is `unverified`: SKILL.md says report it N/A (unverified) and
+ *   "never let an unverified candidate read as having passed", and the
+ *   closed GateVerdict union has no third honest state.
+ *
+ *   FLAG findings never change the verdict: their rule ids go to sqpFlags,
+ *   reported independently per SKILL.md.
+ *
+ * Notes are emitted in one fixed order (OSV blockers by id, then DISCARD
+ * findings in input order, then fixable advisories, then the MODERATE/LOW
+ * summary, then the handoff, then WARN findings, then unverified notices,
+ * then FLAG notes) so identical inputs always produce byte-identical
+ * output. Structurally invalid input throws loudly — same policy as
+ * gatherSecurityEvidence(): silence here would be a false PASS.
+ */
+export interface GateMapping {
+  verdict: GateVerdict;
+  notes: string[];
+  /** Deduplicated FLAG rule ids, first-occurrence order preserved. */
+  sqpFlags: string[];
+}
+
+const FINDING_WEIGHTS = ["DISCARD", "WARN", "FLAG"] as const;
+const SEVERITIES = ["CRITICAL", "HIGH", "MODERATE", "LOW", "UNKNOWN"] as const;
+
+function assertValidEvidence(evidence: SecurityEvidence[]): void {
+  if (!Array.isArray(evidence)) {
+    throw new Error("resolveSecurityVerdict: evidence must be an array");
+  }
+  if (evidence.length === 0) {
+    throw new Error(
+      "resolveSecurityVerdict: evidence is empty — no check ran at all, refusing to emit a verdict"
+    );
+  }
+  for (const [i, record] of evidence.entries()) {
+    if (!record || typeof record !== "object") {
+      throw new Error(`resolveSecurityVerdict: evidence[${i}] must be an object`);
+    }
+    if (record.source !== "osv" && record.source !== "publisher-continuity") {
+      throw new Error(
+        `resolveSecurityVerdict: evidence[${i}].source must be "osv" or "publisher-continuity", got ${JSON.stringify(record)}`
+      );
+    }
+    if (record.source === "osv") {
+      if (record.status === "ok") {
+        if (typeof record.queriedVersion !== "string" || record.queriedVersion === "") {
+          throw new Error(`resolveSecurityVerdict: evidence[${i}].queriedVersion must be a non-empty string`);
+        }
+        if (!Array.isArray(record.advisories)) {
+          throw new Error(`resolveSecurityVerdict: evidence[${i}].advisories must be an array`);
+        }
+        for (const [j, advisory] of record.advisories.entries()) {
+          if (!advisory || typeof advisory !== "object" || typeof advisory.id !== "string" || advisory.id === "") {
+            throw new Error(`resolveSecurityVerdict: evidence[${i}].advisories[${j}].id must be a non-empty string`);
+          }
+          if (!(SEVERITIES as readonly string[]).includes(advisory.severity)) {
+            throw new Error(
+              `resolveSecurityVerdict: evidence[${i}].advisories[${j}].severity must be one of ${SEVERITIES.join(", ")}, got ${JSON.stringify(advisory.severity)}`
+            );
+          }
+          if (typeof advisory.hasFix !== "boolean") {
+            throw new Error(`resolveSecurityVerdict: evidence[${i}].advisories[${j}].hasFix must be a boolean`);
+          }
+        }
+      } else if (record.reason !== "unreachable") {
+        throw new Error(`resolveSecurityVerdict: evidence[${i}] has invalid unverified reason for osv`);
+      }
+    } else if (record.source === "publisher-continuity") {
+      if (record.status === "ok") {
+        const handoff = record.handoff;
+        if (handoff !== null &&
+            (!handoff || typeof handoff !== "object" ||
+             typeof handoff.from !== "string" || handoff.from === "" ||
+             typeof handoff.to !== "string" || handoff.to === "" ||
+             typeof handoff.version !== "string" || handoff.version === "" ||
+             typeof handoff.date !== "string" || handoff.date === "")) {
+          throw new Error(`resolveSecurityVerdict: evidence[${i}].handoff must be null or a complete PublisherHandoff`);
+        }
+      } else if (record.reason !== "unreachable" && record.reason !== "unsupported-ecosystem") {
+        throw new Error(`resolveSecurityVerdict: evidence[${i}] has invalid unverified reason for publisher-continuity`);
+      }
+    }
+  }
+}
+
+function assertValidFindings(findings: ContentFinding[]): void {
+  if (!Array.isArray(findings)) {
+    throw new Error("resolveSecurityVerdict: findings must be an array");
+  }
+  for (const [i, finding] of findings.entries()) {
+    if (!finding || typeof finding !== "object") {
+      throw new Error(`resolveSecurityVerdict: findings[${i}] must be an object`);
+    }
+    if (!(FINDING_WEIGHTS as readonly string[]).includes(finding.weight)) {
+      throw new Error(
+        `resolveSecurityVerdict: findings[${i}].weight must be one of ${FINDING_WEIGHTS.join(", ")}, got ${JSON.stringify(finding.weight)}`
+      );
+    }
+    if (typeof finding.rule !== "string" || finding.rule === "") {
+      throw new Error(`resolveSecurityVerdict: findings[${i}].rule must be a non-empty string`);
+    }
+    if (typeof finding.detail !== "string" || finding.detail === "") {
+      throw new Error(`resolveSecurityVerdict: findings[${i}].detail must be a non-empty string`);
+    }
+  }
+}
+
+function advisoryLabel(a: OsvAdvisory): string {
+  return a.summary ? `${a.severity} ${a.id}: ${a.summary}` : `${a.severity} ${a.id}`;
+}
+
+export function resolveSecurityVerdict(
+  evidence: SecurityEvidence[],
+  findings: ContentFinding[]
+): GateMapping {
+  assertValidEvidence(evidence);
+  assertValidFindings(findings);
+
+  const osv = evidence.find(
+    (record): record is Extract<SecurityEvidence, { source: "osv"; status: "ok" }> =>
+      record.source === "osv" && record.status === "ok"
+  );
+  const continuity = evidence.find(
+    (record): record is Extract<SecurityEvidence, { source: "publisher-continuity"; status: "ok" }> =>
+      record.source === "publisher-continuity" && record.status === "ok"
+  );
+
+  const advisories = osv ? [...osv.advisories] : [];
+  const byId = (a: OsvAdvisory, b: OsvAdvisory) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  const blockers = advisories.filter((a) => (a.severity === "CRITICAL" || a.severity === "HIGH") && !a.hasFix).sort(byId);
+  const fixable = advisories.filter((a) => (a.severity === "CRITICAL" || a.severity === "HIGH") && a.hasFix).sort(byId);
+  const minor = advisories.filter((a) => a.severity === "MODERATE" || a.severity === "LOW").sort(byId);
+
+  const discardFindings = findings.filter((f) => f.weight === "DISCARD");
+  const warnFindings = findings.filter((f) => f.weight === "WARN");
+  const flagFindings = findings.filter((f) => f.weight === "FLAG");
+
+  const unverifiedNotes = evidence
+    .filter(
+      (
+        record
+      ): record is Extract<SecurityEvidence, { status: "unverified" }> =>
+        record.status === "unverified"
+    )
+    .map((record) => `${record.source}: N/A (unverified — ${record.reason})`);
+
+  const notes: string[] = [];
+  for (const advisory of blockers) notes.push(`OSV blocks: ${advisoryLabel(advisory)}`);
+  for (const finding of discardFindings) notes.push(`${finding.rule}: ${finding.detail}`);
+  for (const advisory of fixable) {
+    notes.push(`OSV ${advisoryLabel(advisory)} has a fixed version available — recommend the fixed version`);
+  }
+  if (minor.length > 0) {
+    notes.push(`OSV MODERATE/LOW advisories: ${minor.map(advisoryLabel).join("; ")}`);
+  }
+  if (continuity?.handoff) {
+    const h = continuity.handoff;
+    notes.push(`Publisher handoff: ${h.from} -> ${h.to}, version ${h.version}, ${h.date}`);
+  }
+  for (const finding of warnFindings) notes.push(`${finding.rule}: ${finding.detail}`);
+  notes.push(...unverifiedNotes);
+  for (const finding of flagFindings) notes.push(`${finding.rule}: ${finding.detail}`);
+
+  const sqpFlags = [...new Set(flagFindings.map((f) => f.rule))];
+
+  const blocked = blockers.length > 0 || discardFindings.length > 0;
+  const warned =
+    fixable.length > 0 || minor.length > 0 ||
+    (continuity?.handoff != null) || warnFindings.length > 0 ||
+    unverifiedNotes.length > 0;
+
+  return {
+    verdict: blocked ? "BLOCKED" : warned ? "WARN" : "PASS",
+    notes,
+    sqpFlags,
+  };
+}
+
+/**
+ * Phase 3.5 gate entry point — assemble the SecurityCheckResult for one
+ * candidate from already-gathered evidence and already-produced content
+ * findings. Thin on purpose: every rule lives in resolveSecurityVerdict();
+ * this only pins which optional fields appear (empty notes/sqpFlags are
+ * omitted, matching the contract's optional shape). Synchronous — nothing
+ * here waits on a tool or network anymore; the judgment this used to
+ * promise arrives as the `findings` argument, produced upstream.
+ */
+export function verifyCandidate(
+  candidate: Candidate,
+  evidence: SecurityEvidence[],
+  findings: ContentFinding[]
+): SecurityCheckResult {
+  if (!candidate || typeof candidate !== "object") {
+    throw new Error("verifyCandidate: candidate must be an object");
+  }
+  const mapping = resolveSecurityVerdict(evidence, findings);
+  return {
+    candidate,
+    verdict: mapping.verdict,
+    evidence,
+    ...(mapping.sqpFlags.length > 0 ? { sqpFlags: mapping.sqpFlags } : {}),
+    ...(mapping.notes.length > 0 ? { notes: mapping.notes } : {}),
+  };
 }

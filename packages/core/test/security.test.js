@@ -543,3 +543,217 @@ test("invalid targets throw naming the offending field", async () => {
     /version/
   );
 });
+
+// ---------------------------------------------------------------------------
+// 4. Phase 3.5 Stage 2 — resolveSecurityVerdict / verifyCandidate.
+// ---------------------------------------------------------------------------
+
+import {
+  resolveSecurityVerdict,
+  verifyCandidate,
+} from "../dist/index.js";
+
+const advisory = (overrides = {}) => ({
+  id: "GHSA-xxxx-0001",
+  aliases: [],
+  severity: "HIGH",
+  hasFix: false,
+  summary: "flaw summary",
+  ...overrides,
+});
+
+const osvOk = (advisories, queriedVersion = "1.2.3") => ({
+  source: "osv",
+  status: "ok",
+  queriedVersion,
+  advisories,
+});
+const continuityOk = (handoff) => ({
+  source: "publisher-continuity",
+  status: "ok",
+  handoff,
+});
+const finding = (weight, rule, detail) => ({ weight, rule, detail });
+
+test("clean evidence with no findings is PASS", () => {
+  const mapping = resolveSecurityVerdict(
+    [osvOk([]), continuityOk(null)],
+    []
+  );
+  assert.equal(mapping.verdict, "PASS");
+  assert.deepEqual(mapping.notes, []);
+  assert.deepEqual(mapping.sqpFlags, []);
+});
+
+test("CRITICAL/HIGH with no fix blocks; note carries the summary verbatim", () => {
+  const mapping = resolveSecurityVerdict(
+    [
+      osvOk([
+        advisory({ severity: "CRITICAL", summary: "RCE via crafted payload" }),
+        advisory({ id: "GHSA-xxxx-0002", severity: "HIGH", hasFix: true }),
+      ]),
+      continuityOk(null),
+    ],
+    []
+  );
+  assert.equal(mapping.verdict, "BLOCKED");
+  assert.deepEqual(mapping.notes[0], "OSV blocks: CRITICAL GHSA-xxxx-0001: RCE via crafted payload");
+});
+
+test("a candidate matching several rules at once is BLOCKED, never downgraded", () => {
+  const mapping = resolveSecurityVerdict(
+    [
+      osvOk([advisory({ severity: "CRITICAL", hasFix: true })]), // WARN alone
+      continuityOk({ from: "old-guard", to: "newcomer", version: "9.0.0", date: "2026-01-01" }),
+    ],
+    [finding("WARN", "SQP-X", "reads env vars"), finding("FLAG", "SQP-2", "network without warning")]
+  );
+  assert.equal(mapping.verdict, "WARN"); // no blocker present: highest firing class is WARN
+
+  const withBlocker = resolveSecurityVerdict(
+    [
+      osvOk([
+        advisory({ severity: "CRITICAL", hasFix: true }),
+        advisory({ id: "GHSA-zzzz-9999", severity: "HIGH", hasFix: false }),
+      ]),
+      continuityOk({ from: "old-guard", to: "newcomer", version: "9.0.0", date: "2026-01-01" }),
+    ],
+    [finding("WARN", "SQP-X", "reads env vars"), finding("FLAG", "SQP-2", "network without warning")]
+  );
+  assert.equal(withBlocker.verdict, "BLOCKED");
+  // Lesser rules are still reported alongside the block, never hidden.
+  assert.ok(withBlocker.notes.some((note) => note.startsWith("Publisher handoff:")));
+  assert.deepEqual(withBlocker.sqpFlags, ["SQP-2"]);
+});
+
+test("DISCARD-weight content findings block on their own", () => {
+  const mapping = resolveSecurityVerdict(
+    [osvOk([]), continuityOk(null)],
+    [finding("DISCARD", "guardrail-rule", "instructs agent to ignore its instructions")]
+  );
+  assert.equal(mapping.verdict, "BLOCKED");
+  assert.ok(mapping.notes.includes("guardrail-rule: instructs agent to ignore its instructions"));
+});
+
+test("fixable CRITICAL/HIGH warns and names the recommendation; MODERATE/LOW summarize", () => {
+  const mapping = resolveSecurityVerdict(
+    [
+      osvOk([
+        advisory({ severity: "CRITICAL", hasFix: true }),
+        advisory({ id: "GHSA-xxxx-0003", severity: "MODERATE", summary: "minor flaw" }),
+      ]),
+      continuityOk(null),
+    ],
+    []
+  );
+  assert.equal(mapping.verdict, "WARN");
+  assert.ok(
+    mapping.notes.some((note) =>
+      note === "OSV CRITICAL GHSA-xxxx-0001: flaw summary has a fixed version available — recommend the fixed version"
+    )
+  );
+  assert.ok(
+    mapping.notes.some((note) =>
+      note === "OSV MODERATE/LOW advisories: MODERATE GHSA-xxxx-0003: minor flaw"
+    )
+  );
+});
+
+test("a publisher handoff warns and names both publishers, version, and date", () => {
+  const mapping = resolveSecurityVerdict(
+    [osvOk([]), continuityOk({ from: "original-author", to: "successor", version: "2.0.0", date: "2026-03-01" })],
+    []
+  );
+  assert.equal(mapping.verdict, "WARN");
+  assert.ok(
+    mapping.notes.includes(
+      "Publisher handoff: original-author -> successor, version 2.0.0, 2026-03-01"
+    )
+  );
+});
+
+test("unverified checks floor the verdict at WARN — never read as passed", () => {
+  for (const record of [
+    { source: "osv", status: "unverified", reason: "unreachable" },
+    { source: "publisher-continuity", status: "unverified", reason: "unsupported-ecosystem" },
+  ]) {
+    const other =
+      record.source === "osv"
+        ? continuityOk(null)
+        : osvOk([]);
+    const mapping = resolveSecurityVerdict([record, other], []);
+    assert.equal(mapping.verdict, "WARN", JSON.stringify(record));
+    assert.ok(mapping.notes.some((note) => note.startsWith(`${record.source}: N/A (unverified`)));
+  }
+});
+
+test("FLAG findings populate sqpFlags independently of a passing verdict, deduped", () => {
+  const mapping = resolveSecurityVerdict(
+    [osvOk([]), continuityOk(null)],
+    [
+      finding("FLAG", "SQP-2", "performs writes with no user warning"),
+      finding("FLAG", "SQP-1", "activates on overly broad phrases"),
+      finding("FLAG", "SQP-2", "second instance of the same rule"),
+    ]
+  );
+  assert.equal(mapping.verdict, "PASS");
+  assert.deepEqual(mapping.sqpFlags, ["SQP-2", "SQP-1"]);
+  assert.equal(mapping.notes.filter((note) => note.startsWith("SQP-")).length, 3);
+});
+
+test("identical inputs produce byte-identical notes (fixed emission order)", () => {
+  const evidence = [
+    osvOk([
+      advisory({ id: "GHSA-b-0002", severity: "LOW", hasFix: true, summary: "b" }),
+      advisory({ id: "GHSA-a-0001", severity: "HIGH", hasFix: true, summary: "a" }),
+    ]),
+    continuityOk({ from: "x", to: "y", version: "1", date: "2026-01-01" }),
+    { source: "publisher-continuity", status: "unverified", reason: "unreachable" },
+  ];
+  const findings = [
+    finding("WARN", "W-1", "w"),
+    finding("FLAG", "F-1", "f"),
+  ];
+  const run = () => resolveSecurityVerdict(evidence, findings).notes;
+  const first = run();
+  assert.deepEqual(first, run());
+  assert.deepEqual(first, [
+    "OSV HIGH GHSA-a-0001: a has a fixed version available — recommend the fixed version",
+    "OSV MODERATE/LOW advisories: LOW GHSA-b-0002: b",
+    "Publisher handoff: x -> y, version 1, 2026-01-01",
+    "W-1: w",
+    "publisher-continuity: N/A (unverified — unreachable)",
+    "F-1: f",
+  ]);
+});
+
+test("empty evidence refuses to emit a verdict loudly", () => {
+  assert.throws(() => resolveSecurityVerdict([], []), /no check ran at all/);
+});
+
+test("structurally invalid records throw instead of reading clean", () => {
+  assert.throws(() => resolveSecurityVerdict([{ source: "osv", status: "ok", queriedVersion: "", advisories: [] }], []), /queriedVersion/);
+  assert.throws(() => resolveSecurityVerdict([osvOk([advisory({ severity: "catastrophic" })])], []), /severity must be one of/);
+  assert.throws(() => resolveSecurityVerdict([osvOk([advisory({ hasFix: "yes" })])], []), /hasFix must be a boolean/);
+  assert.throws(() => resolveSecurityVerdict([continuityOk({ from: "a" })], []), /complete PublisherHandoff/);
+  assert.throws(() => resolveSecurityVerdict([osvOk([])], [{ weight: "MEH", rule: "r", detail: "d" }]), /weight must be one of/);
+  assert.throws(() => resolveSecurityVerdict([osvOk([])], [{ weight: "FLAG", rule: "", detail: "d" }]), /rule must be a non-empty string/);
+  assert.throws(() => verifyCandidate(null, [osvOk([])], []), /candidate must be an object/);
+});
+
+test("verifyCandidate assembles the SecurityCheckResult, omitting empty optional fields", () => {
+  const candidate = { name: "pkg", tier: "package-registry", url: "https://www.npmjs.com/package/pkg" };
+  const evidence = [osvOk([]), continuityOk(null)];
+
+  const clean = verifyCandidate(candidate, evidence, []);
+  assert.deepEqual(clean, { candidate, verdict: "PASS", evidence });
+
+  const flagged = verifyCandidate(
+    candidate,
+    [osvOk([advisory()]), continuityOk(null)],
+    [finding("FLAG", "SQP-1", "broad trigger")]
+  );
+  assert.equal(flagged.verdict, "BLOCKED");
+  assert.deepEqual(flagged.sqpFlags, ["SQP-1"]);
+  assert.ok(flagged.notes.length > 0);
+});

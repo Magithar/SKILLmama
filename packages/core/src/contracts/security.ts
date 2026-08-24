@@ -20,8 +20,9 @@ import type { Candidate } from "./candidate.js";
  *
  * Much of stage 2's rule mapping over stage-1 evidence is itself mechanical
  * (CRITICAL/HIGH with no fix → BLOCKED; with a fix → WARN; recent publisher
- * handoff → WARN). Encoding that mapping is verifyCandidate()'s job once
- * implemented — these types only pin the shapes it consumes and returns.
+ * handoff → WARN). That mapping is implemented in
+ * mechanical/security.ts as resolveSecurityVerdict() + verifyCandidate();
+ * these types pin the shapes it consumes and returns.
  */
 
 /**

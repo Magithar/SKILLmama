@@ -12,10 +12,21 @@ const expectedExports = [
   "gatherSecurityEvidence",
   "normalizeOsvQueryResponse",
   "detectPublisherHandoff",
-  "NPM_BOT_PUBLISHERS",
-  "findCandidates",
+  "resolveSecurityVerdict",
   "verifyCandidate",
+  "normalizeSearchHits",
+  "buildTierQueries",
+  "assertValidCapabilityRequest",
+  "assertValidTierResults",
+  "searchTiers",
+  "urlDedupeKey",
+  "buildCompanionQueries",
+  "extractCompanionRating",
+  "normalizeCompanionHits",
+  "resolveCompanionGate",
+  "findCandidates",
   "findCompanionSkills",
+  "NPM_BOT_PUBLISHERS",
   // detector registry (data + types; types are erased at runtime)
   "dependencyDetectors",
   "fileDetectors",
@@ -39,23 +50,22 @@ test("public API exposes exactly the intended contract", () => {
   );
 });
 
-// 2. Stub behavior — every still-unimplemented pipeline function throws
-// NotImplementedError. This is the explicit "no fake implementation, no
-// silent success" contract. analyzeProject(), scoreCandidate(), and
-// gatherSecurityEvidence() are implemented; their behavior is pinned by
-// fixtures.test.js, parsers.test.js, scoring.test.js, and security.test.js
-// instead.
-const stubCalls = [
-  ["findCandidates", () => core.findCandidates({ capability: "x" })],
-  ["verifyCandidate", () => core.verifyCandidate({})],
-  ["findCompanionSkills", () => core.findCompanionSkills({})],
-];
-
-for (const [name, call] of stubCalls) {
-  test(`${name} throws NotImplementedError, not a fake result`, () => {
-    assert.throws(call, core.NotImplementedError);
-  });
-}
+// 2. Tool-backed orchestration contract — findCandidates() and
+// findCompanionSkills() are implemented but REQUIRE injected tooling
+// (reasoning + web search). Calling them without it fails loudly instead
+// of silently searching nothing. Implemented behavior is pinned by
+// fixtures.test.js, parsers.test.js, scoring.test.js, search.test.js,
+// security.test.js, and pipeline.test.js.
+test("tool-backed phases refuse to run without injected tooling", async () => {
+  await assert.rejects(
+    () => core.findCandidates({ capability: "x" }, undefined),
+    /tooling with plan\(\) and executeTier\(\) is required/
+  );
+  await assert.rejects(
+    () => core.findCompanionSkills({ name: "pkg" }, undefined),
+    /tooling with search\(\) and evaluate\(\) is required/
+  );
+});
 
 // 3. Companion-skill provenance registry — every source SKILL.md Phase 3.6
 // searches must be covered by the contract, with no extras.
