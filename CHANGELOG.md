@@ -4,6 +4,20 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **CI failed on its very first run — workspace build ordering** (`package.json`): `packages/cli`'s
+  `tsc` needs `packages/core`'s emitted `.d.ts`, but `dist/` is gitignored, so a clean checkout has
+  none. `npm test --workspaces` resolves `cli` before `core`, so the CLI build failed with
+  `TS2307: Cannot find module 'skillmama'` on all three Node versions. It passed locally only
+  because a stale `packages/core/dist/` was lying around from an earlier build — the exact class of
+  bug CI exists to catch, caught on the first run. The root `test` and `build` scripts now order the
+  workspaces explicitly instead of relying on resolution order. Verified by deleting both `dist/`
+  directories and re-running, which now reproduces a clean-checkout build faithfully
+
+---
+
 ## [1.8.0] - 2026-08-24
 
 ### Added
