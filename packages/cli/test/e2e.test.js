@@ -59,3 +59,39 @@ test("--help exits 0 and prints usage", () => {
   assert.equal(status, 0);
   assert.match(stdout, /skillmama scan \[dir\]/);
 });
+
+// ---------------------------------------------------------------------------
+// check — process-level behavior. These do not touch the network: they only
+// exercise argument handling and the paths that fail before any request.
+// ---------------------------------------------------------------------------
+
+test("check requires an explicit version outside npm", () => {
+  const { status, stderr } = run(["check", "flask", "--ecosystem", "PyPI"]);
+  assert.equal(status, 2);
+  assert.match(stderr, /--version is required for --ecosystem PyPI/);
+});
+
+test("check rejects an unknown ecosystem by name", () => {
+  const { status, stderr } = run(["check", "x", "--ecosystem", "cargo"]);
+  assert.equal(status, 2);
+  assert.match(stderr, /unknown --ecosystem "cargo"/);
+});
+
+test("check needs exactly one package argument", () => {
+  assert.equal(run(["check"]).status, 2);
+  assert.equal(run(["check", "a", "b"]).status, 2);
+});
+
+test("an unknown command names both commands", () => {
+  const { status, stderr } = run(["explore"]);
+  assert.equal(status, 2);
+  assert.match(stderr, /expected "scan" or "check"/);
+});
+
+test("help documents check and its exit codes", () => {
+  const { status, stdout } = run(["--help"]);
+  assert.equal(status, 0);
+  assert.match(stdout, /skillmama check <package>/);
+  assert.match(stdout, /3 {2}completed; verdict BLOCKED/);
+  assert.match(stdout, /not that the package is safe/);
+});

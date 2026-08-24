@@ -10,10 +10,11 @@ not published, and not used by that skill today.
 
 ## What's actually implemented
 
-The full pipeline skeleton: six deterministic functions plus both
-tool-backed orchestrations (`findCandidates()`, `findCompanionSkills()`),
-which complete their phases by taking reasoning and web search as INJECTED
-tooling rather than pretending to be deterministic code.
+The full pipeline: six deterministic functions, both tool-backed phase
+orchestrations (`findCandidates()`, `findCompanionSkills()`), and
+`discoverCapabilities()`, which composes Phases 2 through 5 end to end.
+Everything judgment-shaped is taken as INJECTED tooling rather than
+pretended to be deterministic code.
 
 **`analyzeProject()`**, in [`src/mechanical/index.ts`](src/mechanical/index.ts).
 It is a **Structured Project Scan**, not full project understanding: it reads
@@ -166,19 +167,58 @@ discarded skills never surface; survivors carry `notes`/`sqpFlags` only
 when the gate fired. All four sources always run: an empty return means
 "searched everything, nothing survived", never "skipped".
 
+**`discoverCapabilities(request, tooling, options)`**, in
+[`src/reasoning/index.ts`](src/reasoning/index.ts) — Phases 2 through 5,
+composed. Every phase above was individually implemented and none of them
+composed: a caller had to know the order, remember to filter BLOCKED
+candidates before scoring, remember that ALREADY PRESENT ones are never
+scored at all, and remember that a factor with no verified evidence must be
+`"N/A"`. Those are exactly the rules SKILL.md states as prohibitions,
+because they are the ones that get forgotten, so this function owns them:
+
+- ALREADY PRESENT candidates are dropped **before** scoring, matched with
+  the same PEP 503-style normalization `analyzeProject()` uses, and returned
+  in their own list rather than discarded.
+- BLOCKED candidates never reach scoring and never rank — but they are
+  returned too, because the user should know something was found and
+  rejected.
+- Security and factor evidence are gathered in parallel per candidate, then
+  the Phase 3.5 decision table and the band lookups run on it.
+- **The judged factors are checked against their verified bands before any
+  arithmetic runs.** An injected judge may pick a point inside a band and
+  nothing else: Popularity `10` on a candidate whose live evidence says
+  `7–9` throws, and so does `"N/A"` on a factor whose band *was* verified.
+  This is the invariant that makes the deterministic factor work worth
+  having, and it is the reason `judgeFactors()` receives bands rather than
+  raw numbers.
+- Ranking is total and reproducible: score descending, `"N/A"` totals last,
+  ties broken by search tier then name.
+- The companion-skill phase runs by default because SKILL.md marks it
+  REQUIRED. Skipping it needs an explicit `skipCompanionSkills: true`, and
+  the omission is recorded in `notes` — an empty `companionSkills` list must
+  never silently mean "nothing found".
+
+What stays injected: `plan()` and `executeTier()` (as above), `resolve()`
+(which package at which version — SKILL.md's "query the version you intend
+to recommend" trap lives here), `inspect()` (reading a library's docs and
+code for Phase 3.5 content findings), and `judgeFactors()`. Missing tooling
+throws by name; there is no mode in which a stage silently does less.
+
 ## Layout
 
 ```
 src/
   contracts/   shared types (StackProfile, Candidate, SecurityEvidence/
                SecurityCheckResult, SearchPlan/TierResult, ScoringFactors/CandidateScore,
-               PopularityEvidence/MaintenanceEvidence/BandOutcome)
+               PopularityEvidence/MaintenanceEvidence/BandOutcome,
+               DiscoveryEntry/DiscoveryResult)
   mechanical/  functions where the work is genuinely deterministic (file parsing,
                scoring arithmetic, plain-HTTP security- and scoring-factor
                evidence gathering, fixed decision tables and band tables,
                search-hit normalization, recipe template filling)
-  reasoning/   orchestration of the tool-backed phases — judgment and web
-               search are injected; invariants and normalization stay here
+  reasoning/   orchestration of the tool-backed phases and the end-to-end
+               composition — judgment and web search are injected;
+               sequencing, filtering and normalization stay here
 fixtures/      sample projects + expected StackProfile output, used by test/fixtures.test.js
 ```
 
@@ -189,8 +229,8 @@ npm test
 ```
 
 Runs `tsc` then the `node:test` suite (unit tests for detectors/parsers/scoring/
-security/search/factors/pipeline, a public-API export boundary test, and
-fixture-driven tests for `analyzeProject()`). The security, factors, and pipeline
+security/search/factors/pipeline/discovery, a public-API export boundary test, and
+fixture-driven tests for `analyzeProject()`). The security, factors, pipeline and discovery
 tests inject fetch/search stubs — nothing here touches the network.
 
 `test/skill-conformance.test.js` is the one that keeps this package honest.

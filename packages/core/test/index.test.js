@@ -26,6 +26,7 @@ const expectedExports = [
   "resolveCompanionGate",
   "findCandidates",
   "findCompanionSkills",
+  "discoverCapabilities",
   "NPM_BOT_PUBLISHERS",
   // Phase 4 scoring-factor evidence + band mapping
   "gatherFactorEvidence",

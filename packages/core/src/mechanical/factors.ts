@@ -335,7 +335,7 @@ function bandLabel(band: FactorBand): string {
  *    to "> 365", so a repo last pushed 8 months ago falls in a hole.
  *    That is a gap in SKILL.md, not in the data, so the outcome is
  *    `unbanded: "outside-defined-bands"` with the measured age. Closing it
- *    means editing SKILL.md (roadmap task 9's territory), not inventing a
+ *    means editing SKILL.md (roadmap task 8's territory), not inventing a
  *    band here.
  *  - The 10 band also requires "active releases", which pushed_at cannot
  *    establish. A ≤30-day repo gets band 10 with an explicit note that the

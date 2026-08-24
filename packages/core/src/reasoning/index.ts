@@ -1,10 +1,31 @@
-import type { CapabilityRequest } from "../contracts/project.js";
+import type { CapabilityRequest, StackProfile } from "../contracts/project.js";
 import type {
   Candidate,
   CompanionSkill,
   SearchTier,
 } from "../contracts/candidate.js";
-import type { ContentFinding } from "../contracts/security.js";
+import type {
+  ContentFinding,
+  SecurityCheckResult,
+  SecurityEvidence,
+} from "../contracts/security.js";
+import type { ScoringFactors } from "../contracts/scoring.js";
+import type { BandOutcome, FactorTarget } from "../contracts/factors.js";
+import type {
+  DiscoveryEntry,
+  DiscoveryResult,
+} from "../contracts/discovery.js";
+import {
+  gatherSecurityEvidence,
+  verifyCandidate,
+  type SecurityTarget,
+} from "../mechanical/security.js";
+import {
+  gatherFactorEvidence,
+  mapMaintenanceBand,
+  mapPopularityBand,
+} from "../mechanical/factors.js";
+import { scoreCandidate } from "../mechanical/index.js";
 import type { RawHit, SearchPlan, TierResult } from "../contracts/search.js";
 import {
   assertValidCapabilityRequest,
@@ -182,4 +203,307 @@ export async function findCompanionSkills(
     });
   }
   return survivors;
+}
+
+/**
+ * The judgment discoverCapabilities() needs on top of the two phase-level
+ * toolings. Each method is a place where SKILL.md asks for a reading of
+ * something — docs, code, fit — that no HTTP call can supply.
+ */
+export interface DiscoveryTooling
+  extends FindCandidatesTooling,
+    CompanionSkillTooling {
+  /**
+   * Map a candidate onto the identifiers the deterministic checks need:
+   * which package in which ecosystem at which version (Phase 3.5), and
+   * which GitHub repo / npm package to read popularity and maintenance
+   * off (Phase 4).
+   *
+   * `security` may be omitted for a candidate that is not a package at
+   * all (a Tier 4 curated template). When it is, no OSV query runs and
+   * the security verdict rests on content findings alone — which is
+   * honest, and recorded as such rather than reported as a clean pass.
+   *
+   * SKILL.md's OSV trap lives here: `security.version` must be the
+   * version you intend to RECOMMEND, not "latest". Resolving that is the
+   * caller's call because the recommendation is.
+   */
+  resolve(candidate: Candidate): DiscoveryTargets | Promise<DiscoveryTargets>;
+  /**
+   * Phase 3.5 content findings for a library: read its docs and code and
+   * report guardrail circumvention, undisclosed exfiltration, SQP rules.
+   * Return [] when nothing was found — the decision table treats that as
+   * "read it, found nothing", so returning [] without reading is the one
+   * way to make this pipeline lie.
+   */
+  inspect(candidate: Candidate): ContentFinding[] | Promise<ContentFinding[]>;
+  /**
+   * Phase 4 scoring judgment. Compatibility and Simplicity are produced
+   * from scratch here — SKILL.md's bands for them are written in terms
+   * only a reader of the docs can assess. Popularity and Maintenance are
+   * NOT: their bands are already fixed by verified evidence and handed to
+   * you in `popularityBand`/`maintenanceBand`. Your job for those two is
+   * only to pick a point inside the band.
+   *
+   * That restriction is enforced, not requested: a point outside its band
+   * throws, and a factor whose band is `unbanded` must be "N/A".
+   */
+  judgeFactors(input: FactorJudgmentInput): ScoringFactors | Promise<ScoringFactors>;
+}
+
+export interface DiscoveryTargets {
+  /** Omit when the candidate is not a published package. */
+  security?: SecurityTarget;
+  factors: FactorTarget;
+}
+
+export interface FactorJudgmentInput {
+  candidate: Candidate;
+  /** The stack the request was made against, for Compatibility. */
+  stack?: StackProfile;
+  /** Phase 3.5's outcome — a WARN here is context Compatibility should
+   *  reflect (SKILL.md: recommend the fixed version, note the handoff). */
+  security: SecurityCheckResult;
+  popularityBand: BandOutcome;
+  maintenanceBand: BandOutcome;
+}
+
+export interface DiscoverCapabilitiesOptions {
+  /** Forwarded to gatherSecurityEvidence()/gatherFactorEvidence(). */
+  fetchImpl?: typeof fetch;
+  githubToken?: string;
+  /** ISO date anchoring the publisher-handoff recency window and the
+   *  maintenance age calculation. Explicit input rather than hidden clock
+   *  state, so a run is reproducible. */
+  today?: string;
+  /** Skip Phase 3.6/3.7 entirely. Off by default: SKILL.md marks the
+   *  companion search REQUIRED, and an empty list must mean "searched,
+   *  found nothing". Set this only when the caller genuinely has no
+   *  search tool, and the omission is recorded in `notes`. */
+  skipCompanionSkills?: boolean;
+}
+
+/** PEP 503-ish key used only to compare a candidate name against the
+ *  StackProfile's dependency evidence. Deliberately the same shape as
+ *  analyzeProject()'s detector fallback: "psycopg2_binary" and
+ *  "psycopg2-binary" are the same package to a reader, so they must be
+ *  the same package to ALREADY PRESENT detection. */
+function dependencyKey(name: string): string {
+  return name.trim().toLowerCase().replace(/[-_.]+/g, "-");
+}
+
+function isAlreadyPresent(candidate: Candidate, stack?: StackProfile): boolean {
+  if (!stack || !stack.matchedDependencies) return false;
+  const key = dependencyKey(candidate.name);
+  if (key === "") return false;
+  for (const [canonical, rawNames] of Object.entries(stack.matchedDependencies)) {
+    if (dependencyKey(canonical) === key) return true;
+    for (const raw of rawNames) {
+      if (dependencyKey(raw) === key) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Enforce the one rule that makes the deterministic factor work worth
+ * having: an injected judge may pick a point INSIDE a band, and nothing
+ * else. Popularity 10 on a candidate whose verified evidence says 4-6 is
+ * the exact failure this package exists to prevent, so it throws rather
+ * than scoring.
+ */
+function assertFactorRespectsBand(
+  factor: "popularity" | "maintenance",
+  value: number | "N/A",
+  outcome: BandOutcome,
+  candidateName: string
+): void {
+  if (outcome.status === "unbanded") {
+    if (value !== "N/A") {
+      throw new Error(
+        `discoverCapabilities: ${candidateName}: ${factor} has no verified band (${outcome.reason}), so the judged factor must be "N/A", got ${JSON.stringify(value)}`
+      );
+    }
+    return;
+  }
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(
+      `discoverCapabilities: ${candidateName}: ${factor} band ${outcome.band.low}-${outcome.band.high} was verified, so the judged factor must be a number in that band, got ${JSON.stringify(value)}`
+    );
+  }
+  if (value < outcome.band.low || value > outcome.band.high) {
+    throw new Error(
+      `discoverCapabilities: ${candidateName}: judged ${factor} ${value} is outside its verified band ${outcome.band.low}-${outcome.band.high}. The band comes from live evidence; only the point inside it is judgment.`
+    );
+  }
+}
+
+/**
+ * Phases 2-5, composed.
+ *
+ * Every phase in this package was individually implemented and none of
+ * them composed. This is the function that runs them in SKILL.md's order
+ * and owns the sequencing rules a caller would otherwise have to
+ * remember — which are precisely the ones SKILL.md states as
+ * prohibitions, because they are the ones that get forgotten:
+ *
+ *   1. Search all four tiers (findCandidates, injected Stage A/B).
+ *   2. Drop ALREADY PRESENT candidates BEFORE scoring, per Phase 4's
+ *      preamble. They are reported, not scored — recommending something
+ *      already installed is the failure being prevented.
+ *   3. Gather security and factor evidence deterministically, in
+ *      parallel per candidate.
+ *   4. Apply the Phase 3.5 decision table. BLOCKED candidates never
+ *      reach scoring and never rank, but they are RETURNED: the user
+ *      should know something was found and rejected.
+ *   5. Map the verified evidence onto SKILL.md's bands.
+ *   6. Take judgment for the four factors, then verify the two banded
+ *      ones were respected (see assertFactorRespectsBand) before any
+ *      arithmetic runs.
+ *   7. Score, run the required companion search, and rank with a total,
+ *      reproducible order.
+ *
+ * Throws loudly at every boundary. A partially completed discovery that
+ * reads as a complete one is the worst output this pipeline could
+ * produce, so it is never produced.
+ */
+export async function discoverCapabilities(
+  request: CapabilityRequest,
+  tooling: DiscoveryTooling,
+  options: DiscoverCapabilitiesOptions = {}
+): Promise<DiscoveryResult> {
+  assertValidCapabilityRequest(request);
+  for (const method of ["plan", "executeTier", "resolve", "inspect", "judgeFactors"] as const) {
+    if (!tooling || typeof tooling[method] !== "function") {
+      throw new Error(
+        `discoverCapabilities: tooling.${method}() is required — the pipeline never fakes an injected stage`
+      );
+    }
+  }
+  const wantCompanions = options.skipCompanionSkills !== true;
+  if (wantCompanions &&
+      (typeof tooling.search !== "function" || typeof tooling.evaluate !== "function")) {
+    throw new Error(
+      "discoverCapabilities: tooling.search() and tooling.evaluate() are required for the companion-skill phase (SKILL.md marks it REQUIRED); pass skipCompanionSkills: true to omit it deliberately"
+    );
+  }
+
+  const notes: string[] = [];
+  const candidates = await findCandidates(request, tooling);
+
+  const alreadyPresent: Candidate[] = [];
+  const inPlay: Candidate[] = [];
+  for (const candidate of candidates) {
+    if (isAlreadyPresent(candidate, request.stack)) alreadyPresent.push(candidate);
+    else inPlay.push(candidate);
+  }
+  for (const candidate of alreadyPresent) {
+    notes.push(`${candidate.name}: ALREADY PRESENT in the detected stack — not scored`);
+  }
+
+  const blocked: SecurityCheckResult[] = [];
+  const entries: DiscoveryEntry[] = [];
+
+  for (const candidate of inPlay) {
+    const targets = await tooling.resolve(candidate);
+    if (!targets || typeof targets !== "object" || !targets.factors) {
+      throw new Error(
+        `discoverCapabilities: tooling.resolve(${candidate.name}) must return { factors, security? }`
+      );
+    }
+
+    const [securityEvidence, factorEvidence, findings] = await Promise.all([
+      targets.security
+        ? gatherSecurityEvidence(targets.security, {
+            ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
+            ...(options.today ? { today: options.today } : {}),
+          })
+        : Promise.resolve([
+            { source: "osv", status: "unverified", reason: "unreachable" },
+            {
+              source: "publisher-continuity",
+              status: "unverified",
+              reason: "unsupported-ecosystem",
+            },
+          ] satisfies SecurityEvidence[]),
+      gatherFactorEvidence(targets.factors, {
+        ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
+        ...(options.githubToken ? { githubToken: options.githubToken } : {}),
+      }),
+      tooling.inspect(candidate),
+    ]);
+
+    if (!targets.security) {
+      notes.push(
+        `${candidate.name}: not a published package — no OSV or publisher check ran, verdict rests on content findings`
+      );
+    }
+
+    const security = verifyCandidate(candidate, securityEvidence, findings);
+    if (security.verdict === "BLOCKED") {
+      blocked.push(security);
+      notes.push(`${candidate.name}: BLOCKED by the Phase 3.5 gate — not scored`);
+      continue;
+    }
+
+    const popularityBand = mapPopularityBand(factorEvidence.popularity);
+    const maintenanceBand = mapMaintenanceBand(
+      factorEvidence.maintenance,
+      options.today ?? isoToday()
+    );
+
+    const factors = await tooling.judgeFactors({
+      candidate,
+      ...(request.stack ? { stack: request.stack } : {}),
+      security,
+      popularityBand,
+      maintenanceBand,
+    });
+    if (!factors || typeof factors !== "object") {
+      throw new Error(
+        `discoverCapabilities: tooling.judgeFactors(${candidate.name}) must return ScoringFactors`
+      );
+    }
+    assertFactorRespectsBand("popularity", factors.popularity, popularityBand, candidate.name);
+    assertFactorRespectsBand("maintenance", factors.maintenance, maintenanceBand, candidate.name);
+
+    const companionSkills = wantCompanions
+      ? await findCompanionSkills(candidate, tooling)
+      : [];
+
+    entries.push({
+      candidate,
+      score: scoreCandidate(candidate, factors),
+      security,
+      popularityBand,
+      maintenanceBand,
+      companionSkills,
+    });
+  }
+
+  if (!wantCompanions) {
+    notes.push(
+      "Companion-skill search (Phase 3.6/3.7) was skipped by request — an empty companionSkills list here means NOT SEARCHED, not 'nothing found'"
+    );
+  }
+
+  const tierRank = new Map(searchTiers.map((tier, i) => [tier, i]));
+  entries.sort((a, b) => {
+    const aTotal = a.score.totalScore === "N/A" ? -Infinity : a.score.totalScore;
+    const bTotal = b.score.totalScore === "N/A" ? -Infinity : b.score.totalScore;
+    if (aTotal !== bTotal) return bTotal - aTotal;
+    const aTier = tierRank.get(a.candidate.tier) ?? Number.MAX_SAFE_INTEGER;
+    const bTier = tierRank.get(b.candidate.tier) ?? Number.MAX_SAFE_INTEGER;
+    if (aTier !== bTier) return aTier - bTier;
+    return a.candidate.name < b.candidate.name ? -1 : a.candidate.name > b.candidate.name ? 1 : 0;
+  });
+
+  return { ranked: entries, blocked, alreadyPresent, notes };
+}
+
+function isoToday(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
 }

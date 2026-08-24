@@ -51,6 +51,48 @@ All notable changes to SKILLmama are documented here.
   tier, changed `stars:>500`, dropped word in a recipe, changed companion query — all ten
   now fail the suite. SKILL.md stays the source of truth: a failure means the code needs
   updating, never the test
+- **Test counts**: core 129 -> 177, CLI 13 -> 26
+
+- **`discoverCapabilities()`** (`packages/core/src/reasoning/index.ts`,
+  `src/contracts/discovery.ts`): Phases 2 through 5, composed. Every phase was
+  individually implemented and none of them composed — a caller had to know the order,
+  remember to filter BLOCKED candidates before scoring, remember that ALREADY PRESENT ones
+  are never scored at all, and remember that a factor with no verified evidence must be
+  `"N/A"`. Those are the rules SKILL.md states as prohibitions, because they are the ones
+  that get forgotten, so the function owns them: ALREADY PRESENT dropped before scoring
+  (matched with the same PEP 503-style normalization `analyzeProject()` uses) and returned
+  in its own list, BLOCKED never scored but never silently dropped either, evidence
+  gathered in parallel per candidate, ranking total and reproducible (score, then tier,
+  then name), and the REQUIRED companion phase impossible to skip by accident — omitting it
+  takes an explicit flag and is recorded in `notes`
+- **The band invariant.** `discoverCapabilities()` verifies the injected judge's factors
+  against the bands the live evidence produced, before any arithmetic runs. Popularity `10`
+  on a candidate whose evidence says `7-9` throws; so does `"N/A"` on a factor whose band
+  *was* verified, since that direction is equally a lie. This is what makes the
+  deterministic factor work worth having, and it is why `judgeFactors()` receives bands
+  rather than raw numbers
+- **`skillmama check <package>`** (`packages/cli`): the CLI now consumes more than
+  `analyzeProject()`. `check` runs the OSV.dev advisory query, the npm publisher-continuity
+  check and the Popularity/Maintenance band lookups against live registries, then applies
+  Phase 3.5's decision table. `--ecosystem`, `--version`, `--repo`, `--json`; exit `3` on
+  BLOCKED so it is usable in CI. Verified end to end against live data:
+  `flatmap-stream@0.1.1`, the actual event-stream backdoor payload, comes back BLOCKED
+- **What the CLI cannot do prints before the verdict.** It has no LLM, so it cannot produce
+  Phase 3.5's content findings and passes an empty finding list because nobody read the
+  code. That omission is stated above the verdict, not as a footnote: a reader who stops
+  after the first screen must not come away thinking a package was cleared when half the
+  gate ran. Substitutions are announced for the same reason — with no `--version` the
+  registry's latest is queried and the output says so, since SKILL.md is explicit that
+  querying "latest" instead of the version you intend to recommend is a trap. Outside npm
+  no version is guessed at all
+
+### Fixed
+- **`resolveNpmDefaults()` announced a substitution that had not happened.** It reported
+  "no --version given, so latest was queried" whenever it ran, including when the user had
+  passed `--version` and only the repository was being filled in. The version actually
+  queried was always correct; the note was not. Found by running the command against
+  `lodash --version 4.17.15` and reading the output. The function now reports only what it
+  found, and the caller decides what to announce
 
 ### Notes
 - Compatibility and Simplicity deliberately get no equivalent. Their bands are written in

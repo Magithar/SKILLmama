@@ -623,6 +623,12 @@ unit-tested, and refuses to fake the rest.
 | [`packages/core`](packages/core) | `skillmama` | private, unpublished |
 | [`packages/cli`](packages/cli) | `skillmama-cli` | private, unpublished |
 
+The CLI is the package's real consumer: `scan` runs `analyzeProject()`, and
+`check` runs the live-data half of the pipeline — OSV advisories, npm publisher
+continuity, and the Popularity/Maintenance band lookups — against a published
+package. It has no LLM, so it cannot produce Phase 3.5's content findings, and
+it says so above the verdict rather than letting a PASS read as "safe".
+
 Implemented in core:
 
 - **`analyzeProject()`** — structured project scan. Parses seven dependency manifests
@@ -650,6 +656,13 @@ Implemented in core:
   `Candidate[]` with tier provenance. Names are extracted structurally from
   GitHub/npm/PyPI URL shapes (title as fallback), duplicates resolve to the
   earlier tier deterministically.
+- **`discoverCapabilities()`** — Phases 2-5 composed. Owns the sequencing rules
+  SKILL.md states as prohibitions: ALREADY PRESENT candidates are dropped before
+  scoring, BLOCKED ones never rank (but are still returned), the required
+  companion search cannot be skipped by accident, and ranking is total and
+  reproducible. Its strongest guarantee is that an injected judge may pick a
+  point *inside* a verified band and nothing else — Popularity 10 on evidence
+  that says 7-9 throws rather than scores.
 - **`findCandidates()` / `findCompanionSkills()`** — the two tool-backed phases,
   fully orchestrated: SKILL.md's tier recipes and the four fixed companion
   searches are mechanically filled templates, every tier/source is structurally
@@ -661,8 +674,9 @@ Implemented in core:
 
 ```bash
 npm install
-npm test                       # 161 core tests + 13 CLI tests
-npx skillmama scan .           # or: --json
+npm test                       # 177 core tests + 26 CLI tests
+npx skillmama scan .           # structured project scan
+npx skillmama check lodash --version 4.17.15   # live OSV + factor checks
 ```
 
 Two guards keep `packages/` honest about SKILL.md:

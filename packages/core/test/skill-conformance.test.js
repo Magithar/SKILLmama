@@ -253,7 +253,7 @@ test("the 181-365 day gap is SKILL.md's, and the code reports it rather than gue
   );
 
   // This assertion is the alarm: when SKILL.md's table is made contiguous
-  // (roadmap task 9), it fails, and mapMaintenanceBand must be updated in
+  // (roadmap task 8), it fails, and mapMaintenanceBand must be updated in
   // the same change instead of silently keeping a dead branch.
   assert.ok(
     resumes > covered,

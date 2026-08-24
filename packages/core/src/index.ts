@@ -30,6 +30,7 @@ export * from "./contracts/candidate.js";
 export * from "./contracts/security.js";
 export * from "./contracts/scoring.js";
 export * from "./contracts/factors.js";
+export * from "./contracts/discovery.js";
 export * from "./errors.js";
 
 export * from "./mechanical/index.js";
