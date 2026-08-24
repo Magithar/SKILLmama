@@ -14,7 +14,7 @@
 ---
 
 <p align="center">
-  <a href="#see-it-in-action">Demo</a> • <a href="#install">Install</a> • <a href="#usage">Usage</a> • <a href="#ai-adapters">AI Adapters</a> • <a href="#core-workflow">Core Workflow</a> • <a href="#ranking-formula">Ranking Formula</a> • <a href="#5-tier-search-hierarchy">5-Tier Search</a> • <a href="#output-format">Output Format</a> • <a href="#end-to-end-example">Example</a> • <a href="#project-structure">Project Structure</a> • <a href="#evals">Evals</a>
+  <a href="#see-it-in-action">Demo</a> • <a href="#install">Install</a> • <a href="#usage">Usage</a> • <a href="#ai-adapters">AI Adapters</a> • <a href="#core-workflow">Core Workflow</a> • <a href="#ranking-formula">Ranking Formula</a> • <a href="#5-tier-search-hierarchy">5-Tier Search</a> • <a href="#output-format">Output Format</a> • <a href="#end-to-end-example">Example</a> • <a href="#project-structure">Project Structure</a> • <a href="#packages">Packages</a> • <a href="#evals">Evals</a> • <a href="#roadmap">Roadmap</a>
 </p>
 
 ---
@@ -41,15 +41,19 @@
 ## Install
 
 > **Known upstream bug — read this first.** For **Codex** and **Antigravity**, `npx skills add ... -g`
-> prints `Done!` and exits 0 while writing to `~/.agents/skills/`, which neither agent reads.
-> Verified against `skills@1.5.22` (latest) on 2026-08-08. Root cause is
+> prints `Done!` and exits 0 while writing to a directory the agent doesn't read (`~/.agents/skills/`
+> through v1.5.22; upstream `main` has since moved Antigravity's target to `~/.gemini/antigravity/skills`,
+> equally unread). Re-verified against `skills@1.5.23` (latest) and upstream `main` on 2026-08-24.
+> Root cause is
 > [`isUniversalAgent()`](https://github.com/vercel-labs/skills/blob/main/src/installer.ts):
 > agents whose *project* dir is `.agents/skills` get misclassified, and their `globalSkillsDir`
 > is discarded. Tracked in [#1060](https://github.com/vercel-labs/skills/issues/1060) and
-> [#1470](https://github.com/vercel-labs/skills/issues/1470); fix pending in
-> [PR #1483](https://github.com/vercel-labs/skills/pull/1483). **13 agents are affected.**
+> [#1470](https://github.com/vercel-labs/skills/issues/1470); fixes still open as of 2026-08-24 —
+> [PR #1483](https://github.com/vercel-labs/skills/pull/1483) and the newer, more targeted
+> [PR #2028](https://github.com/vercel-labs/skills/pull/2028). **13 agents are affected.**
 >
-> Until that merges, copy the file yourself using the per-agent instructions below. Each one is
+> Until one of those merges and ships in a released CLI version, copy the file yourself using the
+> per-agent instructions below. Each one is
 > two lines and lands in the directory that agent actually reads.
 
 ### Optional — install and verify in one command
@@ -165,7 +169,8 @@ and Antigravity.
 Notes:
 
 - The ❌ rows are the upstream bug described at the top of [Install](#install), not a problem with
-  this skill. Verified against `skills@1.5.22` on 2026-08-08.
+  this skill. Verified against `skills@1.5.22` on 2026-08-08; re-verified against `skills@1.5.23`
+  and upstream `main` on 2026-08-24 — still unfixed, fix PRs #1483/#2028 both open.
 - The `skills` CLI only discovers files named `SKILL.md`. Repos that ship per-platform variants
   under other names are invisible to it.
 - Claude.ai is not CLI-installable. Zip the `skillmama/` folder and upload via Customize → Skills.
@@ -582,8 +587,18 @@ SKILLmama/
 ├── .claude/
 │   └── skills/skillmama/
 │       └── SKILL.md           # symlink → ../../../skillmama/SKILL.md
+├── .claude-plugin/
+│   └── plugin.json            # makes the repo installable as a Claude Code plugin
+├── packages/
+│   ├── core/                  # deterministic slices of the pipeline, as tested code
+│   └── cli/                   # `skillmama scan` — first consumer of core
+├── scripts/
+│   └── check-skill-untouched.sh  # guard: SKILL.md and its install copy stay in sync
 ├── evals/
-│   └── skillmama-ablation.md  # Manual trigger/pipeline eval + result log
+│   ├── skillmama-ablation.md  # manual trigger/pipeline eval + result log
+│   └── skill-on-vs-skill-off-comparison.md  # raw ablation transcript
+├── ROADMAP.md                 # what is implemented and what is left
+├── CHANGELOG.md
 └── README.md
 ```
 
@@ -597,6 +612,56 @@ rather than merely discouraged.
 > out `.claude/skills/skillmama/SKILL.md` as a real symlink. Without it you'll get a text file
 > containing the target path. It only affects the repo-local slash command, not installs.
 
+## Packages
+
+The skill is the product. `packages/` is a separate, additive layer: it extracts the
+slices of the pipeline that are *genuinely* deterministic into code that can be
+unit-tested, and refuses to fake the rest.
+
+| Package | Name | State |
+| --- | --- | --- |
+| [`packages/core`](packages/core) | `skillmama` | private, unpublished |
+| [`packages/cli`](packages/cli) | `skillmama-cli` | private, unpublished |
+
+Implemented in core:
+
+- **`analyzeProject()`** — structured project scan. Parses seven dependency manifests
+  and five deployment configs from a directory's top level. Sorted, deduplicated,
+  fixture-pinned output.
+- **`scoreCandidate()`** — the 40/30/15/15 arithmetic, with `"N/A"` factors excluded
+  and the surviving weights renormalized rather than silently deflating the total.
+- **`gatherSecurityEvidence()`** — Phase 3.5 Stage 1: the OSV.dev advisory query and
+  the npm publisher-continuity check. Evidence only; no verdict.
+- **`resolveSecurityVerdict()` / `verifyCandidate()`** — Phase 3.5 Stage 2's decision
+  table: OSV CRITICAL/HIGH with no fix blocks, with a fix warns, MODERATE/LOW warn,
+  a recent publisher handoff warns, any unverified check floors the verdict at WARN
+  ("never read as passed"), DISCARD-weight findings block outright over WARN/FLAG,
+  and FLAG rules surface independently as `sqpFlags`.
+- **`normalizeSearchHits()`** — Phase 3 Stage C: TierResult[] → deduplicated
+  `Candidate[]` with tier provenance. Names are extracted structurally from
+  GitHub/npm/PyPI URL shapes (title as fallback), duplicates resolve to the
+  earlier tier deterministically.
+- **`findCandidates()` / `findCompanionSkills()`** — the two tool-backed phases,
+  fully orchestrated: SKILL.md's tier recipes and the four fixed companion
+  searches are mechanically filled templates, every tier/source is structurally
+  guaranteed to run in canonical order, normalization goes through the tested
+  pure path, and the Phase 3.7 gate applies its decision table (rating and
+  DISCARD auto-block, WARN/FLAG surface as notes/`sqpFlags`). What stays
+  injected, never faked: choosing search terms (Stage A), executing searches
+  and judging hits (Stage B), and reading a skill's content for the 3.7 gate.
+
+```bash
+npm install
+npm test                       # 129 core tests + 13 CLI tests
+npx skillmama scan .           # or: --json
+```
+
+`scripts/check-skill-untouched.sh` asserts `skillmama/SKILL.md` is unchanged and
+byte-identical to its `.claude/skills/` install copy. Copy drift caused two past
+bugs, so the invariant is now checked mechanically instead of in review.
+
+---
+
 ## Evals
 
 SKILLmama ships a manual eval harness at [`evals/skillmama-ablation.md`](evals/skillmama-ablation.md): 5 prompts that should trigger the skill, 5 that shouldn't, run skill-on vs. skill-off. It's checked after any change to the Trigger rules or the core phases — the log has already caught and fixed three real bugs: a silent empty scan when the working directory didn't match the stated stack, Maintenance scores presented as verified when they were actually estimated, and a deployment-persistence blind spot (recommending an in-process store without checking whether the target hosting platform's disk actually survives a restart) — the last one found via a genuine paired skill-off/skill-on ablation run, not just inference.
@@ -604,3 +669,13 @@ SKILLmama ships a manual eval harness at [`evals/skillmama-ablation.md`](evals/s
 See [`evals/skill-on-vs-skill-off-comparison.md`](evals/skill-on-vs-skill-off-comparison.md) for the full unedited transcript of that ablation run: the same question asked with and without SKILLmama, side by side.
 
 Inspired by [Philipp Schmid](https://github.com/philschmid)'s (Google DeepMind) talk "Don't Ship Skills Without Evals," and the paired skill-on/skill-off ablation methodology from [SkillsBench](https://arxiv.org/abs/2602.12670) (Li et al.), also live at [skillsbench.ai](https://www.skillsbench.ai/).
+
+---
+
+## Roadmap
+
+[`ROADMAP.md`](ROADMAP.md) tracks what is left, in priority order: producing the
+scoring factors from live data (the largest genuine gap — `scoreCandidate()` takes
+factors nothing yet computes), extending publisher continuity beyond npm, the
+publish and tagging decisions for the two packages, and the one remaining adapter
+item (Codex has never been live-tested; Antigravity has).

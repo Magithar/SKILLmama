@@ -4,3 +4,4 @@
 .gstack/
 node_modules/
 dist/
+dev/

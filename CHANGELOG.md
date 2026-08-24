@@ -4,6 +4,111 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [1.8.0] - 2026-08-24
+
+### Added
+- **CI workflow** (`.github/workflows/ci.yml`): `npm test` across the workspaces plus
+  `scripts/check-skill-untouched.sh`, on push and PR, Node 18/20/22. Until now both the
+  test suite and the drift guard only ran when someone remembered to run them locally; the guard exists
+  because copy drift caused two shipped bugs, so it should be load-bearing
+- **`findCandidates()` implemented via injected tooling** (`packages/core/src/reasoning/index.ts`):
+  Phase 2+3 is now orchestrated end-to-end instead of throwing. The design keeps the package's
+  honesty boundary intact — reasoning (Stage A: choosing 3-5 search terms) and tool work (Stage B:
+  running web searches and judging which hits count) are injected as `tooling.plan()` /
+  `tooling.executeTier()`, never faked; what the package owns is what an agent harness must never
+  get wrong: the SKILL.md tier recipes as mechanically filled templates (`buildTierQueries()` with
+  deterministic first-sorted language/framework picks from the StackProfile and token-dropping when
+  unknown), all four tiers executed in canonical order (SKILL.md's early-stop rule lives within a
+  tier, so there is deliberately no orchestrator-level cross-tier stop), per-tier structural
+  validation surfacing a broken executor at its own tier, early-stop state (`candidatesSoFar`) and
+  verbatim constraints passed through to the executor, and Stage C normalization through the tested
+  `normalizeSearchHits()`. Malformed plan or tier output throws loudly at the offending stage —
+  missing work must never read as "fewer results"
+- **`findCompanionSkills()` implemented end-to-end** (same file + new
+  `packages/core/src/mechanical/companions.ts`): Phase 3.6 turns out to need no planner at all —
+  its four searches are FIXED per candidate. `buildCompanionQueries()` pins them verbatim from
+  SKILL.md (including the load-bearing quoted `"SKILL.md"` on the GitHub recipe); hits normalize
+  per source via `normalizeCompanionHits()` (repo names from GitHub deep links with the same
+  site-namespace blocklist as Stage C, directory slugs for terminalskills.io/skillsmp/skills.sh,
+  title fallback, drop-don't-guess) and dedupe across sources resolving to the earlier recipe.
+  terminalskills.io's reliability rating extracts worst-wins from hit text for that source alone
+  (skillsmp explicitly carries none). Phase 3.7's decision table lands as `resolveCompanionGate()`:
+  SUSPICIOUS/MALICIOUS rating auto-discards regardless of findings; DISCARD-weight findings win
+  outright over WARN/FLAG; FLAGs surface independently as deduplicated `sqpFlags`. Reading a
+  skill's content stays injected (`tooling.evaluate()`). BLOCKED skills are filtered entirely —
+  discarded skills never surface in output; survivors carry `notes`/`sqpFlags` only when the gate
+  fired (new optional fields on the CompanionSkill contract). All four sources always run: an
+  empty return means "searched everything, nothing survived", never "skipped" — the REQUIRED-phase
+  failure mode is now structurally impossible rather than merely documented
+- **`resolveSecurityVerdict()` + `verifyCandidate()` implemented**
+  (`packages/core/src/mechanical/security.ts`): Phase 3.5 Stage 2 is now code rather than a stub.
+  Once Stage 1's evidence exists and an LLM has produced `ContentFinding[]` upstream, emitting the
+  verdict turns out to be SKILL.md's own decision table rather than judgment: CRITICAL/HIGH with no
+  fix → BLOCKED (note carries the advisory summary verbatim); with a fix → WARN ("recommend the
+  fixed version"); MODERATE/LOW → WARN; recent publisher handoff → WARN naming both publishers,
+  version, and date; DISCARD-weight findings block outright over WARN/FLAG; FLAG rules surface
+  independently as deduplicated `sqpFlags`; any unverified check floors the verdict at WARN — the
+  closed GateVerdict union has no honest third state for "didn't check", and SKILL.md forbids
+  letting unverified read as passed. Notes emit in one fixed order so identical inputs give
+  byte-identical output; empty evidence refuses loudly instead of implying a clean gate.
+  `verifyCandidate()` moved out of `reasoning/` into `mechanical/` and is now synchronous — the
+  judgment it used to promise arrives as its `findings` argument, produced upstream
+- **`normalizeSearchHits()` implemented** (`packages/core/src/mechanical/search.ts`):
+  Phase 3 Stage C, the deterministic tail of `findCandidates()`. TierResult[] whose hits Stage B
+  has judged to count become deduplicated `Candidate[]` with tier provenance. Names extract
+  structurally where URLs carry them (`github.com/{owner}/{repo}` deep links with `.git`
+  stripping and a site-namespace blocklist for `/topics`-style pages,
+  `npmjs.com/package/{name}` including two-segment `@scope/pkg`,
+  `pypi.org/project/{name}`), with the hit's own title as fallback; hits with neither are dropped
+  rather than guessed at. Results process in canonical tier rank (GitHub → MCP → registries →
+  templates), so cross-tier duplicates resolve to the earlier tier deterministically, and URL-key
+  dedupe ignores scheme/www./trailing-slash/query spelling variants. Stages A/B of
+  `findCandidates()` stay injected rather than implemented — they need reasoning plus a
+  web-search tool — but the function itself no longer stubs out; see its entry above
+- **`ROADMAP.md`**: a single place recording what is implemented and what is left — the remaining
+  `NotImplementedError` pipeline function halves, the known limits of what already ships (publisher
+  continuity is npm-only, scoring factors are produced nowhere in code, `analyzeProject()`'s
+  accepted v1 manifest limits), the open publish/tagging/CI decisions for the two packages, the
+  documentation inconsistencies, and the one remaining adapter item
+- **README "Packages" section**: the repo shipped `packages/core` and `packages/cli` in 1.6.0 and
+  1.7.0 but the README never mentioned they existed. It now states which functions are implemented,
+  that the rest throw `NotImplementedError` deliberately, how to run the suites and the CLI, and
+  what the drift guard checks. A "Roadmap" section and two new nav links were added alongside it
+
+### Changed
+- **Working drafts moved out of the repo root into a gitignored `dev/`**: the eight
+  `devto-article*.md` drafts, `linkedin-post.md`, the seven `RELEASE-1.4.x`/`1.5.0` notes, and
+  `core-workflow.html`/`.svg` all sat untracked alongside the source, referenced by nothing — the
+  published Dev.to Parts 1-8 are linked from the README, the CHANGELOG is the tracked release
+  record, and the README draws its Core Workflow as inline ASCII, so these are working files
+  rather than repo artifacts. `dev/` is now in `.gitignore`, leaving the repo root tracked-only
+
+### Fixed
+- **`.claude-plugin/plugin.json` version was stale at `1.5.0`**, three releases behind the
+  CHANGELOG; now tracks the release (`1.8.0`). Nothing reads it for behavior, but it is what a plugin install reports as the
+  installed version
+- **README "Project Structure" tree was two releases out of date**: it showed only `skillmama/`,
+  `.claude/`, `evals/` and the README, omitting `packages/`, `scripts/`, `.claude-plugin/`,
+  `CHANGELOG.md`, and the second eval file
+
+### Changed
+- **Upstream skills-CLI bug rechecked (2026-08-24), still open**: PR #1483 unmerged; found the
+  newer, more targeted fix PR [#2028](https://github.com/vercel-labs/skills/pull/2028) now also
+  open, and `skills@1.5.23` + upstream `main` both still misroute Codex/Antigravity global
+  installs (main's Antigravity target has since moved to a *third* wrong directory). README
+  install warning and adapters-table notes updated with the recheck date and the second PR;
+  the two ❌ rows stay until a fix merges AND ships in a released CLI version
+
+### Notes
+- Test suite grew from 92 to 129 core tests (search normalization, gate mapping, recipe
+  templates, both orchestrations); CLI unchanged at 13. `skillmama/SKILL.md` untouched —
+  verified by the guard script, now also enforced in CI
+- No pipeline function throws `NotImplementedError` anymore. The class stays exported for API
+  stability but nothing uses it: the remaining non-deterministic work (planning, search
+  execution, skill-content judgment) is injected tooling, not a missing implementation
+
+---
+
 ## [1.7.0] - 2026-08-22
 
 ### Added
