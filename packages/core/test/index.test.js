@@ -27,6 +27,12 @@ const expectedExports = [
   "findCandidates",
   "findCompanionSkills",
   "NPM_BOT_PUBLISHERS",
+  // Phase 4 scoring-factor evidence + band mapping
+  "gatherFactorEvidence",
+  "normalizeGithubRepoResponse",
+  "normalizeNpmDownloadsResponse",
+  "mapPopularityBand",
+  "mapMaintenanceBand",
   // detector registry (data + types; types are erased at runtime)
   "dependencyDetectors",
   "fileDetectors",

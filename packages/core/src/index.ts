@@ -4,8 +4,11 @@
  * skillmama/SKILL.md remains the sole source of truth for SKILLmama's
  * actual behavior. Implemented so far: analyzeProject(), scoreCandidate(),
  * gatherSecurityEvidence() (Phase 3.5 Stage 1), resolveSecurityVerdict() +
- * verifyCandidate() (Phase 3.5 Stage 2's decision table), and
- * normalizeSearchHits() (Phase 3 Stage C). findCandidates() and
+ * verifyCandidate() (Phase 3.5 Stage 2's decision table),
+ * normalizeSearchHits() (Phase 3 Stage C), and gatherFactorEvidence() +
+ * mapPopularityBand()/mapMaintenanceBand() (Phase 4's two live-data
+ * scoring factors, evidence and band lookup; picking a point inside a
+ * band stays judgment). findCandidates() and
  * findCompanionSkills() are implemented as orchestrations that REQUIRE
  * injected tooling: the reasoning (choosing search terms) and tool work
  * (running searches, judging hits, reading skill content) are supplied by
@@ -26,6 +29,7 @@ export * from "./contracts/project.js";
 export * from "./contracts/candidate.js";
 export * from "./contracts/security.js";
 export * from "./contracts/scoring.js";
+export * from "./contracts/factors.js";
 export * from "./errors.js";
 
 export * from "./mechanical/index.js";

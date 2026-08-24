@@ -637,6 +637,15 @@ Implemented in core:
   a recent publisher handoff warns, any unverified check floors the verdict at WARN
   ("never read as passed"), DISCARD-weight findings block outright over WARN/FLAG,
   and FLAG rules surface independently as `sqpFlags`.
+- **`gatherFactorEvidence()` / `mapPopularityBand()` / `mapMaintenanceBand()`** —
+  Phase 4's two live-data factors, split like Phase 3.5: one GitHub request for
+  stars and last-push date plus one npm request for weekly downloads, then
+  SKILL.md's band tables as a lookup. Unverified sources stay unverified rather
+  than becoming a low score, and two things get reported instead of guessed:
+  SKILL.md's Maintenance table has no band for 181-365 days (it jumps from
+  "≤180 → 4-6" to "> 365 → 1-3"), and its 10 band also requires "active
+  releases", which a push date cannot establish. Picking a point inside a band
+  stays judgment.
 - **`normalizeSearchHits()`** — Phase 3 Stage C: TierResult[] → deduplicated
   `Candidate[]` with tier provenance. Names are extracted structurally from
   GitHub/npm/PyPI URL shapes (title as fallback), duplicates resolve to the
@@ -652,7 +661,7 @@ Implemented in core:
 
 ```bash
 npm install
-npm test                       # 129 core tests + 13 CLI tests
+npm test                       # 152 core tests + 13 CLI tests
 npx skillmama scan .           # or: --json
 ```
 
@@ -674,8 +683,9 @@ Inspired by [Philipp Schmid](https://github.com/philschmid)'s (Google DeepMind) 
 
 ## Roadmap
 
-[`ROADMAP.md`](ROADMAP.md) tracks what is left, in priority order: producing the
-scoring factors from live data (the largest genuine gap — `scoreCandidate()` takes
-factors nothing yet computes), extending publisher continuity beyond npm, the
-publish and tagging decisions for the two packages, and the one remaining adapter
-item (Codex has never been live-tested; Antigravity has).
+[`ROADMAP.md`](ROADMAP.md) tracks what is left, in priority order: extending
+publisher continuity beyond npm, the publish and tagging decisions for the two
+packages, wiring the CLI past `scan`, and the one remaining adapter item (Codex
+has never been live-tested; Antigravity has). The Compatibility and Simplicity
+factors stay outside the package deliberately — their bands are written in terms
+only a reader of the docs can assess.

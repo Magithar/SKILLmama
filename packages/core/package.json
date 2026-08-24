@@ -20,7 +20,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test test/index.test.js test/detectors.test.js test/fixtures.test.js test/parsers.test.js test/scoring.test.js test/security.test.js test/search.test.js test/pipeline.test.js"
+    "test": "npm run build && node --test test/index.test.js test/detectors.test.js test/fixtures.test.js test/parsers.test.js test/scoring.test.js test/security.test.js test/search.test.js test/factors.test.js test/pipeline.test.js"
   },
   "devDependencies": {
     "@types/node": "^22.20.1",

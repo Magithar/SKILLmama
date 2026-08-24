@@ -19,15 +19,18 @@ export * from "./detectors.js";
 export * from "./security.js";
 export * from "./search.js";
 export * from "./companions.js";
+export * from "./factors.js";
 
 /**
  * Functions in this file are the ones where the underlying capability is
  * genuinely mechanical (file parsing, arithmetic, plain-HTTP evidence
  * checks, fixed decision tables over typed inputs). analyzeProject(),
  * scoreCandidate(), the Phase 3.5 pair (gatherSecurityEvidence() +
- * resolveSecurityVerdict()/verifyCandidate()), and Phase 3 Stage C
- * (normalizeSearchHits()) are implemented; findCandidates()'s stages
- * A/B and findCompanionSkills() remain reasoning-layer stubs.
+ * resolveSecurityVerdict()/verifyCandidate()), Phase 3 Stage C
+ * (normalizeSearchHits()), and Phase 4's live-data factors
+ * (gatherFactorEvidence() + mapPopularityBand()/mapMaintenanceBand())
+ * are implemented; findCandidates()'s stages A/B and
+ * findCompanionSkills() remain reasoning-layer stubs.
  */
 
 function addTo<K>(map: Map<K, Set<string>>, key: K, value: string): void {

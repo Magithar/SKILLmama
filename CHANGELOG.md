@@ -4,6 +4,46 @@ All notable changes to SKILLmama are documented here.
 
 ---
 
+## [Unreleased]
+
+### Added
+- **The two scoring factors that start from live data**
+  (`packages/core/src/mechanical/factors.ts`, `src/contracts/factors.ts`): Phase 4's
+  Popularity and Maintenance now have a deterministic path, split the same way Phase 3.5
+  is. `gatherFactorEvidence()` pulls stars and last-push date from the GitHub repo API in
+  one request and weekly downloads from the npm downloads API, so a candidate costs at
+  most two HTTP calls; `mapPopularityBand()` and `mapMaintenanceBand()` then apply
+  SKILL.md's band tables, which are stated as fixed numeric ranges and so are a lookup
+  rather than a judgment. This closes the gap where `scoreCandidate()` took four factors
+  nothing in the package computed — two of them are now produced from verified live data,
+  with the caller only picking a point inside the returned band
+- **Three things the mappers report instead of guessing.** SKILL.md's Maintenance table
+  has no band for 181-365 days: it jumps from "≤180 → 4-6" straight to "> 365 → 1-3", so
+  a repo last pushed 8 months ago falls in a hole. That is a gap in SKILL.md, not in the
+  data, so the outcome is `unbanded: "outside-defined-bands"` carrying the measured age
+  rather than an invented band. SKILL.md's Maintenance 10 is "≤30 days, *active
+  releases*", and `pushed_at` cannot establish the release half, so that band comes with
+  an explicit note. And a factor whose sources all came back unverified maps to
+  `no-verified-evidence`, which is SKILL.md's own instruction: mark Maintenance
+  `N/A (unverified)` rather than assigning a number
+- **Two band-edge decisions SKILL.md leaves open, fixed and documented.** Its ranges
+  overlap (1k stars is in both "100-1k" and "1k-10k"), so the higher band wins at an exact
+  edge, matching how the table reads top-down. And the Popularity clauses are joined by
+  OR, so the best band across available sources wins: a library with 40 stars and 3M
+  weekly downloads scores 10, which is what the OR plainly says
+- **23 tests** covering both payload normalizers, the request-count and absent-source
+  behavior of the gatherer, every band edge in both tables from both sides, the 181-365
+  gap, archived-beats-recency, and a gathered-evidence-to-band end-to-end pass. Fetch is
+  stubbed throughout; the suite still never touches the network. Core is at 152 tests
+
+### Notes
+- Compatibility and Simplicity deliberately get no equivalent. Their bands are written in
+  terms of "well-documented", "significant glue code", "minimal config" — properties only
+  a reader of the docs can assess, so there is no evidence stage to build. Two of four
+  factors is the honest ceiling here, not a partial job
+
+---
+
 ## [1.8.0] - 2026-08-24
 
 ### Added

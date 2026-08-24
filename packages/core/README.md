@@ -10,7 +10,7 @@ not published, and not used by that skill today.
 
 ## What's actually implemented
 
-The full pipeline skeleton: five deterministic functions plus both
+The full pipeline skeleton: six deterministic functions plus both
 tool-backed orchestrations (`findCandidates()`, `findCompanionSkills()`),
 which complete their phases by taking reasoning and web search as INJECTED
 tooling rather than pretending to be deterministic code.
@@ -36,11 +36,12 @@ bands, it computes the weighted total
 (`compatibility×0.40 + popularity×0.30 + maintenance×0.15 + simplicity×0.15`),
 renormalizes proportionally when a factor is `"N/A"`, rounds half-up to one
 decimal with boundary-tolerant handling, and refuses out-of-range input
-loudly. It does **not** produce the factors — Compatibility/Simplicity are
-LLM judgment over verified local evidence, and Popularity/Maintenance
-band-mapping starts from live data whose point-within-band selection is
-still judgment. Callers also filter BLOCKED and ALREADY PRESENT candidates
-first, per Phase 4's preamble.
+loudly. It does **not** produce the factors: Compatibility/Simplicity are
+LLM judgment over verified local evidence, and while Popularity/Maintenance
+now have a deterministic evidence + band step (`gatherFactorEvidence()`,
+below), picking a point inside a band stays judgment for every factor.
+Callers also filter BLOCKED and ALREADY PRESENT candidates first, per
+Phase 4's preamble.
 
 **`gatherSecurityEvidence(target, options)`**, in
 [`src/mechanical/security.ts`](src/mechanical/security.ts) — Phase 3.5
@@ -78,6 +79,43 @@ and any unverified check floors the verdict at WARN, because the closed
 SKILL.md forbids letting unverified read as passed. Notes are emitted in a
 fixed order so identical inputs give byte-identical output;
 `verifyCandidate()` only assembles the `SecurityCheckResult`.
+
+**`gatherFactorEvidence(target, options)` +
+`mapPopularityBand(evidence)` / `mapMaintenanceBand(evidence, today)`**, in
+[`src/mechanical/factors.ts`](src/mechanical/factors.ts) — the two Phase 4
+factors that start from live data, split the same way Phase 3.5 is.
+`gatherFactorEvidence()` pulls stars and last-push date from the GitHub repo
+API in one request and weekly downloads from the npm downloads API, so a
+candidate costs at most two HTTP calls; the mappers then apply SKILL.md's
+band tables, which are stated as fixed numeric ranges and so are a lookup,
+not a judgment.
+
+Three things it reports rather than guesses:
+
+- **Unverified stays unverified.** A missing repo, a missing npm package, a
+  rate-limited GitHub response, and a network failure all produce
+  `status: "unverified"` with a distinct reason, and a factor whose sources
+  were all unverified maps to `no-verified-evidence` — SKILL.md's explicit
+  instruction for Maintenance: mark it `N/A (unverified)` rather than
+  assigning a number.
+- **SKILL.md has a hole in the Maintenance table.** It jumps from
+  "≤180 days → 4–6" to "> 365 days → 1–3", so a repo last pushed 8 months
+  ago has no band. That is a gap in SKILL.md, not in the data, so the
+  outcome is `unbanded: "outside-defined-bands"` carrying the measured age.
+  Closing it means editing SKILL.md, not inventing a band here.
+- **The 10 band asks for more than a push date.** SKILL.md's Maintenance 10
+  is "≤30 days, *active releases*", which `pushed_at` cannot establish, so
+  the band comes with an explicit note saying the release half is
+  unverified.
+
+Two boundary decisions SKILL.md leaves open are fixed and documented: its
+band edges overlap (1k stars is in both "100–1k" and "1k–10k"), so the
+higher band wins at an exact edge; and the Popularity clauses are joined by
+OR, so the best band across available sources wins — a library with 40 stars
+and 3M weekly downloads scores 10, which is what the OR plainly says.
+Compatibility and Simplicity get no such treatment on purpose: their bands
+are written in terms of "well-documented", "significant glue code",
+"minimal config", which only a reader of the docs can assess.
 
 **`normalizeSearchHits(tierResults)`**, in
 [`src/mechanical/search.ts`](src/mechanical/search.ts) — Phase 3 Stage C,
@@ -133,11 +171,12 @@ when the gate fired. All four sources always run: an empty return means
 ```
 src/
   contracts/   shared types (StackProfile, Candidate, SecurityEvidence/
-               SecurityCheckResult, SearchPlan/TierResult, ScoringFactors/CandidateScore)
+               SecurityCheckResult, SearchPlan/TierResult, ScoringFactors/CandidateScore,
+               PopularityEvidence/MaintenanceEvidence/BandOutcome)
   mechanical/  functions where the work is genuinely deterministic (file parsing,
-               scoring arithmetic, plain-HTTP security-evidence gathering,
-               fixed decision tables, search-hit normalization, recipe
-               template filling)
+               scoring arithmetic, plain-HTTP security- and scoring-factor
+               evidence gathering, fixed decision tables and band tables,
+               search-hit normalization, recipe template filling)
   reasoning/   orchestration of the tool-backed phases — judgment and web
                search are injected; invariants and normalization stay here
 fixtures/      sample projects + expected StackProfile output, used by test/fixtures.test.js
@@ -150,6 +189,6 @@ npm test
 ```
 
 Runs `tsc` then the `node:test` suite (unit tests for detectors/parsers/scoring/
-security/search/pipeline, a public-API export boundary test, and fixture-driven
-tests for `analyzeProject()`). The security and pipeline tests inject fetch/search
-stubs — nothing here touches the network.
+security/search/factors/pipeline, a public-API export boundary test, and
+fixture-driven tests for `analyzeProject()`). The security, factors, and pipeline
+tests inject fetch/search stubs — nothing here touches the network.
