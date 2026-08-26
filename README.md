@@ -614,14 +614,27 @@ rather than merely discouraged.
 
 ## Packages
 
-The skill is the product. `packages/` is a separate, additive layer: it extracts the
-slices of the pipeline that are *genuinely* deterministic into code that can be
-unit-tested, and refuses to fake the rest.
+SKILLmama is a capability discovery system. `SKILL.md` is the agent-native
+implementation and the specification. The `skillmama` npm package provides a
+CLI and a programmatic runtime for the deterministic parts of that system. The
+shared deterministic rules are checked against SKILL.md by conformance tests.
+
+`packages/` is a separate, additive layer: it extracts the slices of the pipeline
+that are *genuinely* deterministic into code that can be unit-tested, and refuses
+to fake the rest.
 
 | Package | Name | State |
 | --- | --- | --- |
 | [`packages/core`](packages/core) | `skillmama` | private, unpublished |
-| [`packages/cli`](packages/cli) | `skillmama-cli` | private, unpublished |
+
+There is one package. `packages/core` is a folder name, not a second identity:
+it carries the `skillmama` bin and the programmatic API in a single publishable
+unit, so nothing has to explain a `core`/`cli` split to a user who just wants
+the command. `src/cli/` holds the binary, and `package.json`'s `exports` maps
+`.` only — the detector and parser registries, the query builders, the hit
+normalizers, and the HTTP payload normalizers stay internal and cannot be
+deep-imported. The supported surface is exactly what `src/index.ts` names, and
+`test/index.test.js` fails if that list drifts in either direction.
 
 The CLI is the package's real consumer: `scan` runs `analyzeProject()`, and
 `check` runs the live-data half of the pipeline — OSV advisories, npm publisher

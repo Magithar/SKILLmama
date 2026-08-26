@@ -5,3 +5,6 @@
 node_modules/
 dist/
 dev/
+
+# generated at pack time from the canonical root LICENSE (see packages/core prepack)
+packages/core/LICENSE

@@ -1,12 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  gatherFactorEvidence,
-  mapMaintenanceBand,
-  mapPopularityBand,
-  normalizeGithubRepoResponse,
-  normalizeNpmDownloadsResponse,
-} from "../dist/index.js";
+import { gatherFactorEvidence, mapMaintenanceBand, mapPopularityBand } from "../dist/index.js";
+import { normalizeGithubRepoResponse, normalizeNpmDownloadsResponse } from "../dist/mechanical/factors.js";
 
 const TODAY = "2026-08-24";
 

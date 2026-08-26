@@ -1,11 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  NPM_BOT_PUBLISHERS,
-  detectPublisherHandoff,
-  gatherSecurityEvidence,
-  normalizeOsvQueryResponse,
-} from "../dist/index.js";
+import { gatherSecurityEvidence } from "../dist/index.js";
+import { NPM_BOT_PUBLISHERS, detectPublisherHandoff, normalizeOsvQueryResponse } from "../dist/mechanical/security.js";
 
 const TODAY = "2026-08-21";
 

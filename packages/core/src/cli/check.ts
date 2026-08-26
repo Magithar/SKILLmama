@@ -9,8 +9,8 @@ import {
   type PopularityEvidence,
   type SecurityEvidence,
   type SecurityCheckResult,
-} from "skillmama";
-import { verifyCandidate } from "skillmama";
+} from "../index.js";
+import { verifyCandidate } from "../index.js";
 
 /**
  * `skillmama check` — the deterministic half of SKILLmama's per-candidate

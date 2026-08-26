@@ -1,11 +1,20 @@
 {
   "name": "skillmama",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
-  "description": "Deterministic core of SKILLmama's capability-discovery pipeline: structured project scanning (StackProfile). skillmama/SKILL.md remains the source of truth for full behavior.",
+  "description": "SKILLmama is a capability discovery system. SKILL.md is the agent-native implementation and the specification. The skillmama npm package provides a CLI (scan, check) and a programmatic runtime for the deterministic parts of that system. The shared deterministic rules are checked against SKILL.md by conformance tests.",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "bin": {
+    "skillmama": "./dist/cli/main.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -15,12 +24,14 @@
     "directory": "packages/core"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=18.3"
   },
   "license": "Apache-2.0",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test test/index.test.js test/detectors.test.js test/fixtures.test.js test/parsers.test.js test/scoring.test.js test/security.test.js test/search.test.js test/factors.test.js test/pipeline.test.js test/discovery.test.js test/skill-conformance.test.js"
+    "build": "tsc -p tsconfig.json && chmod +x dist/cli/main.js",
+    "prepack": "cp ../../LICENSE ./LICENSE",
+    "postpack": "rm -f ./LICENSE",
+    "test": "npm run build && node --test test/index.test.js test/detectors.test.js test/fixtures.test.js test/parsers.test.js test/scoring.test.js test/security.test.js test/search.test.js test/factors.test.js test/pipeline.test.js test/discovery.test.js test/skill-conformance.test.js test/cli-render.test.js test/cli-check.test.js test/cli-e2e.test.js"
   },
   "devDependencies": {
     "@types/node": "^22.20.1",

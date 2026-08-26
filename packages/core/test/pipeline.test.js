@@ -1,14 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  buildTierQueries,
-  buildCompanionQueries,
-  extractCompanionRating,
-  normalizeCompanionHits,
-  resolveCompanionGate,
-  findCandidates,
-  findCompanionSkills,
-} from "../dist/index.js";
+import { findCandidates, findCompanionSkills } from "../dist/index.js";
+import { buildCompanionQueries, extractCompanionRating, normalizeCompanionHits, resolveCompanionGate } from "../dist/mechanical/companions.js";
+import { buildTierQueries } from "../dist/mechanical/search.js";
 
 // ---------------------------------------------------------------------------
 // 1. buildTierQueries — SKILL.md recipes as template filling.

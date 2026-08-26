@@ -51,7 +51,8 @@ All notable changes to SKILLmama are documented here.
   tier, changed `stars:>500`, dropped word in a recipe, changed companion query — all ten
   now fail the suite. SKILL.md stays the source of truth: a failure means the code needs
   updating, never the test
-- **Test counts**: core 129 -> 177, CLI 13 -> 26
+- **Test counts**: core 129 -> 204 in one merged suite (the CLI suite folded
+  into it during the restructure described under Changed below)
 
 - **`discoverCapabilities()`** (`packages/core/src/reasoning/index.ts`,
   `src/contracts/discovery.ts`): Phases 2 through 5, composed. Every phase was
@@ -71,7 +72,7 @@ All notable changes to SKILLmama are documented here.
   *was* verified, since that direction is equally a lie. This is what makes the
   deterministic factor work worth having, and it is why `judgeFactors()` receives bands
   rather than raw numbers
-- **`skillmama check <package>`** (`packages/cli`): the CLI now consumes more than
+- **`skillmama check <package>`** (`packages/core/src/cli/`): the CLI now consumes more than
   `analyzeProject()`. `check` runs the OSV.dev advisory query, the npm publisher-continuity
   check and the Popularity/Maintenance band lookups against live registries, then applies
   Phase 3.5's decision table. `--ecosystem`, `--version`, `--repo`, `--json`; exit `3` on
@@ -85,6 +86,33 @@ All notable changes to SKILLmama are documented here.
   registry's latest is queried and the output says so, since SKILL.md is explicit that
   querying "latest" instead of the version you intend to recommend is a trap. Outside npm
   no version is guessed at all
+
+### Changed
+- **One publishable package instead of two: `packages/cli` is deleted and folded into
+  `packages/core`.** The CLI sources move to `src/cli/`, its tests join core's single
+  suite, and the root workspace list shrinks accordingly. What ships is one npm unit
+  named `skillmama` carrying both the `skillmama` bin and the programmatic API, so a
+  user installing the command never has to learn that a core/cli split existed — and
+  there are no longer two packages to publish separately or version in lockstep. The
+  package stays `private: true`; publishing remains an open decision, not a fait accompli
+- **The public API boundary went from implied to declared** (`package.json`,
+  `src/index.ts`): core previously re-exported `mechanical/` and `reasoning/` wholesale,
+  which made every internal normalizer and registry importable by any consumer whether
+  it was meant to be or not. `exports` now maps `.` only, and `src/index.ts` names
+  exactly what is public — the pipeline entry points, the per-phase functions an adapter
+  composes, and the contract types those signatures reference. The detector/parser
+  registries, the query builders, and the hit/payload normalizers stay internal; tests
+  reach them by relative import exactly as before. `test/index.test.js` fails if the
+  export list drifts in either direction, so widening the surface is now a deliberate
+  API decision rather than an accident of adding a function
+- **Package metadata catches up to being a shippable unit**: version `0.0.1` -> `0.1.0`;
+  `engines` moves from `>=18` to `>=18.3`, naming what the CLI actually requires
+  (`util.parseArgs`, which landed in Node 18.3) rather than the looser floor core alone
+  needs; and `prepack`/`postpack` copy the root LICENSE into the tarball and remove it
+  again afterward — Apache-2.0 requires shipping the license text with the code, but a
+  second copy tracked in-tree would be drift bait, so the generated file is gitignored.
+  Along the way the root LICENSE's placeholder copyright line became real:
+  "Copyright 2026 Magithar Sridhar"
 
 ### Fixed
 - **`resolveNpmDefaults()` announced a substitution that had not happened.** It reported

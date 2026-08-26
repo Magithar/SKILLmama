@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { parseArgs } from "node:util";
-import { analyzeProject, type OsvEcosystem } from "skillmama";
+import { analyzeProject, type OsvEcosystem } from "../index.js";
 import { resolveNpmDefaults, runCheck, type CheckTarget } from "./check.js";
 import {
   renderCheckJson,

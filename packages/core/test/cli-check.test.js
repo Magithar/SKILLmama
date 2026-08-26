@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { resolveNpmDefaults, runCheck } from "../dist/check.js";
-import { renderCheckJson, renderCheckText } from "../dist/render.js";
+import { resolveNpmDefaults, runCheck } from "../dist/cli/check.js";
+import { renderCheckJson, renderCheckText } from "../dist/cli/render.js";
 
 const TODAY = "2026-08-24";
 

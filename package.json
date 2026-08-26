@@ -2,10 +2,10 @@
   "name": "skillmama-monorepo",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/core"
   ],
   "scripts": {
-    "build": "npm run build --workspace packages/core && npm run build --workspace packages/cli",
-    "test": "npm test --workspace packages/core && npm test --workspace packages/cli"
+    "build": "npm run build --workspace packages/core",
+    "test": "npm test --workspace packages/core"
   }
 }

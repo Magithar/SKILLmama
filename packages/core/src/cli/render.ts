@@ -1,4 +1,4 @@
-import type { BandOutcome, StackProfile } from "skillmama";
+import type { BandOutcome, StackProfile } from "../index.js";
 import type { CheckResult } from "./check.js";
 
 /**

@@ -1,12 +1,22 @@
 # skillmama
 
-Typed contract boundary for SKILLmama's capability-discovery pipeline. This
-package does not implement SKILLmama — it is scaffolding for what a future
-deterministic implementation could look like.
+SKILLmama is a capability discovery system. [`SKILL.md`](../../skillmama/SKILL.md)
+is the agent-native implementation and the specification. The `skillmama` npm
+package provides a CLI and a programmatic runtime for the deterministic parts of
+that system. The shared deterministic rules are checked against SKILL.md by
+conformance tests (`test/skill-conformance.test.js`).
 
-**[`skillmama/SKILL.md`](../../skillmama/SKILL.md) is the shipped product and
-the sole source of truth for SKILLmama's actual behavior.** It is not built,
-not published, and not used by that skill today.
+Judgment-shaped work is injected, never faked. The package is not published
+today, and the skill does not call it.
+
+`packages/core` is a folder name, not a second package identity. There is one
+publishable unit named `skillmama`: it owns the `skillmama` bin (`src/cli/`)
+and the API, so a user installing the command never has to learn about a
+`core`/`cli` split. `package.json`'s `exports` maps `.` only, so the supported
+surface is exactly what [`src/index.ts`](src/index.ts) names — the detector and
+parser registries, the tier/companion query builders, the hit normalizers and
+the HTTP payload normalizers are internal and cannot be deep-imported.
+`test/index.test.js` fails if that list drifts in either direction.
 
 ## What's actually implemented
 
@@ -204,6 +214,86 @@ to recommend" trap lives here), `inspect()` (reading a library's docs and
 code for Phase 3.5 content findings), and `judgeFactors()`. Missing tooling
 throws by name; there is no mode in which a stage silently does less.
 
+## The `skillmama` CLI
+
+Two commands, both running only the parts of SKILLmama's pipeline that need no
+judgment. Source in [`src/cli/`](src/cli); process-level behavior is pinned by
+`test/cli-e2e.test.js`, which spawns the built binary against `fixtures/`.
+
+### Usage
+
+```
+skillmama scan [dir]        Structured project scan (default: current directory)
+skillmama check <package>   Live-data checks against a published package
+```
+
+Options: `--json` · `--ecosystem npm|PyPI|Go|crates.io` · `--version <v>` ·
+`--repo <owner/name>` · `-h, --help`
+
+Exit codes: `0` completed, verdict PASS or WARN · `1` failed · `2` usage error ·
+`3` completed, verdict BLOCKED.
+
+#### scan
+
+The same deterministic slice SKILL.md's Phase 1 uses: it reads only top-level
+manifest/config files, never README prose or source code. Unknown technologies
+are silently ignored; a malformed manifest fails loudly.
+
+#### check
+
+Runs the OSV.dev advisory query, the npm publisher-continuity check, and the
+Popularity/Maintenance band lookups against live registries, then applies
+Phase 3.5's decision table.
+
+```
+$ skillmama check lodash --version 4.17.15
+
+lodash@4.17.15  (npm)
+
+Not checked:
+  ! Repository lodash/lodash was read from the npm metadata, not supplied.
+  ! Phase 3.5 content inspection did not run: no docs or code were read, so
+    guardrail-circumvention, exfiltration and SQP findings were not looked for.
+    A PASS below means the live-data checks found nothing, not that the package
+    is safe.
+
+Verdict  WARN
+
+  - OSV HIGH GHSA-35jh-r3h4-6jhm: Command Injection in lodash has a fixed
+    version available — recommend the fixed version
+  ...
+
+Popularity    10/10  (pick a point in this band)
+Maintenance   7-9/10  (pick a point in this band)
+```
+
+Three things about that output are deliberate:
+
+- **What did not run prints before the verdict.** This command has no LLM, so
+  it cannot produce Phase 3.5's content findings — it passes an empty finding
+  list because nobody read the code. A reader who stops after the first screen
+  must not come away thinking a package was cleared when half the gate ran.
+- **The bands are ranges, not scores.** SKILL.md defines bands, and picking a
+  point inside one is judgment. The CLI hands you the band it verified.
+- **Substitutions are announced.** With no `--version`, npm's latest is queried
+  and the output says so, because SKILL.md is explicit that querying "latest"
+  instead of the version you intend to recommend is a trap. Outside npm, no
+  version is guessed at all: `--version` is required.
+
+`GITHUB_TOKEN`, if set, is sent to the GitHub API. Unauthenticated requests are
+capped at 60/hour per IP; a rate-limited response degrades to `unverified`
+rather than to a wrong number.
+
+### What this CLI still does not do
+
+`discoverCapabilities()` composes Phases 2 through 5 end to
+end, but four of its stages are injected judgment: choosing search terms,
+judging which search hits count, reading a package's docs and code, and scoring
+Compatibility and Simplicity. A CLI has no LLM to supply them, so rather than
+stub them with something that looks like an answer, this tool runs the half it
+can run honestly. Driving the full pipeline needs an agent harness, and
+[`skillmama/SKILL.md`](../../skillmama/SKILL.md) remains where that happens.
+
 ## Layout
 
 ```
@@ -219,6 +309,9 @@ src/
   reasoning/   orchestration of the tool-backed phases and the end-to-end
                composition — judgment and web search are injected;
                sequencing, filtering and normalization stay here
+  cli/         the `skillmama` binary (scan, check) — a consumer of the above,
+               not part of the exported API
+  index.ts     the public API boundary; `exports` maps "." to this file only
 fixtures/      sample projects + expected StackProfile output, used by test/fixtures.test.js
 ```
 
@@ -230,8 +323,9 @@ npm test
 
 Runs `tsc` then the `node:test` suite (unit tests for detectors/parsers/scoring/
 security/search/factors/pipeline/discovery, a public-API export boundary test, and
-fixture-driven tests for `analyzeProject()`). The security, factors, pipeline and discovery
-tests inject fetch/search stubs — nothing here touches the network.
+fixture-driven tests for `analyzeProject()`, plus `cli-render`/`cli-check`/`cli-e2e`
+for the binary). The security, factors, pipeline, discovery and CLI tests inject
+fetch/search stubs or spawn the binary offline — nothing here touches the network.
 
 `test/skill-conformance.test.js` is the one that keeps this package honest.
 `scripts/check-skill-untouched.sh` guards `skillmama/SKILL.md` against copy

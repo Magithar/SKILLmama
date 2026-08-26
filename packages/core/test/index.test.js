@@ -2,44 +2,59 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as core from "../dist/index.js";
 
-// 1. Package boundary — the intended public API is present and nothing
-// unexpected leaked in. Update this list deliberately when the contract
-// changes; do not let it silently drift.
+// 1. Package boundary — the intended PUBLIC API, and nothing more. This is
+// the narrowed surface: pipeline entry points, the per-phase functions an
+// adapter needs to compose, and the one runtime value from contracts/.
+// Internals (detector/parser registries, query builders, hit normalizers,
+// HTTP payload normalizers) are deliberately absent — they stay reachable
+// by relative import inside the package, and package.json's "exports"
+// maps "." only, so no consumer can deep-import past dist/index.js.
+// Update this list deliberately when the contract changes; do not let it
+// silently drift.
 const expectedExports = [
   "NotImplementedError",
+  // Phase 2
   "analyzeProject",
-  "scoreCandidate",
+  // Phase 3 — orchestrations; the tier recipes behind them are internal
+  "findCandidates",
+  "findCompanionSkills",
+  "discoverCapabilities",
+  // Phase 3.5 — evidence (Stage 1) and verdict (Stage 2)
   "gatherSecurityEvidence",
-  "normalizeOsvQueryResponse",
-  "detectPublisherHandoff",
   "resolveSecurityVerdict",
   "verifyCandidate",
-  "normalizeSearchHits",
-  "buildTierQueries",
-  "assertValidCapabilityRequest",
-  "assertValidTierResults",
+  // Phase 4 — weights, factor evidence, band lookup
+  "scoreCandidate",
+  "gatherFactorEvidence",
+  "mapPopularityBand",
+  "mapMaintenanceBand",
+  // companion-skill provenance registry
+  "companionSkillSources",
+];
+
+// Named individually so a re-widening of the barrel fails loudly here
+// rather than quietly re-publishing an internal.
+const expectedInternal = [
+  "dependencyDetectors",
+  "fileDetectors",
+  "stackCategories",
+  "manifestParsers",
+  "parsePackageJson",
   "searchTiers",
+  "buildTierQueries",
+  "normalizeSearchHits",
   "urlDedupeKey",
+  "assertValidTierResults",
+  "assertValidCapabilityRequest",
   "buildCompanionQueries",
   "extractCompanionRating",
   "normalizeCompanionHits",
   "resolveCompanionGate",
-  "findCandidates",
-  "findCompanionSkills",
-  "discoverCapabilities",
   "NPM_BOT_PUBLISHERS",
-  // Phase 4 scoring-factor evidence + band mapping
-  "gatherFactorEvidence",
+  "detectPublisherHandoff",
+  "normalizeOsvQueryResponse",
   "normalizeGithubRepoResponse",
   "normalizeNpmDownloadsResponse",
-  "mapPopularityBand",
-  "mapMaintenanceBand",
-  // detector registry (data + types; types are erased at runtime)
-  "dependencyDetectors",
-  "fileDetectors",
-  "stackCategories",
-  // companion-skill provenance registry
-  "companionSkillSources",
 ];
 
 test("public API exposes exactly the intended contract", () => {
@@ -55,6 +70,15 @@ test("public API exposes exactly the intended contract", () => {
     [...expectedExports].sort(),
     "public export list changed — update expectedExports deliberately if intended"
   );
+});
+
+test("internals are not part of the published surface", () => {
+  for (const name of expectedInternal) {
+    assert.ok(
+      !(name in core),
+      `"${name}" is internal — it must not be re-exported from src/index.ts`
+    );
+  }
 });
 
 // 2. Tool-backed orchestration contract — findCandidates() and

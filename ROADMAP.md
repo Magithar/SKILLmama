@@ -1,6 +1,6 @@
 # Roadmap — what is left
 
-Status as of 2026-08-24, at v1.8.0 plus unreleased work on `main`. CI is green
+Status as of 2026-08-26, at v1.8.0 plus unreleased work on `main`. CI is green
 on Node 18/20/22, and v1.6.0/v1.7.0/v1.8.0 are tagged with GitHub Releases
 published.
 
@@ -20,6 +20,15 @@ a reader of the docs can assess), so the package cannot score a candidate alone
 ---
 
 ## Done since the last revision
+
+The two packages are now one: `packages/cli` is deleted and folded into
+`packages/core`, which carries the `skillmama` bin and the programmatic API as
+a single publishable unit (version 0.0.1 -> 0.1.0, engines ->18.3 for
+`util.parseArgs`, LICENSE copied in at pack time). The public API surface went
+from wholesale `export *` re-exports to a declared boundary — `exports` maps
+`.` only, `src/index.ts` names what is public, and `test/index.test.js` pins
+the list. This answers half of task 4 by construction; publishing itself is
+still open. One merged suite, 204 tests.
 
 Tasks 8 and 13 are done, plus the three structural problems behind them.
 
@@ -60,7 +69,7 @@ never run against a clean tree. Fixed and verified green.
 
 | # | Task | Notes |
 | --- | --- | --- |
-| 4 | Decide whether to publish the packages | Both are `private: true` at `0.0.1` while the repo is at 1.8.0. The unscoped npm name `skillmama` is confirmed available. Two decisions, not one: publish or stay private, and whether package versions track the repo version or run independently. |
+| 4 | Decide whether to publish the package | Half answered by the cli→core merge above: there is one publishable unit named `skillmama` (`private: true`, at 0.1.0), so there is no second name and no cross-package versioning question. Still open: publish to npm or stay private, and whether the package's versions track the repo (repo at 1.8.0, package at 0.1.0) or run independently. The unscoped npm name `skillmama` is confirmed available. |
 | 5 | Cut a release for the factors work | The Popularity/Maintenance implementation sits under `[Unreleased]` in the CHANGELOG. Tag and publish it the same way as v1.6.0–v1.8.0, with the release body drafted in `dev/`. |
 | 6 | Extend publisher continuity beyond npm | PyPI, crates.io, RubyGems, and Go all return `reason: "unsupported-ecosystem"`. A Python candidate can never be said to have passed this check, which is a visible hole given SKILLmama's Python examples. |
 | 7 | Live-test Codex | The last open item of the four-adapter work. Antigravity was tested end to end and works; Codex has never been run at all, and its README status stays ⚠️ unverified until someone installs the CLI, restarts it, and runs a real capability prompt. |

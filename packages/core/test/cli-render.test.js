@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { renderProfileJson, renderProfileText } from "../dist/render.js";
+import { renderProfileJson, renderProfileText } from "../dist/cli/render.js";
 
 /**
  * @param {Partial<import('skillmama').StackProfile>} overrides

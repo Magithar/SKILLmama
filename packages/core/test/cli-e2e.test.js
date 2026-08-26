@@ -5,8 +5,8 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-const CLI = fileURLToPath(new URL("../dist/main.js", import.meta.url));
-const FIXTURES = join(dirname(CLI), "../../core/fixtures");
+const CLI = fileURLToPath(new URL("../dist/cli/main.js", import.meta.url));
+const FIXTURES = join(dirname(CLI), "../../fixtures");
 
 function run(args) {
   return spawnSync(process.execPath, [CLI, ...args], { encoding: "utf8" });

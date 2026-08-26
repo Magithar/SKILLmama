@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { normalizeSearchHits } from "../dist/index.js";
+import { normalizeSearchHits } from "../dist/mechanical/search.js";
 
 const hit = (url, title) => ({ url, ...(title !== undefined ? { title } : {}) });
 const tier = (tierName, queries, hits) => ({

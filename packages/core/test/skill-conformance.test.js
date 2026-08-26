@@ -2,16 +2,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import {
-  NPM_BOT_PUBLISHERS,
-  buildCompanionQueries,
-  buildTierQueries,
-  companionSkillSources,
-  mapMaintenanceBand,
-  mapPopularityBand,
-  scoreCandidate,
-  searchTiers,
-} from "../dist/index.js";
+import { companionSkillSources, mapMaintenanceBand, mapPopularityBand, scoreCandidate } from "../dist/index.js";
+import { buildCompanionQueries } from "../dist/mechanical/companions.js";
+import { buildTierQueries, searchTiers } from "../dist/mechanical/search.js";
+import { NPM_BOT_PUBLISHERS } from "../dist/mechanical/security.js";
 
 /**
  * SKILL.md <-> packages/core conformance.
