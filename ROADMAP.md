@@ -74,7 +74,6 @@ extension — ready to post now that the release it references has shipped.
 
 | # | Task | Notes |
 | --- | --- | --- |
-| 9 | Dev.to Part 9 | Draft ready: `dev/devto-article-v9.md`. v1.9.0 has shipped, so everything it references (the published CLI, the closed Maintenance gap, the crates.io extension) is now real. Only remaining step is posting it, which needs a human with Dev.to account access. |
 | 10 | Recheck the upstream skills-CLI bug | Rechecked 2026-08-31: no change since 2026-08-24. PR #1483 and PR #2028 both still open and unmerged; issues #1060/#1470 both still open; npm's published `skills` is still `1.5.23` (released 2026-08-19, before either PR). The two ❌ rows in the AI Adapters table change only when a fix merges *and* ships in a released CLI version. Recheck on the next release. |
 | 11 | skills.sh listing | Rechecked 2026-08-31: issue creation on `vercel-labs/skills` is no longer restricted (issues enabled, blank issues allowed). What's unclear now is the ask itself — the README's skills.sh badge/link already resolves for this repo, so what gap the original "indexing request" meant to close needs to be re-established before filing anything. |
 
