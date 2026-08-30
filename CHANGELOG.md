@@ -6,6 +6,19 @@ All notable changes to SKILLmama are documented here.
 
 ## [Unreleased]
 
+### Changed
+- **`skillmama@0.1.1` npm package metadata and README, for discoverability and
+  accuracy.** `packages/core/package.json` gained `keywords` (`capability-discovery`,
+  `library-selection`, `dependency-choice`, `security-gate`, `supply-chain`, `osv`,
+  `publisher-continuity`, `agent-skills`, `claude-code`, `cli`) — the published
+  `0.1.0` had none, so it carried no npm search signal at all. `packages/core/README.md`
+  (the page npmjs.com renders) is restructured to lead with a badge and a copy-paste
+  quickstart, and each implemented function gets its own heading instead of being
+  buried in a bolded run-in lead. Also dropped a stale claim left over from `1.9.0`:
+  the README still described the Maintenance-band gap as open after task 8 closed it.
+  Per task 4's decision, the package's own semver is independent of the repo's — this
+  bump ships as an npm publish only, with no matching repo git tag
+
 ## [1.9.0] - 2026-08-31
 
 ### Fixed

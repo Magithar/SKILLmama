@@ -1,14 +1,28 @@
 # skillmama
 
-SKILLmama is a capability discovery system. [`SKILL.md`](../../skillmama/SKILL.md)
-is the agent-native implementation and the specification. The `skillmama` npm
-package provides a CLI and a programmatic runtime for the deterministic parts of
-that system. The shared deterministic rules are checked against SKILL.md by
-conformance tests (`test/skill-conformance.test.js`).
+Score a library, SDK, or tool the same way SKILLmama's agent skill does, from the terminal.
 
-Judgment-shaped work is injected, never faked. Published to npm as
-[`skillmama`](https://www.npmjs.com/package/skillmama), independently of the
-repo's own version; the skill does not call it.
+```bash
+npx skillmama scan .                             # what's already in this project
+npx skillmama check lodash --version 4.17.15     # live OSV + publisher-continuity + factor bands
+```
+
+[![npm](https://img.shields.io/npm/v/skillmama)](https://www.npmjs.com/package/skillmama)
+
+## Why this exists
+
+[`SKILL.md`](../../skillmama/SKILL.md) is the agent-native implementation and
+the specification for capability discovery — it is the shipped product and
+the sole source of truth. This package implements the slice of that pipeline
+that is genuinely deterministic (manifest parsing, scoring arithmetic, plain
+HTTP evidence-gathering, fixed decision tables) and injects rather than fakes
+everything that is judgment: choosing search terms, judging which hits count,
+reading a package's docs and code, scoring Compatibility and Simplicity.
+`test/skill-conformance.test.js` parses SKILL.md at test time and fails if the
+package's numbers, tables, or query recipes drift from what it actually says.
+
+Published to npm as [`skillmama`](https://www.npmjs.com/package/skillmama),
+independently of the repo's own version; the skill does not call it.
 
 `packages/core` is a folder name, not a second package identity. There is one
 publishable unit named `skillmama`: it owns the `skillmama` bin (`src/cli/`)
@@ -27,8 +41,10 @@ orchestrations (`findCandidates()`, `findCompanionSkills()`), and
 Everything judgment-shaped is taken as INJECTED tooling rather than
 pretended to be deterministic code.
 
-**`analyzeProject()`**, in [`src/mechanical/index.ts`](src/mechanical/index.ts).
-It is a **Structured Project Scan**, not full project understanding: it reads
+### `analyzeProject()`
+
+[`src/mechanical/index.ts`](src/mechanical/index.ts).
+A **Structured Project Scan**, not full project understanding: it reads
 the top-level entries of a project directory and parses a fixed set of
 dependency manifests (`package.json`, `pyproject.toml`, `Cargo.toml`,
 `requirements.txt`, `go.mod`, `Gemfile`, `composer.json`) plus a few
@@ -41,8 +57,9 @@ reproduce SKILL.md's deeper Phase B1 source-sampling analysis. Those stay
 LLM-interpreted behavior that SKILL.md owns directly — see the doc comment
 above `analyzeProject()` for the full scope statement.
 
-**`scoreCandidate(candidate, factors)`**, also in
-[`src/mechanical/index.ts`](src/mechanical/index.ts). The deterministic
+### `scoreCandidate(candidate, factors)`
+
+Also in [`src/mechanical/index.ts`](src/mechanical/index.ts). The deterministic
 slice of Phase 4: given four factors already scored 1–10 per SKILL.md's
 bands, it computes the weighted total
 (`compatibility×0.40 + popularity×0.30 + maintenance×0.15 + simplicity×0.15`),
@@ -55,7 +72,8 @@ below), picking a point inside a band stays judgment for every factor.
 Callers also filter BLOCKED and ALREADY PRESENT candidates first, per
 Phase 4's preamble.
 
-**`gatherSecurityEvidence(target, options)`**, in
+### `gatherSecurityEvidence(target, options)`
+
 [`src/mechanical/security.ts`](src/mechanical/security.ts) — Phase 3.5
 Stage 1, the evidence half of the security gate. Both live-data checks
 SKILL.md runs are plain HTTP APIs, so this one is genuinely deterministic:
@@ -81,8 +99,9 @@ pure normalizers (`normalizeOsvQueryResponse`, `detectPublisherHandoff`,
 `detectCratesIoPublisherHandoff`) are exported and fixture-tested directly;
 tests inject a fetch stub, so the suite never touches the network.
 
-**`resolveSecurityVerdict(evidence, findings)` / `verifyCandidate(...)`,
-also in [`src/mechanical/security.ts`](src/mechanical/security.ts) — Phase
+### `resolveSecurityVerdict(evidence, findings)` / `verifyCandidate(...)`
+
+Also in [`src/mechanical/security.ts`](src/mechanical/security.ts) — Phase
 3.5 Stage 2. Once Stage 1's evidence exists and an LLM has produced
 `ContentFinding[]` by actually reading the candidate's docs/code, emitting
 the verdict is not judgment at all but SKILL.md's own decision table:
@@ -96,8 +115,8 @@ SKILL.md forbids letting unverified read as passed. Notes are emitted in a
 fixed order so identical inputs give byte-identical output;
 `verifyCandidate()` only assembles the `SecurityCheckResult`.
 
-**`gatherFactorEvidence(target, options)` +
-`mapPopularityBand(evidence)` / `mapMaintenanceBand(evidence, today)`**, in
+### `gatherFactorEvidence(target, options)` + `mapPopularityBand()` / `mapMaintenanceBand()`
+
 [`src/mechanical/factors.ts`](src/mechanical/factors.ts) — the two Phase 4
 factors that start from live data, split the same way Phase 3.5 is.
 `gatherFactorEvidence()` pulls stars and last-push date from the GitHub repo
@@ -106,7 +125,7 @@ candidate costs at most two HTTP calls; the mappers then apply SKILL.md's
 band tables, which are stated as fixed numeric ranges and so are a lookup,
 not a judgment.
 
-Three things it reports rather than guesses:
+Two things it reports rather than guesses:
 
 - **Unverified stays unverified.** A missing repo, a missing npm package, a
   rate-limited GitHub response, and a network failure all produce
@@ -114,11 +133,6 @@ Three things it reports rather than guesses:
   were all unverified maps to `no-verified-evidence` — SKILL.md's explicit
   instruction for Maintenance: mark it `N/A (unverified)` rather than
   assigning a number.
-- **SKILL.md has a hole in the Maintenance table.** It jumps from
-  "≤180 days → 4–6" to "> 365 days → 1–3", so a repo last pushed 8 months
-  ago has no band. That is a gap in SKILL.md, not in the data, so the
-  outcome is `unbanded: "outside-defined-bands"` carrying the measured age.
-  Closing it means editing SKILL.md, not inventing a band here.
 - **The 10 band asks for more than a push date.** SKILL.md's Maintenance 10
   is "≤30 days, *active releases*", which `pushed_at` cannot establish, so
   the band comes with an explicit note saying the release half is
@@ -133,7 +147,8 @@ Compatibility and Simplicity get no such treatment on purpose: their bands
 are written in terms of "well-documented", "significant glue code",
 "minimal config", which only a reader of the docs can assess.
 
-**`normalizeSearchHits(tierResults)`**, in
+### `normalizeSearchHits(tierResults)`
+
 [`src/mechanical/search.ts`](src/mechanical/search.ts) — Phase 3 Stage C,
 the deterministic tail of `findCandidates()`: TierResult[] whose hits Stage
 B has judged to count become deduplicated `Candidate[]` with tier
@@ -146,10 +161,11 @@ Results process in canonical tier rank, so cross-tier duplicates resolve to
 the earlier tier deterministically; hits with neither a known URL pattern
 nor a usable title are dropped rather than guessed at.
 
-Everything judgment-shaped is injected, never faked:
+## Everything judgment-shaped is injected, never faked
 
-**`findCandidates(request, tooling)`, in
-[`src/reasoning/index.ts`](src/reasoning/index.ts)** — Phase 2+3
+### `findCandidates(request, tooling)`
+
+[`src/reasoning/index.ts`](src/reasoning/index.ts) — Phase 2+3
 orchestration. `tooling.plan()` (Stage A: choose 3–5 search terms — LLM
 judgment) and `tooling.executeTier()` (Stage B: run a tier's queries with a
 web-search tool and judge which hits count) are the caller's; everything
@@ -163,8 +179,9 @@ verbatim constraints), and Stage C normalization through
 `normalizeSearchHits()`. Malformed stage output throws loudly — missing
 work must never read as "fewer results".
 
-**`findCompanionSkills(candidate, tooling)`, also in
-[`src/reasoning/index.ts`](src/reasoning/index.ts)** — Phase 3.6+3.7
+### `findCompanionSkills(candidate, tooling)`
+
+Also in [`src/reasoning/index.ts`](src/reasoning/index.ts) — Phase 3.6+3.7
 end-to-end. Phase 3.6 needs no planner at all: its four searches are FIXED
 (`buildCompanionQueries()` pins them verbatim, including the load-bearing
 quotes in `site:github.com "SKILL.md"`), executed via injected
@@ -182,7 +199,8 @@ discarded skills never surface; survivors carry `notes`/`sqpFlags` only
 when the gate fired. All four sources always run: an empty return means
 "searched everything, nothing survived", never "skipped".
 
-**`discoverCapabilities(request, tooling, options)`**, in
+### `discoverCapabilities(request, tooling, options)`
+
 [`src/reasoning/index.ts`](src/reasoning/index.ts) — Phases 2 through 5,
 composed. Every phase above was individually implemented and none of them
 composed: a caller had to know the order, remember to filter BLOCKED
@@ -232,11 +250,20 @@ skillmama scan [dir]        Structured project scan (default: current directory)
 skillmama check <package>   Live-data checks against a published package
 ```
 
-Options: `--json` · `--ecosystem npm|PyPI|Go|crates.io` · `--version <v>` ·
-`--repo <owner/name>` · `-h, --help`
+| Option | Effect |
+| --- | --- |
+| `--json` | machine-readable output |
+| `--ecosystem npm\|PyPI\|Go\|crates.io` | registry to check against (default `npm`) |
+| `--version <v>` | version to check; omit to query the registry's latest (npm only) |
+| `--repo <owner/name>` | GitHub repo to pull stars/last-push from; inferred from npm metadata when omitted |
+| `-h, --help` | show usage |
 
-Exit codes: `0` completed, verdict PASS or WARN · `1` failed · `2` usage error ·
-`3` completed, verdict BLOCKED.
+| Exit code | Meaning |
+| --- | --- |
+| `0` | completed, verdict PASS or WARN |
+| `1` | failed |
+| `2` | usage error |
+| `3` | completed, verdict BLOCKED |
 
 #### scan
 
