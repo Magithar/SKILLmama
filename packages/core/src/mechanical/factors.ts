@@ -327,19 +327,13 @@ function bandLabel(band: FactorBand): string {
  *   10:  ≤30 days, active releases
  *   7–9: ≤90 days
  *   4–6: ≤180 days
+ *   3–5: 181–365 days
  *   1–3: >365 days or archived
  *
- * Two things this mapper reports instead of guessing:
- *
- *  - 181–365 days has NO band in SKILL.md. The table jumps from "≤180"
- *    to "> 365", so a repo last pushed 8 months ago falls in a hole.
- *    That is a gap in SKILL.md, not in the data, so the outcome is
- *    `unbanded: "outside-defined-bands"` with the measured age. Closing it
- *    means editing SKILL.md (roadmap task 8's territory), not inventing a
- *    band here.
- *  - The 10 band also requires "active releases", which pushed_at cannot
- *    establish. A ≤30-day repo gets band 10 with an explicit note that the
- *    release half is unverified, so the point-picker knows to check.
+ * One thing this mapper reports instead of guessing: the 10 band also
+ * requires "active releases", which pushed_at cannot establish. A ≤30-day
+ * repo gets band 10 with an explicit note that the release half is
+ * unverified, so the point-picker knows to check.
  *
  * `archived` takes precedence over recency: SKILL.md's 1–3 band is
  * "> 365 days OR archived", and an archived repo pushed yesterday is
@@ -450,13 +444,5 @@ export function mapMaintenanceBand(
   if (days > 365) {
     return { status: "banded", band: { low: 1, high: 3 }, notes: [...notes, `${ageNote} -> 1–3`] };
   }
-  return {
-    status: "unbanded",
-    reason: "outside-defined-bands",
-    notes: [
-      ...notes,
-      `${ageNote}`,
-      "SKILL.md's Maintenance table has no band for 181–365 days: it jumps from \"≤180 → 4–6\" to \">365 → 1–3\". Reporting the gap instead of inventing a band",
-    ],
-  };
+  return { status: "banded", band: { low: 3, high: 5 }, notes: [...notes, `${ageNote} -> 3–5`] };
 }

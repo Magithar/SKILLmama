@@ -6,7 +6,43 @@ All notable changes to SKILLmama are documented here.
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-08-31
+
+### Fixed
+- **Two SKILL.md corrections, made together per roadmap task 8.** (a) "5-tier search"
+  in the frontmatter `description`, the README hero line, and the README nav link all
+  overcounted: there are four numbered tiers plus a Phase 3.6 companion-skills search
+  that SKILL.md itself never calls a scored tier. Reworded to "4-tier search plus a
+  companion-skills pass" everywhere it appeared as a live claim. (b) The Maintenance
+  table's 181-365 day hole is closed with a `3-5` band, splitting the difference between
+  the adjacent `≤180 → 4-6` and `>365 → 1-3` bands. `mapMaintenanceBand()` now returns
+  a real band for that range instead of `unbanded: "outside-defined-bands"` — that
+  reason had exactly one producer, so the outcome type drops it rather than keep a
+  branch nothing can reach. `packages/core/test/skill-conformance.test.js`'s gap-tripwire
+  test is rewritten to assert the table stays contiguous instead of asserting a hole
+
 ### Added
+- **Publisher continuity extended to crates.io, per roadmap task 6.**
+  `detectCratesIoPublisherHandoff()` (`packages/core/src/mechanical/security.ts`) runs
+  the same four-rule algorithm as the npm check — sort by publish time, require the old
+  guard to never return, only the most recent handoff and only under 12 months, drop
+  non-human publishers before detection — against crates.io's shape instead: `GET
+  /api/v1/crates/{crate}` embeds `versions[]` directly, so there's no separate time map
+  to join the way npm's packument needs. crates.io has no literal bot list; a null
+  `published_by` covers both trusted publishing (a CI-based release with no human
+  account, crates.io's equivalent of npm's `GitHub Actions`) and legacy versions from
+  before crates.io tracked publishers, and either way gets dropped the same way npm's
+  missing `_npmUser` does. The handoff-detection algorithm itself is factored out into a
+  shared `findRecentHumanHandoff()` so npm and crates.io only differ in how they parse
+  their registry's response into a common history shape. PyPI and Go were evaluated and
+  ruled out: neither exposes a per-release uploader, so they stay
+  `reason: "unsupported-ecosystem"` with SKILL.md's existing documented reasoning.
+  crates.io's crawler policy 403s requests with no descriptive `User-Agent`; sent on
+  every crates.io request, unlike npm's registry which needs none. Verified end to end
+  against live data: `ripgrep` and `rustls` — whose `ctz`/`djc`/`cpu` rotation is the
+  crates.io analogue of npm's express/lodash/chalk team-rotation case — both correctly
+  report no handoff. SKILL.md's Check 2 documents the crates.io script alongside the
+  npm one. 8 tests added, core at 212
 - **The two scoring factors that start from live data**
   (`packages/core/src/mechanical/factors.ts`, `src/contracts/factors.ts`): Phase 4's
   Popularity and Maintenance now have a deterministic path, split the same way Phase 3.5
@@ -17,23 +53,19 @@ All notable changes to SKILLmama are documented here.
   rather than a judgment. This closes the gap where `scoreCandidate()` took four factors
   nothing in the package computed — two of them are now produced from verified live data,
   with the caller only picking a point inside the returned band
-- **Three things the mappers report instead of guessing.** SKILL.md's Maintenance table
-  has no band for 181-365 days: it jumps from "≤180 → 4-6" straight to "> 365 → 1-3", so
-  a repo last pushed 8 months ago falls in a hole. That is a gap in SKILL.md, not in the
-  data, so the outcome is `unbanded: "outside-defined-bands"` carrying the measured age
-  rather than an invented band. SKILL.md's Maintenance 10 is "≤30 days, *active
-  releases*", and `pushed_at` cannot establish the release half, so that band comes with
-  an explicit note. And a factor whose sources all came back unverified maps to
-  `no-verified-evidence`, which is SKILL.md's own instruction: mark Maintenance
-  `N/A (unverified)` rather than assigning a number
+- **Two things the mappers report instead of guessing.** SKILL.md's Maintenance 10 is
+  "≤30 days, *active releases*", and `pushed_at` cannot establish the release half, so
+  that band comes with an explicit note. And a factor whose sources all came back
+  unverified maps to `no-verified-evidence`, which is SKILL.md's own instruction: mark
+  Maintenance `N/A (unverified)` rather than assigning a number
 - **Two band-edge decisions SKILL.md leaves open, fixed and documented.** Its ranges
   overlap (1k stars is in both "100-1k" and "1k-10k"), so the higher band wins at an exact
   edge, matching how the table reads top-down. And the Popularity clauses are joined by
   OR, so the best band across available sources wins: a library with 40 stars and 3M
   weekly downloads scores 10, which is what the OR plainly says
 - **23 tests** covering both payload normalizers, the request-count and absent-source
-  behavior of the gatherer, every band edge in both tables from both sides, the 181-365
-  gap, archived-beats-recency, and a gathered-evidence-to-band end-to-end pass. Fetch is
+  behavior of the gatherer, every band edge in both tables from both sides,
+  archived-beats-recency, and a gathered-evidence-to-band end-to-end pass. Fetch is
   stubbed throughout; the suite still never touches the network. Core is at 152 tests
 
 - **SKILL.md conformance tests** (`packages/core/test/skill-conformance.test.js`):
@@ -93,8 +125,11 @@ All notable changes to SKILLmama are documented here.
   suite, and the root workspace list shrinks accordingly. What ships is one npm unit
   named `skillmama` carrying both the `skillmama` bin and the programmatic API, so a
   user installing the command never has to learn that a core/cli split existed — and
-  there are no longer two packages to publish separately or version in lockstep. The
-  package stays `private: true`; publishing remains an open decision, not a fait accompli
+  there are no longer two packages to publish separately or version in lockstep. Task 4's
+  two decisions are made and executed in this release: publish to npm, and let the
+  package run its own independent 0.x semver rather than track the repo's 1.x — honest
+  about an API boundary declared this same cycle, and free to break without dragging the
+  repo's major along. `"private": true` is dropped and `skillmama@0.1.0` is published
 - **The public API boundary went from implied to declared** (`package.json`,
   `src/index.ts`): core previously re-exported `mechanical/` and `reasoning/` wholesale,
   which made every internal normalizer and registry importable by any consumer whether

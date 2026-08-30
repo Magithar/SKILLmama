@@ -7,14 +7,14 @@
 </p>
 
 <p align="center">
-  SKILLmama eliminates the hours spent researching which library, SDK, or tool to use — it scans your project's actual stack, searches across 5 tiers of the ecosystem, and returns the top 3 ranked picks with scored evidence. No more Reddit threads or outdated blog posts; just the right tool for your exact setup, with install commands and links, in seconds.<br/><br/>
+  SKILLmama eliminates the hours spent researching which library, SDK, or tool to use — it scans your project's actual stack, searches across 4 tiers of the ecosystem plus a companion-skills pass, and returns the top 3 ranked picks with scored evidence. No more Reddit threads or outdated blog posts; just the right tool for your exact setup, with install commands and links, in seconds.<br/><br/>
   Works with <a href="#claude-code-cli">Claude Code</a>, <a href="#claudeai-web--desktop">Claude.ai</a>, <a href="#openai-codex">OpenAI Codex</a>, and <a href="#antigravity">Antigravity</a>.
 </p>
 
 ---
 
 <p align="center">
-  <a href="#see-it-in-action">Demo</a> • <a href="#install">Install</a> • <a href="#usage">Usage</a> • <a href="#ai-adapters">AI Adapters</a> • <a href="#core-workflow">Core Workflow</a> • <a href="#ranking-formula">Ranking Formula</a> • <a href="#5-tier-search-hierarchy">5-Tier Search</a> • <a href="#output-format">Output Format</a> • <a href="#end-to-end-example">Example</a> • <a href="#project-structure">Project Structure</a> • <a href="#packages">Packages</a> • <a href="#evals">Evals</a> • <a href="#roadmap">Roadmap</a>
+  <a href="#see-it-in-action">Demo</a> • <a href="#install">Install</a> • <a href="#usage">Usage</a> • <a href="#ai-adapters">AI Adapters</a> • <a href="#core-workflow">Core Workflow</a> • <a href="#ranking-formula">Ranking Formula</a> • <a href="#4-tier-search-hierarchy">4-Tier Search</a> • <a href="#output-format">Output Format</a> • <a href="#end-to-end-example">Example</a> • <a href="#project-structure">Project Structure</a> • <a href="#packages">Packages</a> • <a href="#evals">Evals</a> • <a href="#roadmap">Roadmap</a>
 </p>
 
 ---
@@ -43,12 +43,12 @@
 > **Known upstream bug — read this first.** For **Codex** and **Antigravity**, `npx skills add ... -g`
 > prints `Done!` and exits 0 while writing to a directory the agent doesn't read (`~/.agents/skills/`
 > through v1.5.22; upstream `main` has since moved Antigravity's target to `~/.gemini/antigravity/skills`,
-> equally unread). Re-verified against `skills@1.5.23` (latest) and upstream `main` on 2026-08-24.
+> equally unread). Re-verified against `skills@1.5.23` (latest) and upstream `main` on 2026-08-31.
 > Root cause is
 > [`isUniversalAgent()`](https://github.com/vercel-labs/skills/blob/main/src/installer.ts):
 > agents whose *project* dir is `.agents/skills` get misclassified, and their `globalSkillsDir`
 > is discarded. Tracked in [#1060](https://github.com/vercel-labs/skills/issues/1060) and
-> [#1470](https://github.com/vercel-labs/skills/issues/1470); fixes still open as of 2026-08-24 —
+> [#1470](https://github.com/vercel-labs/skills/issues/1470); fixes still open as of 2026-08-31 —
 > [PR #1483](https://github.com/vercel-labs/skills/pull/1483) and the newer, more targeted
 > [PR #2028](https://github.com/vercel-labs/skills/pull/2028). **13 agents are affected.**
 >
@@ -170,7 +170,7 @@ Notes:
 
 - The ❌ rows are the upstream bug described at the top of [Install](#install), not a problem with
   this skill. Verified against `skills@1.5.22` on 2026-08-08; re-verified against `skills@1.5.23`
-  and upstream `main` on 2026-08-24 — still unfixed, fix PRs #1483/#2028 both open.
+  and upstream `main` on 2026-08-31 — still unfixed, fix PRs #1483/#2028 both open.
 - The `skills` CLI only discovers files named `SKILL.md`. Repos that ship per-platform variants
   under other names are invisible to it.
 - Claude.ai is not CLI-installable. Zip the `skillmama/` folder and upload via Customize → Skills.
@@ -355,7 +355,7 @@ Before scoring, every candidate passes through the gate (Phase 3.5). The first t
 | Layer | What it checks | Action |
 | ----- | -------------- | ------ |
 | Advisories | Live [OSV.dev](https://osv.dev) lookup for the exact version being recommended, across npm, PyPI, Go, and crates.io | 🚫 BLOCKED if CRITICAL/HIGH with no fix available (the advisory's trigger condition, if OSV states one — a specific mode, flag, or endpoint — is quoted verbatim so you can judge whether your own usage is exposed), ⚠️ WARN if a fix exists (the fixed version is named) or if MODERATE/LOW |
-| Publisher continuity | Whether npm publish rights changed hands between releases, the [event-stream](https://blog.npmjs.org/post/180565383195/details-about-the-event-stream-incident) failure mode that advisory scanning misses | ⚠️ WARN naming both publishers and the date, never an automatic discard. CI bots are not counted as a handoff |
+| Publisher continuity | Whether npm or crates.io publish rights changed hands between releases, the [event-stream](https://blog.npmjs.org/post/180565383195/details-about-the-event-stream-incident) failure mode that advisory scanning misses | ⚠️ WARN naming both publishers and the date, never an automatic discard. CI/trusted-publishing releases are not counted as a handoff |
 | Hard Gate | Data exfiltration, no-disclosure destructive ops, jailbreak instructions | 🚫 BLOCKED (discarded) or ⚠️ WARN (user confirms) |
 | SQP-1 | Vague trigger phrases with no exclusion conditions | Flag in result |
 | SQP-2 | Destructive/sensitive ops with no user-visible warning | Flag in result |
@@ -363,7 +363,7 @@ Before scoring, every candidate passes through the gate (Phase 3.5). The first t
 
 **Known limits.** Stated plainly, because a gate that oversells what it checks is worse than no gate:
 
-- **Publisher continuity is npm-only.** PyPI exposes no per-release uploader identity, so Python candidates report `N/A (unsupported ecosystem)` rather than implying the check ran.
+- **Publisher continuity covers npm and crates.io.** Those are the two registries that expose a real per-release publisher identity. PyPI and Go don't, so candidates on those registries report `N/A (unsupported ecosystem)` rather than implying the check ran.
 - **It catches handoffs, not account takeovers.** In the ua-parser-js, rc, and coa compromises the attacker published under the real maintainer's name, so this check reads clean. Only the advisory lookup catches those, and only after disclosure.
 - **Only recent handoffs are reported** (under 12 months, most recent only). Measured across 98 popular npm packages: 51% carry a stale handoff somewhere in their history, so reporting all of them would fire on more than half of npm and train you to ignore the warning. With the recency filter, 7%.
 - **Advisory lookup covers the direct package,** not the full transitive dependency tree.
@@ -408,7 +408,7 @@ Every candidate that passes the gate is scored 1–10 on four dimensions:
 
 ---
 
-## 5-Tier Search Hierarchy
+## 4-Tier Search Hierarchy
 
 | Tier | Source                                          | What it finds                              |
 | ---- | ----------------------------------------------- | ------------------------------------------ |
@@ -625,7 +625,7 @@ to fake the rest.
 
 | Package | Name | State |
 | --- | --- | --- |
-| [`packages/core`](packages/core) | `skillmama` | private, unpublished |
+| [`packages/core`](packages/core) | [`skillmama`](https://www.npmjs.com/package/skillmama) | published, `0.1.0` |
 
 There is one package. `packages/core` is a folder name, not a second identity:
 it carries the `skillmama` bin and the programmatic API in a single publishable
@@ -660,11 +660,9 @@ Implemented in core:
   Phase 4's two live-data factors, split like Phase 3.5: one GitHub request for
   stars and last-push date plus one npm request for weekly downloads, then
   SKILL.md's band tables as a lookup. Unverified sources stay unverified rather
-  than becoming a low score, and two things get reported instead of guessed:
-  SKILL.md's Maintenance table has no band for 181-365 days (it jumps from
-  "≤180 → 4-6" to "> 365 → 1-3"), and its 10 band also requires "active
-  releases", which a push date cannot establish. Picking a point inside a band
-  stays judgment.
+  than becoming a low score, and one thing gets reported instead of guessed:
+  the Maintenance 10 band also requires "active releases", which a push date
+  cannot establish. Picking a point inside a band stays judgment.
 - **`normalizeSearchHits()`** — Phase 3 Stage C: TierResult[] → deduplicated
   `Candidate[]` with tier provenance. Names are extracted structurally from
   GitHub/npm/PyPI URL shapes (title as fallback), duplicates resolve to the
@@ -717,9 +715,9 @@ Inspired by [Philipp Schmid](https://github.com/philschmid)'s (Google DeepMind) 
 
 ## Roadmap
 
-[`ROADMAP.md`](ROADMAP.md) tracks what is left, in priority order: extending
-publisher continuity beyond npm, the publish and tagging decisions for the two
-packages, wiring the CLI past `scan`, and the one remaining adapter item (Codex
-has never been live-tested; Antigravity has). The Compatibility and Simplicity
+[`ROADMAP.md`](ROADMAP.md) tracks what is left, in priority order: cutting the
+release that ships the factors work and the crates.io publisher check and
+publishes `skillmama` to npm, and the one remaining adapter item (Codex has
+never been live-tested; Antigravity has). The Compatibility and Simplicity
 factors stay outside the package deliberately — their bands are written in terms
 only a reader of the docs can assess.

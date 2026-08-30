@@ -260,6 +260,8 @@ test("maintenance bands match SKILL.md's table", () => {
   assert.deepEqual(band(90), { low: 7, high: 9 });
   assert.deepEqual(band(91), { low: 4, high: 6 });
   assert.deepEqual(band(180), { low: 4, high: 6 });
+  assert.deepEqual(band(181), { low: 3, high: 5 });
+  assert.deepEqual(band(365), { low: 3, high: 5 });
   assert.deepEqual(band(366), { low: 1, high: 3 });
   assert.deepEqual(band(3_000), { low: 1, high: 3 });
 });
@@ -269,12 +271,11 @@ test("the 10 band carries the unverifiable \"active releases\" qualifier", () =>
   assert.ok(outcome.notes.some((n) => n.includes("active releases")));
 });
 
-test("181-365 days is reported as a gap in SKILL.md, not guessed at", () => {
+test("181-365 days bands to 3-5, closing SKILL.md's former gap", () => {
   for (const age of [181, 200, 365]) {
     const outcome = mapMaintenanceBand([pushed(daysAgo(age))], TODAY);
-    assert.equal(outcome.status, "unbanded", `age ${age}`);
-    assert.equal(outcome.reason, "outside-defined-bands");
-    assert.ok(outcome.notes.some((n) => n.includes("181–365")));
+    assert.equal(outcome.status, "banded", `age ${age}`);
+    assert.deepEqual(outcome.band, { low: 3, high: 5 });
     assert.ok(outcome.notes.some((n) => n.includes(`${age} days before ${TODAY}`)));
   }
 });

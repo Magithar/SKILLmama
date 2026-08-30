@@ -1,7 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { gatherSecurityEvidence } from "../dist/index.js";
-import { NPM_BOT_PUBLISHERS, detectPublisherHandoff, normalizeOsvQueryResponse } from "../dist/mechanical/security.js";
+import {
+  NPM_BOT_PUBLISHERS,
+  detectPublisherHandoff,
+  detectCratesIoPublisherHandoff,
+  normalizeOsvQueryResponse,
+} from "../dist/mechanical/security.js";
 
 const TODAY = "2026-08-21";
 
@@ -300,6 +305,100 @@ test("structurally invalid input throws instead of reading as clean", () => {
 });
 
 // ---------------------------------------------------------------------------
+// 2b. Publisher continuity — crates.io. Same four rules, crates.io's shape:
+//     `versions[]` is embedded directly (no separate time map), and a
+//     null `published_by` (trusted publishing OR pre-tracking legacy
+//     versions) takes the place of npm's bot list / missing `_npmUser`.
+// ---------------------------------------------------------------------------
+
+function crateResponse(publishes) {
+  return {
+    versions: publishes.map((p) => ({
+      num: p.version,
+      created_at: `${p.date}T12:00:00.000Z`,
+      published_by: p.publisher === undefined ? null : { login: p.publisher },
+    })),
+  };
+}
+
+test("crates.io: solo maintainer, no handoff", () => {
+  const doc = crateResponse([
+    { version: "1.0.0", publisher: "solo", date: "2024-01-01" },
+    { version: "1.1.0", publisher: "solo", date: "2026-06-01" },
+  ]);
+  assert.equal(detectCratesIoPublisherHandoff(doc, TODAY), null);
+});
+
+test("crates.io: team rotation is not a handoff (rustls-shaped: ctz/djc/cpu rotate, none retires)", () => {
+  const doc = crateResponse([
+    { version: "0.23.39", publisher: "cpu", date: "2026-04-22" },
+    { version: "0.23.40", publisher: "ctz", date: "2026-04-28" },
+    { version: "0.23.41", publisher: "djc", date: "2026-06-22" },
+    { version: "0.23.42", publisher: "djc", date: "2026-07-13" },
+    { version: "0.23.43", publisher: "ctz", date: "2026-07-29" },
+    { version: "0.23.44", publisher: "cpu", date: "2026-08-05" },
+  ]);
+  assert.equal(detectCratesIoPublisherHandoff(doc, TODAY), null);
+});
+
+test("crates.io: genuine handoff under 12 months is reported with both publishers, version, date", () => {
+  const doc = crateResponse([
+    { version: "1.0.0", publisher: "old-guard", date: "2026-01-01" },
+    { version: "2.0.0", publisher: "new-maintainer", date: "2026-02-01" },
+    { version: "2.1.0", publisher: "new-maintainer", date: "2026-07-01" },
+  ]);
+  assert.deepEqual(detectCratesIoPublisherHandoff(doc, TODAY), {
+    from: "old-guard",
+    to: "new-maintainer",
+    version: "2.0.0",
+    date: "2026-02-01",
+  });
+});
+
+test("crates.io: stale handoffs (>= 12 months) are never reported", () => {
+  const doc = crateResponse([
+    { version: "1.0.0", publisher: "original", date: "2018-09-05" },
+    { version: "2.0.0", publisher: "successor", date: "2018-11-26" },
+  ]);
+  assert.equal(detectCratesIoPublisherHandoff(doc, TODAY), null);
+});
+
+test("crates.io: null published_by (trusted publishing or pre-tracking legacy) is dropped, not a handoff", () => {
+  // uv/ruff-shaped: every version trusted-published via CI, published_by null throughout.
+  const trustedPublishingOnly = crateResponse([
+    { version: "0.1.0", date: "2026-01-01" },
+    { version: "0.2.0", date: "2026-02-01" },
+  ]);
+  assert.equal(detectCratesIoPublisherHandoff(trustedPublishingOnly, TODAY), null);
+
+  const humanHandoffViaTrustedPublishingGap = crateResponse([
+    { version: "1.0.0", publisher: "human", date: "2026-01-01" },
+    { version: "1.1.0", date: "2026-02-01" }, // trusted-published release, no login
+    { version: "2.0.0", publisher: "newcomer", date: "2026-03-01" },
+  ]);
+  assert.deepEqual(detectCratesIoPublisherHandoff(humanHandoffViaTrustedPublishingGap, TODAY), {
+    from: "human",
+    to: "newcomer",
+    version: "2.0.0",
+    date: "2026-03-01",
+  });
+});
+
+test("crates.io: structurally invalid input throws instead of reading as clean", () => {
+  assert.throws(() => detectCratesIoPublisherHandoff(null, TODAY), /crateResponse/);
+  assert.throws(() => detectCratesIoPublisherHandoff({}, TODAY), /crateResponse/);
+  assert.throws(() => detectCratesIoPublisherHandoff("<html>", TODAY), /crateResponse/);
+  assert.throws(
+    () =>
+      detectCratesIoPublisherHandoff(
+        crateResponse([{ version: "1.0.0", publisher: "a", date: "2026-01-01" }]),
+        "not-a-date"
+      ),
+    /today/
+  );
+});
+
+// ---------------------------------------------------------------------------
 // 3. Orchestration — injected transport, canonical evidence order,
 //    unverified-not-passed degradation.
 // ---------------------------------------------------------------------------
@@ -382,24 +481,66 @@ test("scoped package names are percent-encoded against the npm registry", async 
   assert.ok(log.some((c) => c.url === "https://registry.npmjs.org/%40scope%2Fpkg"));
 });
 
-test("non-npm ecosystems report publisher continuity as unsupported, never checked", async () => {
-  let registryHit = false;
+test("crates.io candidate yields both checks in canonical order [osv, publisher-continuity]", async () => {
+  const SOLO_CRATE = crateResponse([{ version: "1.3.0", publisher: "solo", date: "2026-01-01" }]);
   const evidence = await gatherSecurityEvidence(
-    { name: "requests", ecosystem: "PyPI", version: "2.31.0" },
+    { name: "serde", ecosystem: "crates.io", version: "1.3.0" },
     {
-      fetchImpl: async (url) => {
-        if (url.includes("registry.npmjs.org")) registryHit = true;
-        return { ok: true, status: 200, json: async () => ({}) };
-      },
+      fetchImpl: fetchStub({
+        "https://api.osv.dev/v1/query": { body: CLEAN_OSV },
+        "https://crates.io/api/v1/crates/serde": { body: SOLO_CRATE },
+      }),
       today: TODAY,
     }
   );
-  assert.equal(registryHit, false);
-  assert.deepEqual(evidence[1], {
-    source: "publisher-continuity",
-    status: "unverified",
-    reason: "unsupported-ecosystem",
-  });
+  assert.deepEqual(evidence.map((e) => e.source), ["osv", "publisher-continuity"]);
+  assert.deepEqual(evidence, [
+    { source: "osv", status: "ok", queriedVersion: "1.3.0", advisories: [] },
+    { source: "publisher-continuity", status: "ok", handoff: null },
+  ]);
+});
+
+test("crates.io requests carry the descriptive User-Agent crates.io's crawler policy requires", async () => {
+  const log = [];
+  await gatherSecurityEvidence(
+    { name: "serde", ecosystem: "crates.io", version: "1.0.0" },
+    {
+      fetchImpl: fetchStub(
+        {
+          "https://api.osv.dev/v1/query": { body: CLEAN_OSV },
+          "https://crates.io/api/v1/crates/serde": {
+            body: crateResponse([{ version: "1.0.0", publisher: "solo", date: "2026-01-01" }]),
+          },
+        },
+        log
+      ),
+      today: TODAY,
+    }
+  );
+  const cratesCall = log.find((c) => c.url === "https://crates.io/api/v1/crates/serde");
+  assert.match(cratesCall.init.headers["user-agent"], /skillmama/);
+});
+
+test("PyPI and Go report publisher continuity as unsupported, never checked", async () => {
+  for (const ecosystem of ["PyPI", "Go"]) {
+    let registryHit = false;
+    const evidence = await gatherSecurityEvidence(
+      { name: "requests", ecosystem, version: "2.31.0" },
+      {
+        fetchImpl: async (url) => {
+          if (url.includes("registry.npmjs.org") || url.includes("crates.io")) registryHit = true;
+          return { ok: true, status: 200, json: async () => ({}) };
+        },
+        today: TODAY,
+      }
+    );
+    assert.equal(registryHit, false, `${ecosystem} must not hit any publisher registry`);
+    assert.deepEqual(evidence[1], {
+      source: "publisher-continuity",
+      status: "unverified",
+      reason: "unsupported-ecosystem",
+    });
+  }
 });
 
 test("OSV unreachable degrades to unverified — and never reads as passed", async () => {

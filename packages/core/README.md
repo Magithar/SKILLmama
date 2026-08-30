@@ -6,8 +6,9 @@ package provides a CLI and a programmatic runtime for the deterministic parts of
 that system. The shared deterministic rules are checked against SKILL.md by
 conformance tests (`test/skill-conformance.test.js`).
 
-Judgment-shaped work is injected, never faked. The package is not published
-today, and the skill does not call it.
+Judgment-shaped work is injected, never faked. Published to npm as
+[`skillmama`](https://www.npmjs.com/package/skillmama), independently of the
+repo's own version; the skill does not call it.
 
 `packages/core` is a folder name, not a second package identity. There is one
 publishable unit named `skillmama`: it owns the `skillmama` bin (`src/cli/`)
@@ -61,20 +62,24 @@ SKILL.md runs are plain HTTP APIs, so this one is genuinely deterministic:
 the [OSV.dev](https://osv.dev) advisory query (severity off
 `database_specific.severity`, `hasFix` from any `fixed` event, PYSEC-*/
 GHSA-* twins deduped on aliases with severity read off the GHSA twin) and
-the npm publisher-continuity check — a faithful port of SKILL.md Check 2's
-reference script with all four load-bearing rules: sort by publish time not
-packument key order; a handoff means the old guard never publishes again;
-only the most recent handoff under 12 months is ever reported; bot and
-unknown publishers are dropped before detection. Transport failure degrades
+the npm and crates.io publisher-continuity checks — a faithful port of
+SKILL.md Check 2's reference script(s) with all four load-bearing rules:
+sort by publish time not registry key/list order; a handoff means the old
+guard never publishes again; only the most recent handoff under 12 months
+is ever reported; non-human publishers are dropped before detection (npm's
+literal bot list; crates.io's null `published_by`, which covers both
+trusted-publishing/CI releases and legacy versions from before crates.io
+tracked publishers). The two registries parse into a shared history shape
+and run through one `findRecentHumanHandoff()`. Transport failure degrades
 to `{ status: "unverified", reason: "unreachable" }` per SKILL.md's "never
 let an unverified candidate read as having passed", while a reachable
-registry returning garbage throws loudly instead of reading clean.
-Non-npm ecosystems report publisher continuity as
-`unsupported-ecosystem` so a Python candidate can never imply it was
-checked. It deliberately does **not** judge — that is the next function's
-job. The two pure normalizers (`normalizeOsvQueryResponse`,
-`detectPublisherHandoff`) are exported and fixture-tested directly; tests
-inject a fetch stub, so the suite never touches the network.
+registry returning garbage throws loudly instead of reading clean. PyPI and
+Go report publisher continuity as `unsupported-ecosystem` — neither exposes
+a per-release uploader, so a candidate there can never imply the check ran.
+It deliberately does **not** judge — that is the next function's job. The
+pure normalizers (`normalizeOsvQueryResponse`, `detectPublisherHandoff`,
+`detectCratesIoPublisherHandoff`) are exported and fixture-tested directly;
+tests inject a fetch stub, so the suite never touches the network.
 
 **`resolveSecurityVerdict(evidence, findings)` / `verifyCandidate(...)`,
 also in [`src/mechanical/security.ts`](src/mechanical/security.ts) — Phase

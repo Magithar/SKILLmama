@@ -72,6 +72,10 @@ export const NPM_BOT_PUBLISHERS: ReadonlySet<string> = new Set([
 
 const OSV_QUERY_URL = "https://api.osv.dev/v1/query";
 const NPM_REGISTRY_BASE = "https://registry.npmjs.org";
+const CRATES_IO_BASE = "https://crates.io/api/v1/crates";
+/** crates.io's crawler policy 403s any request without a descriptive,
+ *  contactable User-Agent — npm and OSV impose no such requirement. */
+const CRATES_IO_USER_AGENT = "skillmama (https://github.com/Magithar/SKILLmama)";
 
 const OSV_ECOSYSTEMS: readonly OsvEcosystem[] = ["npm", "PyPI", "Go", "crates.io"];
 
@@ -321,16 +325,29 @@ export function detectPublisherHandoff(
         : undefined;
     history.push({
       version,
-      publisher: typeof name === "string" ? name : "",
+      publisher: typeof name === "string" && !NPM_BOT_PUBLISHERS.has(name) ? name : "",
       date: publishedAt.slice(0, 10),
       publishedAt: Date.parse(publishedAt),
     });
   }
-  history.sort((a, b) => a.publishedAt - b.publishedAt);
+  return findRecentHumanHandoff(history, today);
+}
 
-  const humans = history.filter(
-    (entry) => entry.publisher !== "" && !NPM_BOT_PUBLISHERS.has(entry.publisher)
-  );
+/**
+ * Shared handoff-detection algorithm over an already-parsed, ecosystem-
+ * agnostic publish history. `entry.publisher === ""` means "not a human
+ * account" (bot/CI/unknown) and must already be excluded by the caller —
+ * this function only sorts, requires the old guard never to return, and
+ * applies the 12-month recency filter. See detectPublisherHandoff()'s doc
+ * comment for why each of those rules exists; the reasoning is the same
+ * regardless of which registry the history came from.
+ */
+function findRecentHumanHandoff(
+  history: ParsedPublishHistoryEntry[],
+  today: string
+): PublisherHandoff | null {
+  const sorted = [...history].sort((a, b) => a.publishedAt - b.publishedAt);
+  const humans = sorted.filter((entry) => entry.publisher !== "");
 
   const seen = new Set<string>();
   let lastHandoff: { prev: ParsedPublishHistoryEntry; newcomer: ParsedPublishHistoryEntry } | undefined;
@@ -358,6 +375,71 @@ export function detectPublisherHandoff(
   };
 }
 
+/**
+ * crates.io crate response -> recent human-to-human publisher handoff, or
+ * null. Pure. Same four rules as detectPublisherHandoff(), adapted to
+ * crates.io's shape:
+ *
+ *  - `GET /api/v1/crates/{crate}` embeds the full `versions[]` array
+ *    directly (no separate time map to join, unlike npm), each with `num`,
+ *    `created_at`, and a nullable `published_by.login`.
+ *  - crates.io has no literal bot list. `published_by` is null both for
+ *    trusted publishing (`trustpub_data` set — a CI-based release with no
+ *    human account, crates.io's equivalent of npm's `GitHub Actions`) and
+ *    for legacy versions published before crates.io tracked publishers at
+ *    all. Either way, a null `published_by` is not a human account and is
+ *    dropped before detection, same treatment as npm's missing `_npmUser`.
+ *  - The old-guard-never-returns and 12-month recency rules are identical;
+ *    rustls rotates releases among an active team (ctz, djc, cpu) the same
+ *    way express/lodash/chalk do on npm, so the "any change is a handoff"
+ *    shortcut would be just as wrong here.
+ *
+ * Structurally invalid input throws loudly — same policy as
+ * detectPublisherHandoff().
+ */
+export function detectCratesIoPublisherHandoff(
+  crateResponse: unknown,
+  today: string
+): PublisherHandoff | null {
+  if (typeof today !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(today) ||
+      !Number.isFinite(Date.parse(today))) {
+    throw new Error(
+      `detectCratesIoPublisherHandoff: today must be an ISO date (YYYY-MM-DD), got ${JSON.stringify(today)}`
+    );
+  }
+  if (!crateResponse || typeof crateResponse !== "object") {
+    throw new Error("detectCratesIoPublisherHandoff: crateResponse must be an object");
+  }
+  const versions = (crateResponse as Record<string, unknown>).versions;
+  if (!Array.isArray(versions)) {
+    throw new Error(
+      "detectCratesIoPublisherHandoff: crateResponse is missing a usable versions array — is this actually a crates.io crate response?"
+    );
+  }
+
+  const history: ParsedPublishHistoryEntry[] = [];
+  for (const entry of versions) {
+    if (!entry || typeof entry !== "object") continue;
+    const v = entry as Record<string, unknown>;
+    if (typeof v.num !== "string" || v.num === "") continue;
+    if (typeof v.created_at !== "string" || !Number.isFinite(Date.parse(v.created_at))) {
+      continue;
+    }
+    const publishedBy = v.published_by;
+    const login =
+      publishedBy && typeof publishedBy === "object"
+        ? (publishedBy as Record<string, unknown>).login
+        : undefined;
+    history.push({
+      version: v.num,
+      publisher: typeof login === "string" ? login : "",
+      date: v.created_at.slice(0, 10),
+      publishedAt: Date.parse(v.created_at),
+    });
+  }
+  return findRecentHumanHandoff(history, today);
+}
+
 function isoLocalDate(): string {
   const now = new Date();
   const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -371,9 +453,10 @@ function isoLocalDate(): string {
  * error, non-2xx, unparseable body) degrades that check to
  * `{ status: "unverified", reason: "unreachable" }` per SKILL.md — the
  * consumer must surface unverified records, never drop them. Publisher
- * continuity is npm-only; every other ecosystem yields
- * `reason: "unsupported-ecosystem"` so a Python candidate can never imply
- * it was checked.
+ * continuity covers npm and crates.io, the two registries that expose a
+ * real per-release publisher; PyPI, Go, and RubyGems yield
+ * `reason: "unsupported-ecosystem"` so a candidate on those registries can
+ * never imply it was checked.
  */
 export async function gatherSecurityEvidence(
   target: SecurityTarget,
@@ -408,29 +491,40 @@ export async function gatherSecurityEvidence(
       };
     })(),
     (async (): Promise<SecurityEvidence> => {
-      if (target.ecosystem !== "npm") {
+      if (target.ecosystem === "npm") {
+        const payload = await fetchJson(
+          `${NPM_REGISTRY_BASE}/${encodeURIComponent(target.name)}`,
+          { headers: { accept: "application/json" } },
+          doFetch
+        );
+        if (payload === null) {
+          return { source: "publisher-continuity", status: "unverified", reason: "unreachable" };
+        }
         return {
           source: "publisher-continuity",
-          status: "unverified",
-          reason: "unsupported-ecosystem",
+          status: "ok",
+          handoff: detectPublisherHandoff(payload, today),
         };
       }
-      const payload = await fetchJson(
-        `${NPM_REGISTRY_BASE}/${encodeURIComponent(target.name)}`,
-        { headers: { accept: "application/json" } },
-        doFetch
-      );
-      if (payload === null) {
+      if (target.ecosystem === "crates.io") {
+        const payload = await fetchJson(
+          `${CRATES_IO_BASE}/${encodeURIComponent(target.name)}`,
+          { headers: { accept: "application/json", "user-agent": CRATES_IO_USER_AGENT } },
+          doFetch
+        );
+        if (payload === null) {
+          return { source: "publisher-continuity", status: "unverified", reason: "unreachable" };
+        }
         return {
           source: "publisher-continuity",
-          status: "unverified",
-          reason: "unreachable",
+          status: "ok",
+          handoff: detectCratesIoPublisherHandoff(payload, today),
         };
       }
       return {
         source: "publisher-continuity",
-        status: "ok",
-        handoff: detectPublisherHandoff(payload, today),
+        status: "unverified",
+        reason: "unsupported-ecosystem",
       };
     })(),
   ]);

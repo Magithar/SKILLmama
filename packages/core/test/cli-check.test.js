@@ -99,7 +99,7 @@ test("a non-npm ecosystem never implies publisher continuity was checked", async
   );
 });
 
-test("the 181-365 day gap surfaces as 'no band', not a number", async () => {
+test("181-365 days bands to 3-5, SKILL.md's formerly-unfilled range", async () => {
   const result = await runCheck(target, {
     fetchImpl: stubFetch({
       ...clean,
@@ -111,9 +111,9 @@ test("the 181-365 day gap surfaces as 'no band', not a number", async () => {
     }),
     today: TODAY,
   });
-  assert.equal(result.maintenance.band.status, "unbanded");
-  assert.equal(result.maintenance.band.reason, "outside-defined-bands");
-  assert.match(renderCheckText(result), /Maintenance +no band/);
+  assert.equal(result.maintenance.band.status, "banded");
+  assert.deepEqual(result.maintenance.band.band, { low: 3, high: 5 });
+  assert.match(renderCheckText(result), /Maintenance +3-5/);
 });
 
 test("json output round-trips the whole result", async () => {

@@ -112,9 +112,7 @@ export function renderCheckText(result: CheckResult): string {
 
 function renderBand(outcome: BandOutcome): string {
   if (outcome.status === "unbanded") {
-    return outcome.reason === "outside-defined-bands"
-      ? "no band (SKILL.md's table does not cover this value)"
-      : "N/A (unverified)";
+    return "N/A (unverified)";
   }
   const { low, high } = outcome.band;
   const range = low === high ? `${low}` : `${low}-${high}`;

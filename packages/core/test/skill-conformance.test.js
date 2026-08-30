@@ -187,24 +187,56 @@ const pushedDaysAgo = (n, archived = false) => [
 
 function maintenanceRows() {
   const block = section(/\*\*Maintenance \(15%\)\*\*/, /\n\*\*Simplicity/);
-  const rows = [
+  const edgeRows = [
     ...block.matchAll(/^- (\d+(?:[–-]\d+)?): (≤|>)(\d+) days(.*)$/gm),
   ];
+  const rangeRows = [
+    ...block.matchAll(/^- (\d+(?:[–-]\d+)?): (\d+)[–-](\d+) days(.*)$/gm),
+  ];
   assert.equal(
-    rows.length,
-    4,
-    "SKILL.md conformance: expected 4 Maintenance band lines, the extractor found " + rows.length
+    edgeRows.length + rangeRows.length,
+    5,
+    "SKILL.md conformance: expected 5 Maintenance band lines, the extractor found " +
+      (edgeRows.length + rangeRows.length)
   );
-  return rows.map((row) => ({
-    band: parseBandLabel(row[1]),
-    operator: row[2],
-    days: Number(row[3]),
-    tail: row[4],
-  }));
+  return [
+    ...edgeRows.map((row) => ({
+      band: parseBandLabel(row[1]),
+      operator: row[2],
+      days: Number(row[3]),
+      tail: row[4],
+    })),
+    ...rangeRows.map((row) => ({
+      band: parseBandLabel(row[1]),
+      operator: "range",
+      low: Number(row[2]),
+      high: Number(row[3]),
+      tail: row[4],
+    })),
+  ];
 }
 
 test("mapMaintenanceBand reproduces SKILL.md's Maintenance table", () => {
   for (const row of maintenanceRows()) {
+    if (row.operator === "range") {
+      // A closed range: both endpoints are inside, one step past either
+      // edge must land in a different band.
+      for (const days of [row.low, row.high]) {
+        assert.deepEqual(
+          mapMaintenanceBand(pushedDaysAgo(days), TODAY).band,
+          row.band,
+          `${days} days should map to band ${row.band.low}-${row.band.high} per SKILL.md`
+        );
+      }
+      const belowRange = mapMaintenanceBand(pushedDaysAgo(row.low - 1), TODAY);
+      assert.ok(
+        belowRange.status === "unbanded" ||
+          belowRange.band.low !== row.band.low ||
+          belowRange.band.high !== row.band.high,
+        `${row.low - 1} days must fall OUTSIDE band ${row.band.low}-${row.band.high}; SKILL.md's edge and the code's disagree`
+      );
+      continue;
+    }
     // Both sides of the stated edge, same reasoning as the Popularity table.
     const inside = row.operator === "≤" ? row.days : row.days + 1;
     const outside = row.operator === "≤" ? row.days + 1 : row.days;
@@ -237,7 +269,7 @@ test("the archived clause is read off SKILL.md, not assumed", () => {
   );
 });
 
-test("the 181-365 day gap is SKILL.md's, and the code reports it rather than guessing", () => {
+test("SKILL.md's Maintenance table has no gap left uncovered", () => {
   const rows = maintenanceRows();
   const covered = Math.max(
     ...rows.filter((row) => row.operator === "≤").map((row) => row.days)
@@ -246,22 +278,26 @@ test("the 181-365 day gap is SKILL.md's, and the code reports it rather than gue
     ...rows.filter((row) => row.operator === ">").map((row) => row.days)
   );
 
-  // This assertion is the alarm: when SKILL.md's table is made contiguous
-  // (roadmap task 8), it fails, and mapMaintenanceBand must be updated in
-  // the same change instead of silently keeping a dead branch.
+  const rangeRow = rows.find((row) => row.operator === "range");
+  assert.ok(rangeRow, "SKILL.md conformance: no range-style Maintenance band covers the former gap");
+
+  // This assertion is the alarm: if SKILL.md's table ever opens a gap again
+  // between the ≤ edge, the range row, and the > edge, it fails, and
+  // mapMaintenanceBand must be updated in the same change instead of
+  // silently leaving a hole.
   assert.ok(
-    resumes > covered,
-    `SKILL.md's Maintenance table now covers ${covered + 1}-${resumes} days. The gap is closed, so mapMaintenanceBand's "outside-defined-bands" branch is stale — implement the new band and delete it.`
+    rangeRow.low === covered + 1 && rangeRow.high === resumes,
+    `SKILL.md's Maintenance table has a gap: ≤${covered} is followed by a ${rangeRow.low}-${rangeRow.high} range and then >${resumes}. mapMaintenanceBand must cover the full span explicitly, not fall through.`
   );
 
   for (const days of [covered + 1, Math.floor((covered + resumes) / 2), resumes]) {
     const outcome = mapMaintenanceBand(pushedDaysAgo(days), TODAY);
     assert.equal(
       outcome.status,
-      "unbanded",
-      `${days} days falls in SKILL.md's uncovered range and must not be given a band`
+      "banded",
+      `${days} days falls between SKILL.md's ≤${covered} and >${resumes} edges and must be banded`
     );
-    assert.equal(outcome.reason, "outside-defined-bands");
+    assert.deepEqual(outcome.band, rangeRow.band);
   }
 });
 

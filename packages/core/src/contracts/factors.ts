@@ -78,17 +78,16 @@ export type MaintenanceEvidence =
 /**
  * The result of mapping evidence onto SKILL.md's bands.
  *
- * Three outcomes, not two, because "no data" and "data that SKILL.md has
- * no band for" are different facts and collapsing them would hide a gap
- * in SKILL.md itself:
+ * Two outcomes:
  *
  *   banded   — the band SKILL.md assigns. Pick a point inside it.
  *   unbanded — `no-verified-evidence`: every source came back unverified,
  *              so the factor is SKILL.md's `N/A (unverified)`.
- *            — `outside-defined-bands`: verified evidence that falls in a
- *              hole between SKILL.md's stated ranges. Today exactly one
- *              exists: Maintenance 181–365 days, between "≤180 → 4–6" and
- *              "> 365 → 1–3". Reported rather than guessed.
+ *
+ * Both of SKILL.md's band tables are fully contiguous (Popularity's OR
+ * clauses always resolve to a band; Maintenance's ≤180/181–365/>365 chain
+ * has no gap), so verified evidence always lands in a band — `unbanded`
+ * only ever reports missing data, never a hole in the table.
  *
  * `notes` is always populated: which source was used, which was
  * unverified, and any qualifier the evidence cannot settle. Never empty,
@@ -98,6 +97,6 @@ export type BandOutcome =
   | { status: "banded"; band: FactorBand; notes: string[] }
   | {
       status: "unbanded";
-      reason: "no-verified-evidence" | "outside-defined-bands";
+      reason: "no-verified-evidence";
       notes: string[];
     };

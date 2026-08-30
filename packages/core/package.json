@@ -1,7 +1,6 @@
 {
   "name": "skillmama",
   "version": "0.1.0",
-  "private": true,
   "description": "SKILLmama is a capability discovery system. SKILL.md is the agent-native implementation and the specification. The skillmama npm package provides a CLI (scan, check) and a programmatic runtime for the deterministic parts of that system. The shared deterministic rules are checked against SKILL.md by conformance tests.",
   "type": "module",
   "bin": {
