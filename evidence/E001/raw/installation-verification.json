@@ -1,0 +1,43 @@
+{
+  "hypothesis": "H1 -- verified skill installation",
+  "targets": [
+    {
+      "agent": "codex",
+      "tool": "upstream skills CLI (npx skills add -a codex -g)",
+      "reported_exit_code": 0,
+      "reported_success": true,
+      "actual_destination_written": "~/.agents/skills/skillmama/SKILL.md",
+      "expected_destination": "~/.codex/skills/skillmama/SKILL.md",
+      "expected_destination_populated": false,
+      "installer_status_matches_reality": false
+    },
+    {
+      "agent": "codex",
+      "tool": "skill-land",
+      "reported_exit_code": 0,
+      "reported_success": true,
+      "actual_destination_written": "~/.codex/skills/skillmama/SKILL.md",
+      "expected_destination": "~/.codex/skills/skillmama/SKILL.md",
+      "expected_destination_populated": true,
+      "installer_status_matches_reality": true
+    },
+    {
+      "agent": "antigravity",
+      "tool": "skill-land",
+      "reported_exit_code": 0,
+      "reported_success": true,
+      "actual_destination_written": [
+        "~/.gemini/config/skills/skillmama/SKILL.md",
+        "~/.gemini/antigravity/skills/skillmama/SKILL.md",
+        "~/.gemini/skills/skillmama/SKILL.md"
+      ],
+      "expected_destination": "~/.gemini/config/skills/skillmama/SKILL.md",
+      "expected_destination_populated": true,
+      "installer_status_matches_reality": true
+    }
+  ],
+  "supporting_logs": [
+    "evidence/E001/raw/upstream-skills-output.txt",
+    "evidence/E001/raw/skill-land-output.txt"
+  ]
+}
