@@ -1,0 +1,25 @@
+=== skill-land install: security scan step ===
+skillspector on PATH: skillspector not found
+
+  source   Magithar/SKILLmama
+  skill    SKILLmama  [27795 bytes, sha 2f50abcf647b]
+  from     ./skillmama/SKILL.md
+  contains
+      8  shell commands        bash, npm, npx, sh
+      3  network hosts         api.osv.dev, registry.npmjs.org, crates.io
+      4  credential refs       .env.example
+  security NOT SCANNED  skillspector not on PATH
+           uv tool install git+https://github.com/NVIDIA/skillspector.git
+
+  OpenAI Codex
+    OK    /private/tmp/claude-501/-Users-magi-Documents-GitHub-skills/959f5b13-74bc-4bc5-a707-bb7e0550fb25/scratchpad/soak-e002-home/.codex/skills/skillmama/SKILL.md
+    note  `npx skills add -a codex -g` writes to ~/.agents/skills instead
+
+  verified
+
+npm notice
+npm notice New patch version of npm available! 11.19.0 -> 11.19.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.19.1
+npm notice To update run: npm install -g npm@11.19.1
+npm notice
+exit: 0
