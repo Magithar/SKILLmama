@@ -1,0 +1,19 @@
+lodash@4.17.15  (npm)
+
+Not checked:
+  ! Repository lodash/lodash was read from the npm metadata, not supplied.
+  ! Phase 3.5 content inspection did not run: no docs or code were read, so guardrail-circumvention, exfiltration and SQP findings were not looked for. A PASS below means the live-data checks found nothing, not that the package is safe.
+
+Verdict  WARN
+
+  - OSV HIGH GHSA-35jh-r3h4-6jhm: Command Injection in lodash has a fixed version available — recommend the fixed version
+  - OSV HIGH GHSA-p6mc-m468-83gw: Prototype Pollution in lodash has a fixed version available — recommend the fixed version
+  - OSV MODERATE/LOW advisories: MODERATE GHSA-29mw-wpgm-hmr9: Regular Expression Denial of Service (ReDoS) in lodash; MODERATE GHSA-f23m-r3pf-42rh: lodash vulnerable to Prototype Pollution via array path bypass in `_.unset` and `_.omit`
+
+Popularity    10/10  (pick a point in this band)
+Maintenance   7-9/10  (pick a point in this band)
+  - github-stars: 61,278 stars -> 10
+  - npm-downloads: 173,745,865 weekly -> 10
+  - Bands are OR'd; best available wins -> 10
+  - github-last-commit: last push 2026-07-03, 59 days before 2026-08-31 -> 7–9
+EXIT_CODE:0
