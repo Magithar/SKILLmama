@@ -8,6 +8,7 @@ npx skillmama check lodash --version 4.17.15     # live OSV + publisher-continui
 ```
 
 [![npm](https://img.shields.io/npm/v/skillmama)](https://www.npmjs.com/package/skillmama)
+[![npm downloads](https://img.shields.io/npm/dt/skillmama)](https://www.npmjs.com/package/skillmama)
 
 ## Why this exists
 

@@ -3,6 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/license-Apache_2.0-blue.svg" alt="License"/>
   <img src="https://img.shields.io/github/v/release/Magithar/SKILLmama?include_prereleases&label=release" alt="Release"/>
+  <a href="https://www.npmjs.com/package/skillmama"><img src="https://img.shields.io/npm/dt/skillmama" alt="npm downloads"/></a>
   <a href="https://skills.sh/Magithar/SKILLmama"><img src="https://skills.sh/b/Magithar/SKILLmama" alt="skills.sh"/></a>
 </p>
 
