@@ -42,8 +42,8 @@
     "build": "tsc -p tsconfig.json && chmod +x dist/cli/main.js",
     "prepack": "cp ../../LICENSE ./LICENSE",
     "postpack": "rm -f ./LICENSE",
-    "test": "npm run build && node --test --test-timeout=30000 test/index.test.js test/detectors.test.js test/fixtures.test.js test/parsers.test.js test/scoring.test.js test/security.test.js test/search.test.js test/factors.test.js test/pipeline.test.js test/discovery.test.js test/skill-conformance.test.js test/cli-render.test.js test/cli-check.test.js test/cli-e2e.test.js",
-    "coverage": "npm run build && node --experimental-test-coverage --test-coverage-lines=70 --test-coverage-functions=70 --test-coverage-branches=60 --test-timeout=30000 --test test/*.test.js"
+    "test": "npm run build && node ../../scripts/run-tests.mjs",
+    "coverage": "npm run build && node ../../scripts/run-tests.mjs --coverage"
   },
   "devDependencies": {
     "@types/node": "^22.20.1",
