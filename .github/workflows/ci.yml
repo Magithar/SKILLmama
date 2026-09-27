@@ -20,7 +20,33 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Lint and typecheck
+        run: npm run lint && npm run typecheck
       - name: Test (core + CLI)
         run: npm test
+      - name: Package smoke check
+        run: npm run pack:check
       - name: SKILL.md drift guard
         run: bash scripts/check-skill-untouched.sh
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run coverage
+
+  windows-symlink-fallback:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/ensure-skill-link.mjs
+      - shell: bash
+        run: diff -u skillmama/SKILL.md .claude/skills/skillmama/SKILL.md

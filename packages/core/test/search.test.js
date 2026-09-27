@@ -105,7 +105,7 @@ test("output is ordered by tier rank (github < mcp < package-registry < curated-
 test("cross-tier duplicate keeps the earlier tier's occurrence and provenance", () => {
   const candidates = normalizeSearchHits([
     tier("package-registry", ["npm qdrant"], [hit("https://www.npmjs.com/package/qdrant")]),
-    tier("github", ["gh"], [hit("https://github.com/qdrant/qdrant")]), // same name, later tier... 
+    tier("github", ["gh"], [hit("https://github.com/qdrant/qdrant")]), // same name, later tier...
   ]);
   // github outranks package-registry, so the GitHub occurrence is processed
   // first and survives even though it appeared second in the input.

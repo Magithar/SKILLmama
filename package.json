@@ -1,11 +1,18 @@
 {
   "name": "skillmama-monorepo",
   "private": true,
+  "packageManager": "npm@10.9.3",
   "workspaces": [
     "packages/core"
   ],
   "scripts": {
     "build": "npm run build --workspace packages/core",
-    "test": "npm test --workspace packages/core"
+    "test": "npm test --workspace packages/core",
+    "lint": "node scripts/lint.mjs",
+    "typecheck": "npm exec --workspace packages/core -- tsc --noEmit -p tsconfig.json",
+    "coverage": "npm run coverage --workspace packages/core",
+    "pack:check": "node scripts/check-package.mjs",
+    "hooks:install": "node scripts/install-hooks.mjs",
+    "prepare": "node scripts/install-hooks.mjs"
   }
 }

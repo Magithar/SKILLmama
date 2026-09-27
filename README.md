@@ -314,7 +314,7 @@ Notes:
               │   PHASE 3.7 — Security Gate (Skills)   │
               │                                        │
               │   🚫 BLOCKED → discard                 │
-              │   ⚠️  SQP-1/2/3 → flag, keep           │  
+              │   ⚠️  SQP-1/2/3 → flag, keep           │
               │   ⚠️  WARN → show with caution         │
               └───────────────┬────────────────────────┘
                               │
@@ -620,13 +620,18 @@ implementation and the specification. The `skillmama` npm package provides a
 CLI and a programmatic runtime for the deterministic parts of that system. The
 shared deterministic rules are checked against SKILL.md by conformance tests.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and validation guidance.
+Security reports should follow [SECURITY.md](SECURITY.md).
+
 `packages/` is a separate, additive layer: it extracts the slices of the pipeline
 that are *genuinely* deterministic into code that can be unit-tested, and refuses
 to fake the rest.
 
 | Package | Name | State |
 | --- | --- | --- |
-| [`packages/core`](packages/core) | [`skillmama`](https://www.npmjs.com/package/skillmama) | published, `0.1.0` |
+| [`packages/core`](packages/core) | [`skillmama`](https://www.npmjs.com/package/skillmama) | published, `0.1.1` |
 
 There is one package. `packages/core` is a folder name, not a second identity:
 it carries the `skillmama` bin and the programmatic API in a single publishable
