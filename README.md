@@ -44,7 +44,7 @@
 > **Known upstream bug — read this first.** For **Codex** and **Antigravity**, `npx skills add ... -g`
 > prints `Done!` and exits 0 while writing to a directory the agent doesn't read (`~/.agents/skills/`
 > through v1.5.22; upstream `main` has since moved Antigravity's target to `~/.gemini/antigravity/skills`,
-> equally unread). Re-verified against `skills@1.5.23` (latest) and upstream `main` on 2026-08-31.
+> equally unread). Re-verified against `skills@1.7.0` (latest) and upstream `main` on 2026-09-27.
 > Root cause is
 > [`isUniversalAgent()`](https://github.com/vercel-labs/skills/blob/main/src/installer.ts):
 > agents whose *project* dir is `.agents/skills` get misclassified, and their `globalSkillsDir`
@@ -105,6 +105,11 @@ curl -sL https://raw.githubusercontent.com/Magithar/SKILLmama/main/skillmama/SKI
 ```
 
 Then ask naturally: `codex "find me the best job queue for this project"`.
+
+Codex was live-tested on 2026-09-27 with an explicit `/skillmama` invocation.
+The run scanned this repository, asked for constraints, searched all four tiers
+plus companion skills, produced scored results, and reported unavailable
+security evidence as unverified rather than claiming a pass.
 
 ### Antigravity
 
@@ -170,8 +175,8 @@ and Antigravity.
 Notes:
 
 - The ❌ rows are the upstream bug described at the top of [Install](#install), not a problem with
-  this skill. Verified against `skills@1.5.22` on 2026-08-08; re-verified against `skills@1.5.23`
-  and upstream `main` on 2026-08-31 — still unfixed, fix PRs #1483/#2028 both open.
+  this skill. Verified against `skills@1.5.22` on 2026-08-08; re-verified against `skills@1.7.0`
+  and upstream `main` on 2026-09-27 — still unfixed, fix PR #2028 remains open.
 - The `skills` CLI only discovers files named `SKILL.md`. Repos that ship per-platform variants
   under other names are invisible to it.
 - Claude.ai is not CLI-installable. Zip the `skillmama/` folder and upload via Customize → Skills.
@@ -592,7 +597,6 @@ SKILLmama/
 │   └── plugin.json            # makes the repo installable as a Claude Code plugin
 ├── packages/
 │   ├── core/                  # deterministic slices of the pipeline, as tested code
-│   └── cli/                   # `skillmama scan` — first consumer of core
 ├── scripts/
 │   └── check-skill-untouched.sh  # guard: SKILL.md and its install copy stay in sync
 ├── evals/
@@ -690,8 +694,8 @@ Implemented in core:
   and judging hits (Stage B), and reading a skill's content for the 3.7 gate.
 
 ```bash
-npm install
-npm test                       # 177 core tests + 26 CLI tests
+npm ci
+npm test                       # 212 tests
 npx skillmama scan .           # structured project scan
 npx skillmama check lodash --version 4.17.15   # live OSV + factor checks
 ```
@@ -723,7 +727,7 @@ Inspired by [Philipp Schmid](https://github.com/philschmid)'s (Google DeepMind) 
 
 [`ROADMAP.md`](ROADMAP.md) tracks what is left, in priority order: cutting the
 release that ships the factors work and the crates.io publisher check and
-publishes `skillmama` to npm, and the one remaining adapter item (Codex has
-never been live-tested; Antigravity has). The Compatibility and Simplicity
+publishes `skillmama` to npm. Codex and Antigravity have now both been
+live-tested. The Compatibility and Simplicity
 factors stay outside the package deliberately — their bands are written in terms
 only a reader of the docs can assess.

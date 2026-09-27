@@ -1,9 +1,10 @@
 # Roadmap — what is left
 
-Status as of 2026-08-31, at v1.9.0. CI is green on Node 18/20/22; v1.6.0
-through v1.9.0 are tagged with GitHub Releases published. `skillmama@0.1.0`
-is live on npm, publishing independently of the repo's own version from
-here on.
+Status as of 2026-09-27, at v1.9.0. The repository quality pass is complete;
+local lint, typecheck, 212 tests, coverage thresholds, package validation, and
+the drift guard all pass. v1.6.0 through v1.9.0 are tagged with GitHub Releases
+published. `skillmama@0.1.1` is live on npm, publishing independently of the
+repo's own version from here on.
 
 `skillmama/SKILL.md` is the shipped product and the sole source of truth.
 `packages/` is an additive layer that implements the deterministic slices of the
@@ -22,8 +23,8 @@ a reader of the docs can assess), so the package cannot score a candidate alone
 
 ## Done since the last revision
 
-**v1.9.0 is tagged, released, and `skillmama@0.1.0` is live on npm** —
-verified post-publish via `npx skillmama@0.1.0`, not just a local build:
+**v1.9.0 is tagged, released, and `skillmama@0.1.1` is live on npm** —
+verified post-publish via `npx skillmama@0.1.1`, not just a local build:
 `scan` reads a real project's manifest correctly, `check flatmap-stream
 --version 0.1.1` reproduces the BLOCKED/exit-3 result against the real
 event-stream backdoor payload, and `check ripgrep --ecosystem crates.io`
@@ -64,18 +65,34 @@ Dev.to Part 9 is drafted (`dev/devto-article-v9.md`), covering the
 mechanical/judgment boundary, the conformance test, and the crates.io
 extension — ready to post now that the release it references has shipped.
 
+Repository quality hardening is complete. The root package now pins npm,
+exposes explicit lint/typecheck/coverage/package-validation commands, and the
+core test runner has a 30-second timeout. CI runs lint, typecheck, tests,
+coverage thresholds, package smoke checks, the SKILL.md drift guard, and a
+Windows symlink-fallback check. A native pre-commit hook, contributor and
+security policies, Code of Conduct, funding placeholder, and manual npm release
+workflow are also in place. The package lock and README now agree with the
+published `skillmama@0.1.1` metadata.
+
+Codex adapter verification is complete. On 2026-09-27, a real Codex session
+invoked `/skillmama`, scanned the repository, asked the Phase 1.5 constraint
+question, searched all four tiers plus companion skills, returned scored
+results, and reported unavailable OSV/npm security checks as unverified. This
+verifies the workflow and trigger path; it does not establish that Codex can
+perform live registry checks when its environment has no network access.
+
 ## P1 — the next real work
 
 | # | Task | Notes |
 | --- | --- | --- |
-| 7 | Live-test Codex | The last open item of the four-adapter work. Antigravity was tested end to end and works; Codex has never been run at all, and its README status stays ⚠️ unverified until someone installs the CLI, restarts it, and runs a real capability prompt. |
+| — | None | The four-adapter live-test work is complete for Claude Code, Claude.ai, Codex, and Antigravity. |
 
 ## P2 — hygiene
 
 | # | Task | Notes |
 | --- | --- | --- |
-| 10 | Recheck the upstream skills-CLI bug | Rechecked 2026-08-31: no change since 2026-08-24. PR #1483 and PR #2028 both still open and unmerged; issues #1060/#1470 both still open; npm's published `skills` is still `1.5.23` (released 2026-08-19, before either PR). The two ❌ rows in the AI Adapters table change only when a fix merges *and* ships in a released CLI version. Recheck on the next release. |
-| 11 | skills.sh listing | Rechecked 2026-08-31: issue creation on `vercel-labs/skills` is no longer restricted (issues enabled, blank issues allowed). What's unclear now is the ask itself — the README's skills.sh badge/link already resolves for this repo, so what gap the original "indexing request" meant to close needs to be re-established before filing anything. |
+| 10 | Recheck the upstream skills-CLI bug | Rechecked 2026-09-27 against `skills@1.7.0` and current upstream source: the relevant fixes remain open, and universal global installs still use the canonical `.agents/skills` path. Keep the Codex/Antigravity manual-copy guidance until a fix merges and ships. |
+| 11 | skills.sh listing | Resolved/no action: the README badge and project link already resolve to the SKILLmama listing. |
 
 ## P3 — optional
 
