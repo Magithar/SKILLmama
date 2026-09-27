@@ -11,3 +11,8 @@ packages/core/LICENSE
 
 # local coverage output
 coverage/
+
+# local evidence-loop state and unpublished experiment notes
+.evidence-loop/
+/BOARD.md
+/evidence/E001/raw/*.txt
