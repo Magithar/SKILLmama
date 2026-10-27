@@ -16,3 +16,7 @@ coverage/
 .evidence-loop/
 /BOARD.md
 /evidence/E001/raw/*.txt
+
+# /brag launch video tooling and renders (third-party skill, 16MB of bundled audio)
+/.opencode/skills/brag/
+brag-output*/
