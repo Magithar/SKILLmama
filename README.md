@@ -521,14 +521,14 @@ Sources searched: Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (PyPI) · Tier 4 (Te
 
 | Candidate | Compat | Pop | Maint | Simple | Score    |
 |-----------|--------|-----|-------|--------|----------|
-| Qdrant    | 9      | 8   | 10    | 9      | **9.05** |
-| pgvector  | 10     | 7   | 9     | 7      | **8.65** |
-| Chroma    | 8      | 8   | 9     | 10     | **8.55** |
-| Milvus    | 6      | 9   | 10    | 4      | **7.05** |
+| Qdrant    | 9      | 8   | 10    | 9      | **8.85** |
+| pgvector  | 10     | 7   | 9     | 7      | **8.50** |
+| Chroma    | 8      | 8   | 9     | 10     | **8.45** |
+| Milvus    | 6      | 9   | 10    | 4      | **7.20** |
 
 ---
 
-#1 — Qdrant · Score: 9.05/10
+#1 — Qdrant · Score: 8.85/10
 Docker-native, official Python client, active MCP server for AI workflows.
 - Compatibility: 9/10  — official qdrant-client SDK, FastAPI examples in docs
 - Popularity:    8/10  — 17k GitHub stars, 380k PyPI downloads/week
@@ -538,11 +538,11 @@ Docker-native, official Python client, active MCP server for AI workflows.
 - Install: docker run -p 6333:6333 qdrant/qdrant && pip install qdrant-client
 - Links: [skills.sh](https://skills.sh/qdrant) · [PyPI](https://pypi.org/project/qdrant-client) · [Smithery](https://smithery.ai/server/qdrant-mcp-server) · [GitHub](https://github.com/qdrant/qdrant)
 
-#2 — pgvector · Score: 8.65/10
+#2 — pgvector · Score: 8.50/10
 Stay on PostgreSQL — no new infra, native SQL queries.
 - Links: [PyPI](https://pypi.org/project/pgvector) · [GitHub](https://github.com/pgvector/pgvector)
 
-#3 — Chroma · Score: 8.55/10
+#3 — Chroma · Score: 8.45/10
 Easiest local dev setup; best for prototyping before scaling.
 - Links: [PyPI](https://pypi.org/project/chromadb) · [Smithery](https://smithery.ai/server/chroma-mcp) · [GitHub](https://github.com/chroma-core/chroma)
 
@@ -551,7 +551,7 @@ Easiest local dev setup; best for prototyping before scaling.
 Also Considered:
 | Name   | Score | Why not #1                        | Links |
 |--------|-------|-----------------------------------|-------|
-| Milvus | 7.05  | Complex setup, over-engineered for solo/small team | [PyPI](https://pypi.org/project/pymilvus) · [gh](https://github.com/milvus-io/milvus) |
+| Milvus | 7.20  | Complex setup, over-engineered for solo/small team | [PyPI](https://pypi.org/project/pymilvus) · [gh](https://github.com/milvus-io/milvus) |
 
 ---
 
