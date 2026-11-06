@@ -9,7 +9,7 @@
 
 <p align="center">
   SKILLmama eliminates the hours spent researching which library, SDK, or tool to use — it scans your project's actual stack, searches across 4 tiers of the ecosystem plus a companion-skills pass, and returns the top 3 ranked picks with scored evidence. No more Reddit threads or outdated blog posts; just the right tool for your exact setup, with install commands and links, in seconds.<br/><br/>
-  Works with <a href="#claude-code-cli">Claude Code</a>, <a href="#claudeai-web--desktop">Claude.ai</a>, <a href="#openai-codex">OpenAI Codex</a>, and <a href="#antigravity">Antigravity</a>.
+  Works with <a href="#claude-code">Claude Code</a>, <a href="#claudeai-web--desktop">Claude.ai</a>, <a href="#openai-codex">OpenAI Codex</a>, and <a href="#antigravity">Antigravity</a>.
 </p>
 
 ---
@@ -41,33 +41,15 @@
 
 ## Install
 
-> **Known upstream bug — read this first.** For **Codex** and **Antigravity**, `npx skills add ... -g`
-> prints `Done!` and exits 0 while writing to a directory the agent doesn't read (`~/.agents/skills/`
-> through v1.5.22; upstream `main` has since moved Antigravity's target to `~/.gemini/antigravity/skills`,
-> equally unread). Re-verified against `skills@1.7.0` (latest) and upstream `main` on 2026-09-27.
-> Root cause is
-> [`isUniversalAgent()`](https://github.com/vercel-labs/skills/blob/main/src/installer.ts):
-> agents whose *project* dir is `.agents/skills` get misclassified, and their `globalSkillsDir`
-> is discarded. Tracked in [#1060](https://github.com/vercel-labs/skills/issues/1060) and
-> [#1470](https://github.com/vercel-labs/skills/issues/1470); fixes still open as of 2026-08-31 —
-> [PR #1483](https://github.com/vercel-labs/skills/pull/1483) and the newer, more targeted
-> [PR #2028](https://github.com/vercel-labs/skills/pull/2028). **13 agents are affected.**
->
-> Until one of those merges and ships in a released CLI version, copy the file yourself using the
-> per-agent instructions below. Each one is
-> two lines and lands in the directory that agent actually reads.
+| Agent | How |
+|-------|-----|
+| Claude Code | `npx skills add Magithar/SKILLmama -a claude-code -g` |
+| Claude.ai | Zip `skillmama/` and upload it under Customize → Skills ([steps](#claudeai-web--desktop)) |
+| OpenAI Codex | Copy one file into `~/.codex/skills/` ([steps](#openai-codex)) |
+| Antigravity | Copy one file into `~/.gemini/config/skills/` ([steps](#antigravity)) |
 
-### Optional — install and verify in one command
-
-[`skill-land`](https://www.npmjs.com/package/skill-land) does every agent at once and
-**exits non-zero if the file didn't land**:
-
-```bash
-npx skill-land Magithar/SKILLmama --for claude-code,codex,antigravity
-npx skill-land Magithar/SKILLmama --for codex --verify
-```
-
-Not required. The copy commands below work on their own.
+Codex and Antigravity need the manual copy because of an upstream CLI bug
+([details](#why-codex-and-antigravity-need-a-manual-copy)).
 
 ### Claude Code
 
@@ -96,7 +78,7 @@ Then type `/skillmama` in any Claude Code session.
 ### OpenAI Codex
 
 Codex has a native global skills directory, `~/.codex/skills/`. The upstream CLI does **not**
-write there (see the bug notice above), so copy it yourself:
+write there ([why](#why-codex-and-antigravity-need-a-manual-copy)), so copy it yourself:
 
 ```bash
 mkdir -p ~/.codex/skills/skillmama
@@ -142,7 +124,38 @@ This triggered the real pipeline in testing — a Phase 1.5 constraint question 
 
 > ⚠️ `npx skills add Magithar/SKILLmama -a antigravity -g` reports success but writes to
 > `~/.agents/skills/`, which Antigravity never reads. Still reproduces on `skills@1.5.22`
-> (2026-08-08). See the bug notice at the top of Install.
+> (2026-08-08). See [why](#why-codex-and-antigravity-need-a-manual-copy).
+
+### Optional — install and verify in one command
+
+[`skill-land`](https://www.npmjs.com/package/skill-land) does every agent at once and
+**exits non-zero if the file didn't land**:
+
+```bash
+npx skill-land Magithar/SKILLmama --for claude-code,codex,antigravity
+npx skill-land Magithar/SKILLmama --for codex --verify
+```
+
+Not required. The copy commands above work on their own.
+
+### Why Codex and Antigravity need a manual copy
+
+> For **Codex** and **Antigravity**, `npx skills add ... -g`
+> prints `Done!` and exits 0 while writing to a directory the agent doesn't read (`~/.agents/skills/`
+> through v1.5.22; upstream `main` has since moved Antigravity's target to `~/.gemini/antigravity/skills`,
+> equally unread). Re-verified against `skills@1.7.0` (latest) and upstream `main` on 2026-09-27.
+> Root cause is
+> [`isUniversalAgent()`](https://github.com/vercel-labs/skills/blob/main/src/installer.ts):
+> agents whose *project* dir is `.agents/skills` get misclassified, and their `globalSkillsDir`
+> is discarded. Tracked in [#1060](https://github.com/vercel-labs/skills/issues/1060) and
+> [#1470](https://github.com/vercel-labs/skills/issues/1470), both still open. Two proposed fixes,
+> [PR #1483](https://github.com/vercel-labs/skills/pull/1483) and
+> [PR #2028](https://github.com/vercel-labs/skills/pull/2028), were closed without merging
+> (checked 2026-11-06). **13 agents are affected.**
+>
+> Until a released CLI version fixes this, copy the file yourself using the
+> per-agent instructions above. Each one is
+> two lines and lands in the directory that agent actually reads.
 
 ---
 
@@ -635,7 +648,7 @@ to fake the rest.
 
 | Package | Name | State |
 | --- | --- | --- |
-| [`packages/core`](packages/core) | [`skillmama`](https://www.npmjs.com/package/skillmama) | published, `0.1.1` |
+| [`packages/core`](packages/core) | [`skillmama`](https://www.npmjs.com/package/skillmama) | published, `0.2.0` |
 
 There is one package. `packages/core` is a folder name, not a second identity:
 it carries the `skillmama` bin and the programmatic API in a single publishable
