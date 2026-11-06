@@ -75,7 +75,10 @@ export function renderProfileJson(profile: StackProfile): string {
  * above the verdict. A reader who stops after the first screen must not
  * come away thinking a package was cleared when only half the gate ran.
  */
-export function renderCheckText(result: CheckResult): string {
+export function renderCheckText(
+  result: CheckResult,
+  paintVerdict: (verdict: string) => string = (verdict) => verdict
+): string {
   const { target, security, popularity, maintenance } = result;
   const sections: string[] = [];
 
@@ -85,7 +88,7 @@ export function renderCheckText(result: CheckResult): string {
     "Not checked:\n" + result.notRun.map((note) => `  ! ${note}`).join("\n")
   );
 
-  sections.push(`Verdict  ${security.verdict}`);
+  sections.push(`Verdict  ${paintVerdict(security.verdict)}`);
 
   if (security.notes && security.notes.length > 0) {
     sections.push(security.notes.map((note) => `  - ${note}`).join("\n"));

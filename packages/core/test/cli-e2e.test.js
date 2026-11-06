@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { paintVerdict, renderBanner, renderGuide } from "../dist/cli/welcome.js";
 
 const CLI = fileURLToPath(new URL("../dist/cli/main.js", import.meta.url));
 const FIXTURES = join(dirname(CLI), "../../fixtures");
@@ -58,6 +59,48 @@ test("--help exits 0 and prints usage", () => {
   const { status, stdout } = run(["--help"]);
   assert.equal(status, 0);
   assert.match(stdout, /skillmama scan \[dir\]/);
+});
+
+test("no arguments shows the quick start, without the banner when piped", () => {
+  const { status, stdout } = run([]);
+  assert.equal(status, 0);
+  assert.match(stdout, /Get started[\s\S]*skillmama scan[\s\S]*skillmama --help/);
+  assert.match(stdout, /inside your coding agent:\s+\/skillmama /);
+  for (const row of stdout.split("\n")) assert.ok(row.length <= 80, row);
+  assert.doesNotMatch(stdout, /Usage:|made by|▀/);
+});
+
+test("guide colors only /skillmama", () => {
+  const painted = renderGuide({ color: true, truecolor: false });
+  assert.match(painted, /\x1b\[38;5;78m\/skillmama\x1b\[0m scans your project/);
+  assert.match(painted, /\x1b\[38;5;78m\/skillmama\x1b\[0m find me/);
+  assert.equal(painted.match(/\x1b\[38;5;78m/g).length, 2);
+  assert.equal(
+    painted.replace(/\x1b\[[0-9;]*m/g, ""),
+    renderGuide({ color: false, truecolor: false })
+  );
+});
+
+test("banner fits 80 columns and drops the wordmark when narrower", () => {
+  const plain = { color: false, truecolor: false };
+  const wide = renderBanner("1.2.3", 80, plain);
+  assert.match(wide, /v1\.2\.3/);
+  assert.match(wide, /https:\/\/x\.com\/magithar/);
+  for (const row of wide.split("\n")) assert.ok(row.length <= 80, row);
+  assert.doesNotMatch(renderBanner("1.2.3", 79, plain), /▀/);
+  assert.doesNotMatch(wide, /\x1b/);
+  assert.match(renderBanner("1.2.3", 80, { color: true, truecolor: true }), /38;2;89;195;120/);
+  assert.match(renderBanner("1.2.3", 80, { color: true, truecolor: false }), /38;5;78/);
+});
+
+test("verdicts are red, yellow and green; plain output has no color", () => {
+  const color = { color: true, truecolor: true };
+  assert.match(paintVerdict("BLOCKED", color), /\x1b\[38;2;239;83;80mBLOCKED\x1b\[0m/);
+  assert.match(paintVerdict("WARN", color), /\x1b\[38;2;245;221;17mWARN\x1b\[0m/);
+  assert.match(paintVerdict("PASS", color), /\x1b\[38;2;89;195;120mPASS\x1b\[0m/);
+  assert.equal(paintVerdict("PASS", { color: false, truecolor: true }), "PASS");
+  assert.equal(paintVerdict("BLOCKED", { color: false, truecolor: true }), "BLOCKED");
+  assert.match(paintVerdict("BLOCKED", { color: true, truecolor: false }), /38;5;203/);
 });
 
 // ---------------------------------------------------------------------------

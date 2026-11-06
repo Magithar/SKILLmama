@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { analyzeProject, type OsvEcosystem } from "../index.js";
 import { resolveNpmDefaults, runCheck, type CheckTarget } from "./check.js";
@@ -8,6 +9,7 @@ import {
   renderProfileJson,
   renderProfileText,
 } from "./render.js";
+import { paintVerdict, renderGuide, showWelcomeOnce, terminalPalette } from "./welcome.js";
 
 const USAGE = `skillmama — the deterministic half of SKILLmama's pipeline
 
@@ -56,8 +58,19 @@ const { values, positionals } = parseArgs({
   },
 });
 
-if (values.help || positionals.length === 0) {
+const { version: packageVersion } = JSON.parse(
+  readFileSync(new URL("../../package.json", import.meta.url), "utf8")
+) as { version: string };
+showWelcomeOnce(packageVersion, values.json === true);
+
+if (values.help) {
   console.log(USAGE);
+  process.exit(0);
+}
+// Bare `skillmama` is what a newcomer types first: the commands that matter,
+// not the whole reference.
+if (positionals.length === 0) {
+  console.log(renderGuide(terminalPalette()));
   process.exit(0);
 }
 
@@ -132,7 +145,12 @@ if (command === "scan") {
     // Anything the run substituted for the user belongs with the other
     // "this is not what you asked for" notices, at the top.
     result.notRun.unshift(...resolved);
-    console.log(values.json ? renderCheckJson(result) : renderCheckText(result));
+    const palette = terminalPalette();
+    console.log(
+      values.json
+        ? renderCheckJson(result)
+        : renderCheckText(result, (verdict) => paintVerdict(verdict, palette))
+    );
     if (result.security.verdict === "BLOCKED") process.exit(3);
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : String(cause);
