@@ -69,9 +69,9 @@ states as prohibitions), and a conformance suite
 hardcoding its numbers — mutation-tested against ten separate SKILL.md edits,
 all caught. Core was at 212 tests at that point.
 
-Dev.to Part 9 is drafted (`dev/devto-article-v9.md`), covering the
-mechanical/judgment boundary, the conformance test, and the crates.io
-extension — ready to post now that the release it references has shipped.
+[Dev.to Part 9](https://dev.to/magithar/i-wrote-code-for-a-skill-thats-supposed-to-require-judgment-heres-where-i-drew-the-line-4j81)
+is published, covering the mechanical/judgment boundary, the conformance test,
+and the crates.io extension.
 
 Repository quality hardening is complete. The root package now pins npm,
 exposes explicit lint/typecheck/coverage/package-validation commands, and the
@@ -99,7 +99,7 @@ perform live registry checks when its environment has no network access.
 
 | # | Task | Notes |
 | --- | --- | --- |
-| 10 | Recheck the upstream skills-CLI bug | Rechecked 2026-09-27 against `skills@1.7.0` and current upstream source: universal global installs still used the canonical `.agents/skills` path. The two Antigravity fix PRs, vercel-labs/skills#1483 and #2028, have since closed unmerged (rechecked 2026-11-06), so no fix is in flight. Keep the Codex/Antigravity manual-copy guidance until a fix merges and ships. |
+| 10 | Recheck the upstream skills-CLI bug | Rechecked 2026-11-06 against `skills@1.7.6`, the latest release: Codex and Antigravity global installs still land only in `~/.agents/skills`. The two Antigravity fix PRs, vercel-labs/skills#1483 and #2028, have closed unmerged, and we know of no other fix in flight. Keep the Codex/Antigravity manual-copy guidance until a fix merges and ships. |
 | 11 | skills.sh listing | Resolved/no action: the README badge and project link already resolve to the SKILLmama listing. |
 
 ## P3 — optional

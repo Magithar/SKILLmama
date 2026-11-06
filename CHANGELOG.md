@@ -13,8 +13,17 @@ All notable changes to SKILLmama are documented here.
   of the full usage text, which stays at `skillmama --help`. As with `0.1.1`, the
   package's semver is independent of the repo's, so this ships as an npm publish and a
   `skillmama-v0.2.0` tag, with no matching `v1.x` tag
+- **Stickers.** Five downloadable PNGs in `assets/stickers/`, with a README section and
+  menu link. Free to print and share, but not to sell, and separate from the code's
+  Apache 2.0 license
+- **README: Dev.to Part 9 and CLI usage.** The series list now links Part 9, and Usage
+  shows `npx skillmama scan` and `check`
 
 ### Changed
+- **New emerald pixel logo** in `assets/logo.png`
+- **Upstream `skills` bug re-verified on `skills@1.7.6`.** Codex and Antigravity global
+  installs still land only in `~/.agents/skills`, and PRs #1483 and #2028 closed unmerged,
+  so the manual-copy guidance stays
 - **`skillmama check` colors its verdict** red, yellow or green at a terminal, and
   `NO_COLOR` turns it off. Piped and `--json` output are unchanged. A green `PASS` still
   only means the live-data checks found nothing, so what was not run stays listed above

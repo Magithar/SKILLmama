@@ -35,7 +35,8 @@
 **[Part 5](https://dev.to/magithar/the-bug-was-in-my-own-instructions-not-my-code-255p)** — tested my own install instructions, found they were wrong.<br/>
 **[Part 6](https://dev.to/magithar/i-watched-a-talk-called-dont-ship-skills-without-evals-then-checked-if-mine-had-any-1k0e)** — eval harness, trigger-classification tests, bugs found by testing instead of assuming.<br/>
 **[Part 7](https://dev.to/magithar/i-asked-the-same-question-with-and-without-my-own-skill-the-version-without-it-won-on-one-thing-5gjn)** — paired skill-on/skill-off ablation, the deployment persistence check it exposed, and the live CVE it later caught.<br/>
-**[Part 8](https://dev.to/magithar/a-reader-asked-what-my-security-check-actually-verifies-the-honest-answer-sent-me-back-to-the-1fif)** — building the live OSV.dev and npm publisher-continuity checks, and the real CVE that proved them.
+**[Part 8](https://dev.to/magithar/a-reader-asked-what-my-security-check-actually-verifies-the-honest-answer-sent-me-back-to-the-1fif)** — building the live OSV.dev and npm publisher-continuity checks, and the real CVE that proved them.<br/>
+**[Part 9](https://dev.to/magithar/i-wrote-code-for-a-skill-thats-supposed-to-require-judgment-heres-where-i-drew-the-line-4j81)** — the mechanical/judgment boundary, the conformance test, and the crates.io extension.
 
 ---
 
@@ -98,7 +99,7 @@ security evidence as unverified rather than claiming a pass.
 Global skills live in `~/.gemini/config/skills/`, which is shared by all three Antigravity
 surfaces (2.0, IDE, and the `agy` CLI) since Google consolidated their config. Confirmed by live
 testing here and independently in
-[#1470](https://github.com/vercel-labs/skills/issues/1470#issuecomment-list), including extraction
+[#1470](https://github.com/vercel-labs/skills/issues/1470), including extraction
 from the `agy` binary's own embedded docs.
 
 ```bash
@@ -123,12 +124,12 @@ This triggered the real pipeline in testing — a Phase 1.5 constraint question 
 > Per [Antigravity's official Agent Skills docs](https://antigravity.google/docs/skills), the agent is also supposed to auto-trigger relevant skills from context alone, without explicit invocation — driven by the skill's `description:` frontmatter. We haven't verified that mode here (only explicit invocation was tested), so treat auto-trigger as unconfirmed and invoke explicitly for now.
 
 > ⚠️ `npx skills add Magithar/SKILLmama -a antigravity -g` reports success but writes to
-> `~/.agents/skills/`, which Antigravity never reads. Still reproduces on `skills@1.5.22`
-> (2026-08-08). See [why](#why-codex-and-antigravity-need-a-manual-copy).
+> `~/.agents/skills/`, which Antigravity never reads. Still reproduces on `skills@1.7.6`
+> (2026-11-06). See [why](#why-codex-and-antigravity-need-a-manual-copy).
 
 ### Optional — install and verify in one command
 
-[`skill-land`](https://www.npmjs.com/package/skill-land) does every agent at once and
+[`skill-land`](https://www.npmjs.com/package/skill-land) installs to several agents in one command and
 **exits non-zero if the file didn't land**:
 
 ```bash
@@ -140,22 +141,23 @@ Not required. The copy commands above work on their own.
 
 ### Why Codex and Antigravity need a manual copy
 
-> For **Codex** and **Antigravity**, `npx skills add ... -g`
-> prints `Done!` and exits 0 while writing to a directory the agent doesn't read (`~/.agents/skills/`
-> through v1.5.22; upstream `main` has since moved Antigravity's target to `~/.gemini/antigravity/skills`,
-> equally unread). Re-verified against `skills@1.7.0` (latest) and upstream `main` on 2026-09-27.
-> Root cause is
-> [`isUniversalAgent()`](https://github.com/vercel-labs/skills/blob/main/src/installer.ts):
-> agents whose *project* dir is `.agents/skills` get misclassified, and their `globalSkillsDir`
-> is discarded. Tracked in [#1060](https://github.com/vercel-labs/skills/issues/1060) and
-> [#1470](https://github.com/vercel-labs/skills/issues/1470), both still open. Two proposed fixes,
-> [PR #1483](https://github.com/vercel-labs/skills/pull/1483) and
-> [PR #2028](https://github.com/vercel-labs/skills/pull/2028), were closed without merging
-> (checked 2026-11-06). **13 agents are affected.**
->
-> Until a released CLI version fixes this, copy the file yourself using the
-> per-agent instructions above. Each one is
-> two lines and lands in the directory that agent actually reads.
+For **Codex** and **Antigravity**, `npx skills add ... -g` prints `Done!` and exits 0 while writing
+to `~/.agents/skills/`, a directory neither agent reads. Re-verified on `skills@1.7.6`, the latest
+release, on 2026-11-06.
+
+The root cause is
+[`isUniversalAgent()`](https://github.com/vercel-labs/skills/blob/main/src/installer.ts): agents
+whose *project* dir is `.agents/skills` get misclassified, and their `globalSkillsDir` is discarded.
+**13 agents are affected.**
+
+Tracked in [#1060](https://github.com/vercel-labs/skills/issues/1060) and
+[#1470](https://github.com/vercel-labs/skills/issues/1470). Two proposed fixes,
+[PR #1483](https://github.com/vercel-labs/skills/pull/1483) and
+[PR #2028](https://github.com/vercel-labs/skills/pull/2028), were closed without merging
+(checked 2026-11-06).
+
+Until a released CLI version fixes this, copy the file yourself using the per-agent instructions
+above. Each one is two lines and lands in the directory that agent actually reads.
 
 ---
 
@@ -166,6 +168,13 @@ Not required. The copy commands above work on their own.
 /skillmama find me a vector database for my FastAPI project
 /skillmama what auth library should I use for my Next.js app?
 /skillmama find a .dwg parser for Node.js
+```
+
+Without an agent, the [`skillmama` CLI](#packages) runs the deterministic checks:
+
+```bash
+npx skillmama scan
+npx skillmama check lodash --version 4.17.15
 ```
 
 ---
@@ -188,8 +197,8 @@ and Antigravity.
 Notes:
 
 - The ❌ rows are the [upstream bug](#why-codex-and-antigravity-need-a-manual-copy), not a problem
-  with this skill. Verified against `skills@1.5.22` on 2026-08-08; re-verified against `skills@1.7.0`
-  and upstream `main` on 2026-09-27 — still unfixed. Fix PR #2028 has since closed without merging.
+  with this skill. Verified against `skills@1.5.22` on 2026-08-08; re-verified on `skills@1.7.6` on
+  2026-11-06 — still unfixed.
 - The `skills` CLI only discovers files named `SKILL.md`. Repos that ship per-platform variants
   under other names are invisible to it.
 - Claude.ai is not CLI-installable. Zip the `skillmama/` folder and upload via Customize → Skills.
@@ -473,6 +482,9 @@ Security findings from the internal gate surface inline on each candidate's `Sec
 ---
 
 ## End-to-End Example
+
+This is an illustrative example of the output format, so its scores and links may not match a live
+run.
 
 **User prompt:**
 
