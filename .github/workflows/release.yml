@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write # npm Trusted Publishing: no token to store
 
 jobs:
   publish:
@@ -21,6 +22,8 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org
           cache: npm
+      - name: Use an npm that supports Trusted Publishing
+        run: npm install -g npm@11
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
@@ -37,8 +40,8 @@ jobs:
           git add packages/core/package.json package-lock.json
           git commit -m "chore: release skillmama@${{ inputs.version }}"
           git tag "skillmama-v${{ inputs.version }}"
-          git push origin HEAD --tags
+      # Publish before pushing, so a failed publish leaves no tag behind.
       - name: Publish package
         run: npm publish --workspace packages/core --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Push release metadata
+        run: git push origin HEAD --tags
