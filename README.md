@@ -15,7 +15,7 @@
 ---
 
 <p align="center">
-  <a href="#see-it-in-action">Demo</a> • <a href="#install">Install</a> • <a href="#usage">Usage</a> • <a href="#ai-adapters">AI Adapters</a> • <a href="#core-workflow">Core Workflow</a> • <a href="#ranking-formula">Ranking Formula</a> • <a href="#4-tier-search-hierarchy">4-Tier Search</a> • <a href="#output-format">Output Format</a> • <a href="#end-to-end-example">Example</a> • <a href="#project-structure">Project Structure</a> • <a href="#packages">Packages</a> • <a href="#evals">Evals</a> • <a href="#roadmap">Roadmap</a>
+  <a href="#see-it-in-action">Demo</a> • <a href="#install">Install</a> • <a href="#usage">Usage</a> • <a href="#ai-adapters">AI Adapters</a> • <a href="#core-workflow">Core Workflow</a> • <a href="#ranking-formula">Ranking Formula</a> • <a href="#4-tier-search-hierarchy">4-Tier Search</a> • <a href="#output-format">Output Format</a> • <a href="#end-to-end-example">Example</a> • <a href="#project-structure">Project Structure</a> • <a href="#packages">Packages</a> • <a href="#evals">Evals</a> • <a href="#roadmap">Roadmap</a> • <a href="#stickers">Stickers</a>
 </p>
 
 ---

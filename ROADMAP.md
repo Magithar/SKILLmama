@@ -1,10 +1,10 @@
 # Roadmap — what is left
 
-Status as of 2026-09-27, at v1.9.0. The repository quality pass is complete;
-local lint, typecheck, 212 tests, coverage thresholds, package validation, and
-the drift guard all pass. v1.6.0 through v1.9.0 are tagged with GitHub Releases
-published. `skillmama@0.1.1` is live on npm, publishing independently of the
-repo's own version from here on.
+Status as of 2026-11-06, at v1.9.0. The repository quality pass is complete;
+lint, typecheck, 216 tests, coverage thresholds, package validation, and the
+drift guard all pass. v1.6.0 through v1.9.0 are tagged with GitHub Releases
+published. `skillmama@0.2.0` is live on npm, publishing independently of the
+repo's own version.
 
 `skillmama/SKILL.md` is the shipped product and the sole source of truth.
 `packages/` is an additive layer that implements the deterministic slices of the
@@ -22,6 +22,14 @@ a reader of the docs can assess), so the package cannot score a candidate alone
 ---
 
 ## Done since the last revision
+
+**`skillmama@0.2.0` is live on npm**, tagged `skillmama-v0.2.0`. It adds a
+first-run welcome, a quick-start guide on bare `skillmama`, and colored `check`
+verdicts. Verified from npm in a clean home: the banner shows on the first run
+only, piped output has no color, and `check flatmap-stream --version 0.1.1` is
+still BLOCKED. The release workflow now publishes through npm Trusted Publishing,
+with provenance and no stored token, and publishes before pushing so a failed
+publish leaves no tag. The README also has the new logo and a stickers section.
 
 **v1.9.0 is tagged, released, and `skillmama@0.1.1` is live on npm** —
 verified post-publish via `npx skillmama@0.1.1`, not just a local build:
@@ -59,7 +67,7 @@ composition (`discoverCapabilities()`, owning the sequencing rules SKILL.md
 states as prohibitions), and a conformance suite
 (`skill-conformance.test.js`) that parses SKILL.md at test time instead of
 hardcoding its numbers — mutation-tested against ten separate SKILL.md edits,
-all caught. Core is at 212 tests.
+all caught. Core was at 212 tests at that point.
 
 Dev.to Part 9 is drafted (`dev/devto-article-v9.md`), covering the
 mechanical/judgment boundary, the conformance test, and the crates.io
@@ -71,8 +79,8 @@ core test runner has a 30-second timeout. CI runs lint, typecheck, tests,
 coverage thresholds, package smoke checks, the SKILL.md drift guard, and a
 Windows symlink-fallback check. A native pre-commit hook, contributor and
 security policies, Code of Conduct, funding placeholder, and manual npm release
-workflow are also in place. The package lock and README now agree with the
-published `skillmama@0.1.1` metadata.
+workflow are also in place. The package lock and README agreed with the
+published `skillmama@0.1.1` metadata at that point.
 
 Codex adapter verification is complete. On 2026-09-27, a real Codex session
 invoked `/skillmama`, scanned the repository, asked the Phase 1.5 constraint
@@ -91,7 +99,7 @@ perform live registry checks when its environment has no network access.
 
 | # | Task | Notes |
 | --- | --- | --- |
-| 10 | Recheck the upstream skills-CLI bug | Rechecked 2026-09-27 against `skills@1.7.0` and current upstream source: the relevant fixes remain open, and universal global installs still use the canonical `.agents/skills` path. Keep the Codex/Antigravity manual-copy guidance until a fix merges and ships. |
+| 10 | Recheck the upstream skills-CLI bug | Rechecked 2026-09-27 against `skills@1.7.0` and current upstream source: universal global installs still used the canonical `.agents/skills` path. The two Antigravity fix PRs, vercel-labs/skills#1483 and #2028, have since closed unmerged (rechecked 2026-11-06), so no fix is in flight. Keep the Codex/Antigravity manual-copy guidance until a fix merges and ships. |
 | 11 | skills.sh listing | Resolved/no action: the README badge and project link already resolve to the SKILLmama listing. |
 
 ## P3 — optional
