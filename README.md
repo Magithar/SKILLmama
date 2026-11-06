@@ -740,6 +740,18 @@ only a reader of the docs can assess.
 
 ---
 
+## Stickers
+
+Click a sticker to open it, then download the image to print it, use it as a custom emoji, or add it to a post.
+
+| [<img src="assets/stickers/skillmama-logo.png" alt="SKILLmama logo sticker" width="150">](assets/stickers/skillmama-logo.png) | [<img src="assets/stickers/thumbs-up.png" alt="Thumbs-up sticker" width="150">](assets/stickers/thumbs-up.png) | [<img src="assets/stickers/celebrate.png" alt="Celebration sticker" width="150">](assets/stickers/celebrate.png) | [<img src="assets/stickers/coffee.png" alt="Coffee mug sticker" width="150">](assets/stickers/coffee.png) | [<img src="assets/stickers/sleepy-cat.png" alt="Sleeping cat sticker" width="150">](assets/stickers/sleepy-cat.png) |
+|:--:|:--:|:--:|:--:|:--:|
+| Logo | Thumbs-up | Celebrate | Coffee | Sleepy cat |
+
+Free to print and share, just don't sell them. The stickers are separate from the code's Apache 2.0 license.
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and validation guidance.
