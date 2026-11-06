@@ -6,7 +6,19 @@ All notable changes to SKILLmama are documented here.
 
 ## [Unreleased]
 
+### Added
+- **`skillmama@0.2.0`: a first-run welcome and a quick-start guide.** The first run on
+  a machine prints a wordmark, tagline and credit, once, only at a real terminal: never
+  when piped, in CI or with `--json`. Bare `skillmama` now prints a short guide instead
+  of the full usage text, which stays at `skillmama --help`. As with `0.1.1`, the
+  package's semver is independent of the repo's, so this ships as an npm publish and a
+  `skillmama-v0.2.0` tag, with no matching `v1.x` tag
+
 ### Changed
+- **`skillmama check` colors its verdict** red, yellow or green at a terminal, and
+  `NO_COLOR` turns it off. Piped and `--json` output are unchanged. A green `PASS` still
+  only means the live-data checks found nothing, so what was not run stays listed above
+  the verdict
 - **`skillmama@0.1.1` npm package metadata and README, for discoverability and
   accuracy.** `packages/core/package.json` gained `keywords` (`capability-discovery`,
   `library-selection`, `dependency-choice`, `security-gate`, `supply-chain`, `osv`,
