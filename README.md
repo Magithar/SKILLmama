@@ -187,9 +187,9 @@ and Antigravity.
 
 Notes:
 
-- The ❌ rows are the upstream bug described at the top of [Install](#install), not a problem with
-  this skill. Verified against `skills@1.5.22` on 2026-08-08; re-verified against `skills@1.7.0`
-  and upstream `main` on 2026-09-27 — still unfixed, fix PR #2028 remains open.
+- The ❌ rows are the [upstream bug](#why-codex-and-antigravity-need-a-manual-copy), not a problem
+  with this skill. Verified against `skills@1.5.22` on 2026-08-08; re-verified against `skills@1.7.0`
+  and upstream `main` on 2026-09-27 — still unfixed. Fix PR #2028 has since closed without merging.
 - The `skills` CLI only discovers files named `SKILL.md`. Repos that ship per-platform variants
   under other names are invisible to it.
 - Claude.ai is not CLI-installable. Zip the `skillmama/` folder and upload via Customize → Skills.
@@ -271,7 +271,7 @@ Notes:
                                         │
                                         ▼
                          ┌──────────────────────────────┐
-                         │   PHASE 3 — 5-Tier Search    │
+                         │   PHASE 3 — 4-Tier Search    │
                          └──────────────┬───────────────┘
                                         │
                     ┌───────────────────┴─────────────────────────┐
@@ -508,7 +508,7 @@ STACK      : Python / FastAPI / PostgreSQL / Docker / OpenAI
 CONSTRAINTS: containerizable, Python client, open-source
 ```
 
-**Step 4 — 5-Tier Search**
+**Step 4 — 4-Tier Search**
 
 ```
 Tier 1 GitHub    → qdrant/qdrant (17k★), chroma-core/chroma (14k★),
@@ -637,11 +637,6 @@ implementation and the specification. The `skillmama` npm package provides a
 CLI and a programmatic runtime for the deterministic parts of that system. The
 shared deterministic rules are checked against SKILL.md by conformance tests.
 
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and validation guidance.
-Security reports should follow [SECURITY.md](SECURITY.md).
-
 `packages/` is a separate, additive layer: it extracts the slices of the pipeline
 that are *genuinely* deterministic into code that can be unit-tested, and refuses
 to fake the rest.
@@ -708,7 +703,7 @@ Implemented in core:
 
 ```bash
 npm ci
-npm test                       # 212 tests
+npm test
 npx skillmama scan .           # structured project scan
 npx skillmama check lodash --version 4.17.15   # live OSV + factor checks
 ```
@@ -738,9 +733,14 @@ Inspired by [Philipp Schmid](https://github.com/philschmid)'s (Google DeepMind) 
 
 ## Roadmap
 
-[`ROADMAP.md`](ROADMAP.md) tracks what is left, in priority order: cutting the
-release that ships the factors work and the crates.io publisher check and
-publishes `skillmama` to npm. Codex and Antigravity have now both been
-live-tested. The Compatibility and Simplicity
-factors stay outside the package deliberately — their bands are written in terms
+[`ROADMAP.md`](ROADMAP.md) tracks what is left, in priority order. `skillmama` is
+published to npm, and Codex and Antigravity have both been live-tested. The
+Compatibility and Simplicity factors stay outside the package deliberately — their bands are written in terms
 only a reader of the docs can assess.
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and validation guidance.
+Security reports should follow [SECURITY.md](SECURITY.md).
