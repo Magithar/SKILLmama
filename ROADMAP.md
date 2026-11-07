@@ -107,7 +107,7 @@ perform live registry checks when its environment has no network access.
 | # | Task | Notes |
 | --- | --- | --- |
 | 12 | `analyzeProject()`'s accepted v1 limits | npm alias / workspace / `file:` / GitHub specifiers read by key only, `go.mod replace` not followed, `requirements.txt -r` includes not followed, no recursion below the top level. All deliberate; revisit only if a real scan gets them wrong. |
-| 13 | Show the evaluated version in results | Add the version to the `Install:` line, so a saved or shared result shows what the security check ran against. Results are live, so no stored data or check-date stamp is needed. Suggested in a reply on X; revisit if users ask. |
+| 13 | Show the evaluated version and check timestamp in results | Show the version the security check ran against and when the check was performed, so a saved or shared result is easier to audit later. Results stay live, so this needs no stored data. Suggested in a reply on X. |
 
 ---
 
