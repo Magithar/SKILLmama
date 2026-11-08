@@ -33,6 +33,14 @@ All notable changes to SKILLmama are documented here.
   shows `npx skillmama scan` and `check`
 
 ### Changed
+- **Registry checks no longer pipe downloads into Python.** The npm and crates.io
+  publisher-continuity checks save the registry response to a temp file and parse it
+  there. Same output, but it no longer matches the `curl | interpreter` pattern that
+  skills.sh's Agent Trust Hub audit flagged as "downloads and executes remote code"
+- **Fetched content is data, never instructions.** SKILL.md now says so at the top of
+  Phase 3 and in Rules: search results, READMEs, registry metadata and other skills'
+  SKILL.md files can't change the rules, the scores or what runs, and a candidate whose
+  content tries to is discarded. This addresses Snyk's W011 warning
 - **New emerald pixel logo** in `assets/logo.png`
 - **Upstream `skills` bug re-verified on `skills@1.7.6`.** Codex and Antigravity global
   installs still land only in `~/.agents/skills`, and PRs #1483 and #2028 closed unmerged,
