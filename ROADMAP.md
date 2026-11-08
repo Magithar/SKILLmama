@@ -29,7 +29,9 @@ fixes for the skills.sh Agent Trust Hub and Snyk audit findings. `0.3.0` adds
 
 **Roadmap item 13 is done.** Each candidate's `Security:` line now shows the
 version the check ran against and a UTC timestamp, so a shared result can be
-audited later. Suggested in a reply on X.
+audited later. Blocked candidates are listed in Also Considered with the same
+details, and `Install:` lines are pinned to the checked version. Suggested in a
+reply on X.
 
 **`skillmama@0.2.0` is live on npm**, tagged `skillmama-v0.2.0`. It adds a
 first-run welcome, a quick-start guide on bare `skillmama`, and colored `check`
@@ -109,6 +111,8 @@ perform live registry checks when its environment has no network access.
 | --- | --- | --- |
 | 10 | Recheck the upstream skills-CLI bug | Rechecked 2026-11-06 against `skills@1.7.6`, the latest release: Codex and Antigravity global installs still land only in `~/.agents/skills`. The two Antigravity fix PRs, vercel-labs/skills#1483 and #2028, have closed unmerged, and we know of no other fix in flight. Keep the Codex/Antigravity manual-copy guidance until a fix merges and ships. |
 | 11 | skills.sh listing | Resolved/no action: the README badge and project link already resolve to the SKILLmama listing. |
+| 13 | Recheck the skills.sh audit badges | As of 2026-11-08 the listing shows Gen Agent Trust Hub FAIL (HIGH, "downloads and executes remote code", from `curl \| python3` in the publisher checks) and Snyk WARN (W011, third-party content). Both were addressed in v1.10.0, but the badges are from the Nov 6 scan. Around 2026-11-12, check the audit dates at skills.sh/magithar/skillmama/skillmama/security/agent-trust-hub and /snyk. If they haven't re-run, file one upstream issue covering this and the stale dep-egress audit. W011 may stay as a WARN, since the skill reads third-party content by design. |
+| 14 | Mention `skillmama stickers` in the npm README | `packages/core/README.md`, the page npmjs.com shows, doesn't list the command added in `0.3.0`. Add it before the next npm release. |
 
 ## P3 — optional
 
