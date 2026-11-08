@@ -620,6 +620,8 @@ SKILLmama/
 │       └── SKILL.md           # symlink → ../../../skillmama/SKILL.md
 ├── .claude-plugin/
 │   └── plugin.json            # makes the repo installable as a Claude Code plugin
+├── commands/
+│   └── stickers.md            # plugin slash command: /skillmama:stickers
 ├── packages/
 │   ├── core/                  # deterministic slices of the pipeline, as tested code
 ├── scripts/
@@ -754,7 +756,7 @@ only a reader of the docs can assess.
 
 ## Stickers
 
-Click a sticker to open it, then download the image to print it, use it as a custom emoji, or add it to a post.
+Click a sticker to open it, then download the image to print it, use it as a custom emoji, or add it to a post. From a terminal, `npx skillmama stickers` opens this section. With the Claude Code plugin installed, so does `/skillmama:stickers`.
 
 | [<img src="assets/stickers/skillmama-logo.png" alt="SKILLmama logo sticker" width="150">](assets/stickers/skillmama-logo.png) | [<img src="assets/stickers/thumbs-up.png" alt="Thumbs-up sticker" width="150">](assets/stickers/thumbs-up.png) | [<img src="assets/stickers/celebrate.png" alt="Celebration sticker" width="150">](assets/stickers/celebrate.png) | [<img src="assets/stickers/coffee.png" alt="Coffee mug sticker" width="150">](assets/stickers/coffee.png) | [<img src="assets/stickers/sleepy-cat.png" alt="Sleeping cat sticker" width="150">](assets/stickers/sleepy-cat.png) |
 |:--:|:--:|:--:|:--:|:--:|

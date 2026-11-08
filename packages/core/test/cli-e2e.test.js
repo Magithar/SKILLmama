@@ -125,10 +125,35 @@ test("check needs exactly one package argument", () => {
   assert.equal(run(["check", "a", "b"]).status, 2);
 });
 
-test("an unknown command names both commands", () => {
+test("an unknown command names every command", () => {
   const { status, stderr } = run(["explore"]);
   assert.equal(status, 2);
-  assert.match(stderr, /expected "scan" or "check"/);
+  assert.match(stderr, /expected "scan", "check" or "stickers"/);
+});
+
+test("stickers prints the link and every sticker when piped", () => {
+  const { status, stdout } = run(["stickers"]);
+  assert.equal(status, 0);
+  assert.match(stdout, /https:\/\/github\.com\/Magithar\/SKILLmama#stickers/);
+  assert.match(stdout, /Logo · Thumbs-up · Celebrate · Coffee · Sleepy cat/);
+  assert.match(stdout, /just don't sell them/);
+  for (const row of stdout.split("\n")) assert.ok(row.length <= 80, row);
+});
+
+test("stickers --json emits only the link", () => {
+  const { status, stdout } = run(["stickers", "--json"]);
+  assert.equal(status, 0);
+  assert.deepEqual(JSON.parse(stdout), { url: "https://github.com/Magithar/SKILLmama#stickers" });
+});
+
+test("stickers takes no arguments", () => {
+  const { status, stderr } = run(["stickers", "extra"]);
+  assert.equal(status, 2);
+  assert.match(stderr, /usage: skillmama stickers/);
+});
+
+test("help lists the stickers command", () => {
+  assert.match(run(["--help"]).stdout, /skillmama stickers +Open the free SKILLmama stickers/);
 });
 
 test("help documents check and its exit codes", () => {

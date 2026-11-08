@@ -9,6 +9,7 @@ import {
   renderProfileJson,
   renderProfileText,
 } from "./render.js";
+import { openInBrowser, renderStickers, STICKERS_URL } from "./stickers.js";
 import { paintVerdict, renderGuide, showWelcomeOnce, terminalPalette } from "./welcome.js";
 
 const USAGE = `skillmama — the deterministic half of SKILLmama's pipeline
@@ -16,6 +17,7 @@ const USAGE = `skillmama — the deterministic half of SKILLmama's pipeline
 Usage:
   skillmama scan [dir]        Scan a project directory (default: current directory)
   skillmama check <package>   Run the live-data checks against a published package
+  skillmama stickers          Open the free SKILLmama stickers in your browser
 
 Options:
   --json                      Output as JSON
@@ -75,11 +77,22 @@ if (positionals.length === 0) {
 }
 
 const command = positionals[0];
-if (command !== "scan" && command !== "check") {
-  fail(`unknown command "${command}" — expected "scan" or "check"`, 2);
+if (command !== "scan" && command !== "check" && command !== "stickers") {
+  fail(`unknown command "${command}" — expected "scan", "check" or "stickers"`, 2);
 }
 
-if (command === "scan") {
+if (command === "stickers") {
+  if (positionals.length > 1) {
+    fail("too many arguments — usage: skillmama stickers", 2);
+  }
+  if (values.json) {
+    console.log(JSON.stringify({ url: STICKERS_URL }, null, 2));
+  } else {
+    console.log(renderStickers());
+    // Only a person at a terminal gets a browser tab; piped output and CI don't.
+    if (process.stdout.isTTY && !process.env.CI) openInBrowser(STICKERS_URL);
+  }
+} else if (command === "scan") {
   if (positionals.length > 2) {
     fail("too many arguments — usage: skillmama scan [dir]", 2);
   }
