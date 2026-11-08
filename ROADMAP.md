@@ -23,6 +23,10 @@ a reader of the docs can assess), so the package cannot score a candidate alone
 
 ## Done since the last revision
 
+**Roadmap item 13 is done.** Each candidate's `Security:` line now shows the
+version the check ran against and a UTC timestamp, so a shared result can be
+audited later. Suggested in a reply on X.
+
 **`skillmama@0.2.0` is live on npm**, tagged `skillmama-v0.2.0`. It adds a
 first-run welcome, a quick-start guide on bare `skillmama`, and colored `check`
 verdicts. Verified from npm in a clean home: the banner shows on the first run
@@ -107,7 +111,6 @@ perform live registry checks when its environment has no network access.
 | # | Task | Notes |
 | --- | --- | --- |
 | 12 | `analyzeProject()`'s accepted v1 limits | npm alias / workspace / `file:` / GitHub specifiers read by key only, `go.mod replace` not followed, `requirements.txt -r` includes not followed, no recursion below the top level. All deliberate; revisit only if a real scan gets them wrong. |
-| 13 | Show the evaluated version and check timestamp in results | Show the version the security check ran against and when the check was performed, so a saved or shared result is easier to audit later. Results stay live, so this needs no stored data. Suggested in a reply on X. |
 
 ---
 

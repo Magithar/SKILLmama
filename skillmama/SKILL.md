@@ -249,6 +249,7 @@ curl -s -X POST "https://api.osv.dev/v1/query" \
 Severity is `vulns[].database_specific.severity` (CRITICAL / HIGH / MODERATE / LOW). The fix, when one exists, is the `fixed` event under `vulns[].affected[].ranges[].events[]`. Two traps:
 - PyPI returns `PYSEC-*` records with `severity: UNKNOWN` that duplicate a `GHSA-*` record for the same flaw. Dedupe on `aliases` and read severity off the GHSA twin before concluding a severity is unknown.
 - Query the version you intend to recommend, not the latest.
+- Record the exact version you queried and the time you ran the check, taken from the clock (`date -u +"%Y-%m-%d %H:%M UTC"`), not estimated. Both go on the candidate's `Security:` line in Phase 5, so a saved or shared result shows what was checked and when.
 
 **Check 2 — Publisher continuity (npm, crates.io).**
 
@@ -321,7 +322,7 @@ WARN (set security: "WARN", add security_note) if:
 - Reads env vars / credentials without explanation
 - Has no README
 
-If OSV or the registry is unreachable, report that check `N/A (unverified)` for the candidate in Phase 5. Never let an unverified candidate read as having passed.
+If OSV or the registry is unreachable, report that check `N/A (unverified)` for the candidate in Phase 5, still with the version and time of the attempt. Never let an unverified candidate read as having passed.
 
 FLAG (set sqp, add security_note, do NOT discard) if:
 - SQP-1: activates on overly broad phrases with no exclusion conditions
@@ -374,7 +375,7 @@ report both.
 
 ## Phase 4 — Score Each Candidate
 
-Skip any candidate marked BLOCKED from Phase 3.5.
+Skip any candidate marked BLOCKED from Phase 3.5. Don't score it, but list it in Also Considered as `BLOCKED` with its security_note and the version and time it was checked, so the user can see what was ruled out and why.
 
 Skip any candidate whose package name already appears in the Stack Profile's detected dependencies — mark it `ALREADY PRESENT` instead of scoring it. Don't re-recommend something the project already has installed.
 
@@ -457,8 +458,8 @@ If a field is unknown, mark it N/A and weight the remaining factors proportional
 - Popularity: X/10 — [stars/downloads]
 - Maintenance: X/10 — [last commit / release cadence]
 - Simplicity: X/10 — [setup effort]
-- Security: [PASS | ⚠️ WARN — finding | ⚠️ SQP-1/2/3 — finding]
-- Install: `[install_cmd]`
+- Security: [PASS | ⚠️ WARN — finding | ⚠️ SQP-1/2/3 — finding] · checked [version], [YYYY-MM-DD HH:MM UTC]
+- Install: `[install_cmd]` (pin the package to the version on the Security line, e.g. `pip install qdrant-client==1.20.0` or `npm install zod@3.25.76`, so what gets installed is what was checked)
 - Links: [npm](url) · [PyPI](url) · [GitHub](url) · [Smithery](url)
   _(omit any that don't apply)_
 
@@ -478,6 +479,7 @@ If a field is unknown, mark it N/A and weight the remaining factors proportional
 |------|-------|------------|-------|
 | [Name] | X.X | [brief reason] | [gh](url) · [npm](url) |
 | [Name] | ALREADY PRESENT | Already in your stack (found in [package.json / etc.]) | [gh](url) |
+| [Name] | BLOCKED | [security_note] · checked [version], [YYYY-MM-DD HH:MM UTC] | [gh](url) |
 
 ---
 

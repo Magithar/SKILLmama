@@ -16,6 +16,12 @@ All notable changes to SKILLmama are documented here.
 - **Stickers.** Five downloadable PNGs in `assets/stickers/`, with a README section and
   menu link. Free to print and share, but not to sell, and separate from the code's
   Apache 2.0 license
+- **Results show what the security check ran against, and when.** Each candidate's
+  `Security:` line in SKILL.md's Phase 5 output now ends with the exact version queried
+  and a UTC timestamp read from the clock, so a saved or shared result can be audited
+  later. Results stay live; nothing is stored. Roadmap item 13. Blocked candidates now
+  appear in Also Considered with their finding, version and check time, and the
+  `Install:` line is pinned to the checked version
 - **README: Dev.to Part 9 and CLI usage.** The series list now links Part 9, and Usage
   shows `npx skillmama scan` and `check`
 

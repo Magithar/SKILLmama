@@ -465,14 +465,14 @@ Results open with a scoring table prefixed by the detected stack, then a ranked 
 - Popularity:    X/10 — [stars/downloads]
 - Maintenance:   X/10 — [last commit / release cadence]
 - Simplicity:    X/10 — [setup effort]
-- Security:      [PASS | ⚠️ SQP-N — finding | 🚫 BLOCKED]
-- Install: `[command]`
+- Security:      [PASS | ⚠️ SQP-N — finding | 🚫 BLOCKED] · checked [version], [YYYY-MM-DD HH:MM UTC]
+- Install: `[command]` (pinned to the version on the Security line)
 - Links: [npm] · [PyPI] · [pkg.go.dev] · [Smithery] · [GitHub]
 ```
 
 Followed by:
 
-- **Also Considered** table with Name · Score · Why not #1 · Links
+- **Also Considered** table with Name · Score · Why not #1 · Links. Blocked candidates appear here as `BLOCKED`, with the finding and the version and time they were checked
 - **MCP Option** callout with Smithery + GitHub links
 - **Companion Skills** — installable agent skills for top picks (if found)
 - **Next Steps** — 3 concrete actions
@@ -559,8 +559,8 @@ Docker-native, official Python client, active MCP server for AI workflows.
 - Popularity:    8/10  — 17k GitHub stars, 380k PyPI downloads/week
 - Maintenance:  10/10  — committed 2 days ago, weekly releases
 - Simplicity:   9/10  — docker run + pip install, 5-min setup
-- Security:     PASS  — no findings
-- Install: docker run -p 6333:6333 qdrant/qdrant && pip install qdrant-client
+- Security:     PASS  — no findings · checked qdrant-client 1.15.1, 2026-11-08 09:42 UTC
+- Install: docker run -p 6333:6333 qdrant/qdrant && pip install qdrant-client==1.15.1
 - Links: [skills.sh](https://skills.sh/qdrant) · [PyPI](https://pypi.org/project/qdrant-client) · [Smithery](https://smithery.ai/server/qdrant-mcp-server) · [GitHub](https://github.com/qdrant/qdrant)
 
 #2 — pgvector · Score: 8.50/10
