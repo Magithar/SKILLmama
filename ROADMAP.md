@@ -1,10 +1,9 @@
 # Roadmap — what is left
 
-Status as of 2026-11-06, at v1.9.0. The repository quality pass is complete;
-lint, typecheck, 216 tests, coverage thresholds, package validation, and the
-drift guard all pass. v1.6.0 through v1.9.0 are tagged with GitHub Releases
-published. `skillmama@0.2.0` is live on npm, publishing independently of the
-repo's own version.
+Status as of 2026-11-08, at v1.10.0. Lint, typecheck, 220 tests, coverage
+thresholds, package validation, and the drift guard all pass. v1.6.0 through
+v1.10.0 are tagged with GitHub Releases published. `skillmama@0.3.0` is live on
+npm, publishing independently of the repo's own version.
 
 `skillmama/SKILL.md` is the shipped product and the sole source of truth.
 `packages/` is an additive layer that implements the deterministic slices of the
@@ -22,6 +21,11 @@ a reader of the docs can assess), so the package cannot score a candidate alone
 ---
 
 ## Done since the last revision
+
+**v1.10.0 is tagged and released, and `skillmama@0.3.0` is live on npm.**
+v1.10.0 covers results showing the checked version and time (item 13), and the
+fixes for the skills.sh Agent Trust Hub and Snyk audit findings. `0.3.0` adds
+`skillmama stickers`.
 
 **Roadmap item 13 is done.** Each candidate's `Security:` line now shows the
 version the check ran against and a UTC timestamp, so a shared result can be

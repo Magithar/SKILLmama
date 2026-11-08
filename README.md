@@ -657,7 +657,7 @@ to fake the rest.
 
 | Package | Name | State |
 | --- | --- | --- |
-| [`packages/core`](packages/core) | [`skillmama`](https://www.npmjs.com/package/skillmama) | published, `0.2.0` |
+| [`packages/core`](packages/core) | [`skillmama`](https://www.npmjs.com/package/skillmama) | published, `0.3.0` |
 
 There is one package. `packages/core` is a folder name, not a second identity:
 it carries the `skillmama` bin and the programmatic API in a single publishable

@@ -6,6 +6,10 @@ All notable changes to SKILLmama are documented here.
 
 ## [Unreleased]
 
+---
+
+## [1.10.0] - 2026-11-08
+
 ### Added
 - **`skillmama@0.2.0`: a first-run welcome and a quick-start guide.** The first run on
   a machine prints a wordmark, tagline and credit, once, only at a real terminal: never
@@ -18,8 +22,8 @@ All notable changes to SKILLmama are documented here.
   Apache 2.0 license
 - **`skillmama stickers`.** Opens the README's Stickers section in the browser and
   prints the link and sticker names, so it still works over SSH. Piped output, CI and
-  `--json` never open a browser, and `--json` prints only the link. Not released to npm
-  yet
+  `--json` never open a browser, and `--json` prints only the link. Shipped in
+  `skillmama@0.3.0`
 - **`/skillmama:stickers` in the Claude Code plugin.** A plugin slash command in
   `commands/stickers.md` that opens the same page from inside Claude Code. It is outside
   `SKILL.md`, so the skill and other agents are unaffected
