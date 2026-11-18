@@ -18,7 +18,7 @@ tracks open work. Item numbers are stable, so closed items leave gaps.
 
 | # | Task | Notes |
 | --- | --- | --- |
-| 14 | File the skills.sh re-audit issue | Checked 2026-11-19: both audits are still dated Nov 6, 2026. Gen Agent Trust Hub shows FAIL (HIGH, from the `curl \| python3` publisher checks) and Snyk shows WARN (W011, third-party content). The FAIL was fixed in v1.10.0. File one upstream issue asking for a re-audit, covering the stale dep-egress audit too. W011 may stay a WARN, since the skill reads third-party content by design. |
+| 14 | Wait for the skills.sh re-audit | Filed as vercel-labs/skills#2793 on 2026-11-19, covering both stale audits. SKILLmama: Gen Agent Trust Hub FAIL from Nov 6, for the `curl \| python3` pattern removed in v1.10.0. dep-egress: Snyk W007 FAIL from Aug 8, for text removed the same day. Snyk W011 on SKILLmama may stay a WARN, since the skill reads third-party content by design. Close this once both badges show a newer audit date. |
 
 ## P2: hygiene
 
