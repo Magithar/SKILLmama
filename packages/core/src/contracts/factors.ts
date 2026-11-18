@@ -6,7 +6,7 @@
  *   Stage 1 — EVIDENCE (deterministic): the live numbers SKILL.md's
  *   Popularity and Maintenance bands are read off. Stars and last-push
  *   date come from the GitHub repo API, weekly downloads from the npm
- *   downloads API. No judgment involved.
+ *   downloads API or pypistats.org. No judgment involved.
  *
  *   Stage 2 — BAND MAPPING (deterministic): SKILL.md states each band as
  *   a fixed numeric range, so evidence -> band is a lookup table.
@@ -38,15 +38,20 @@ export interface FactorBand {
 export interface FactorTarget {
   /** GitHub "owner/name". Source of stars AND last-push date. */
   repo?: string;
-  /** npm package name. SKILL.md's downloads band is stated in npm weekly
-   *  downloads; no other registry publishes a comparable number, so this
-   *  stays npm-only rather than pretending PyPI equivalence. */
+  /** npm package name, read from api.npmjs.org's last-week point. */
   npmPackage?: string;
+  /** PyPI project name, read from pypistats.org's `last_week`. pypi.org
+   *  itself shows no download counts; SKILL.md's Tier 3 names pypistats as
+   *  the source, and its downloads band says "weekly downloads" without
+   *  naming a registry, so the same table applies. When only this is set,
+   *  the downloads record is `pypi-downloads` instead of `npm-downloads`. */
+  pypiPackage?: string;
 }
 
 /**
  * `sourceUrl` on these records is the page a person can open to check the
- * number: the GitHub repo page or the npm package page. It is present
+ * number: the GitHub repo page, the npm package page, or the pypistats.org
+ * package page. It is present
  * whenever there is something to point at (ok and `unreachable`), absent
  * for `no-repo` / `no-npm-package`.
  */
@@ -56,7 +61,9 @@ export type PopularityEvidence =
   | { source: "github-stars"; status: "unverified"; reason: "no-repo" }
   | { source: "npm-downloads"; status: "ok"; weeklyDownloads: number; sourceUrl: string }
   | { source: "npm-downloads"; status: "unverified"; reason: "unreachable"; sourceUrl: string }
-  | { source: "npm-downloads"; status: "unverified"; reason: "no-npm-package" };
+  | { source: "npm-downloads"; status: "unverified"; reason: "no-npm-package" }
+  | { source: "pypi-downloads"; status: "ok"; weeklyDownloads: number; sourceUrl: string }
+  | { source: "pypi-downloads"; status: "unverified"; reason: "unreachable"; sourceUrl: string };
 
 export type MaintenanceEvidence =
   | {

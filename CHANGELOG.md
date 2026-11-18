@@ -6,6 +6,15 @@ All notable changes to SKILLmama are documented here.
 
 ## [Unreleased]
 
+### Added
+- **`skillmama check` reads PyPI download counts.** For `--ecosystem PyPI`, Popularity
+  now uses `last_week` from pypistats.org alongside GitHub stars, and links the
+  pypistats page in the Sources block. Before, PyPI packages were banded on stars alone
+  and showed a meaningless `npm-downloads: N/A (no-npm-package)` line.
+  `gatherFactorEvidence()` takes a new `pypiPackage` field and emits a `pypi-downloads`
+  record. Names are PEP 503 normalized, since pypistats is case-sensitive. A
+  rate-limited or failed pypistats request reports `N/A (unverified)`, never a number
+
 ---
 
 ## [1.11.0] - 2026-11-19

@@ -22,7 +22,8 @@ import { verifyCandidate } from "../index.js";
  * scoring Compatibility/Simplicity) and a CLI has no LLM to supply them.
  * Rather than stub them with something that looks like an answer, this
  * command runs exactly the parts that need no judgment — the OSV query,
- * the npm publisher-continuity check, stars/downloads/last-push, and the
+ * the npm publisher-continuity check, stars, npm or PyPI downloads,
+ * last-push, and the
  * band lookups — and says plainly which half did not run.
  *
  * The omission is load-bearing, not a caveat: Phase 3.5's verdict is
@@ -37,6 +38,7 @@ export interface CheckTarget {
   version: string;
   repo?: string;
   npmPackage?: string;
+  pypiPackage?: string;
 }
 
 export interface CheckResult {
@@ -80,6 +82,7 @@ export async function runCheck(
       {
         ...(target.repo ? { repo: target.repo } : {}),
         ...(target.npmPackage ? { npmPackage: target.npmPackage } : {}),
+        ...(target.pypiPackage ? { pypiPackage: target.pypiPackage } : {}),
       },
       {
         ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),

@@ -85,6 +85,21 @@ test("a check with nothing to link says so instead of dropping its line", async 
   assert.match(text, /github-stars +unverified +none \(no-repo\)/);
 });
 
+test("a PyPI check bands downloads from pypistats and links them", async () => {
+  const result = await runCheck(
+    { name: "qdrant-client", ecosystem: "PyPI", version: "1.20.0", repo: "qdrant/qdrant-client", pypiPackage: "qdrant-client" },
+    {
+      fetchImpl: stubFetch({ ...clean, "https://pypistats.org": { data: { last_week: 3_626_345 } } }),
+      today: TODAY,
+    }
+  );
+  assert.deepEqual(result.popularity.evidence.map((r) => r.source), ["github-stars", "pypi-downloads"]);
+  const text = renderCheckText(result);
+  assert.match(text, /pypi-downloads: 3,626,345 last week \(pypistats\) -> 10/);
+  assert.match(text, /pypi-downloads +ok +https:\/\/pypistats\.org\/packages\/qdrant-client/);
+  assert.ok(!text.includes("npm-downloads"), "a PyPI project must not be reported as missing an npm package");
+});
+
 test("a missing repo is reported as not checked, not silently omitted", async () => {
   const result = await runCheck(
     { name: "x", ecosystem: "npm", version: "1.0.0", npmPackage: "x" },

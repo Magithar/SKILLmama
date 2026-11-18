@@ -124,10 +124,13 @@ fixed order so identical inputs give byte-identical output;
 [`src/mechanical/factors.ts`](src/mechanical/factors.ts) — the two Phase 4
 factors that start from live data, split the same way Phase 3.5 is.
 `gatherFactorEvidence()` pulls stars and last-push date from the GitHub repo
-API in one request and weekly downloads from the npm downloads API, so a
-candidate costs at most two HTTP calls; the mappers then apply SKILL.md's
-band tables, which are stated as fixed numeric ranges and so are a lookup,
-not a judgment.
+API in one request, and weekly downloads from the npm downloads API or, for a
+PyPI project, `last_week` from pypistats.org (pypi.org shows no counts). Pass
+`npmPackage`, `pypiPackage`, or both; a PyPI-only target gets a
+`pypi-downloads` record instead of an `npm-downloads` one. pypistats is
+case-sensitive, so names are PEP 503 normalized first. The mappers then
+apply SKILL.md's band tables, which are stated as fixed numeric ranges and so
+are a lookup, not a judgment.
 
 Two things it reports rather than guesses:
 

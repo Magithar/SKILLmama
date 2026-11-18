@@ -149,6 +149,7 @@ if (command === "stickers") {
     version,
     ...(repo ? { repo } : {}),
     ...(ecosystem === "npm" ? { npmPackage: name } : {}),
+    ...(ecosystem === "PyPI" ? { pypiPackage: name } : {}),
   };
 
   try {

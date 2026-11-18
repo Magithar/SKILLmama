@@ -722,7 +722,8 @@ Implemented in core:
   and FLAG rules surface independently as `sqpFlags`.
 - **`gatherFactorEvidence()` / `mapPopularityBand()` / `mapMaintenanceBand()`** —
   Phase 4's two live-data factors, split like Phase 3.5: one GitHub request for
-  stars and last-push date plus one npm request for weekly downloads, then
+  stars and last-push date plus one request for weekly downloads (npm, or
+  pypistats.org for PyPI), then
   SKILL.md's band tables as a lookup. Unverified sources stay unverified rather
   than becoming a low score, and one thing gets reported instead of guessed:
   the Maintenance 10 band also requires "active releases", which a push date

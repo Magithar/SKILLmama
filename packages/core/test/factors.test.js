@@ -1,7 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { gatherFactorEvidence, mapMaintenanceBand, mapPopularityBand } from "../dist/index.js";
-import { normalizeGithubRepoResponse, normalizeNpmDownloadsResponse } from "../dist/mechanical/factors.js";
+import {
+  normalizeGithubRepoResponse,
+  normalizeNpmDownloadsResponse,
+  normalizePypiName,
+  normalizePypistatsResponse,
+} from "../dist/mechanical/factors.js";
 
 const TODAY = "2026-08-24";
 
@@ -186,6 +191,76 @@ test("a malformed target throws instead of quietly searching nothing", async () 
     () => gatherFactorEvidence({ npmPackage: "" }),
     /npmPackage must be a non-empty string/
   );
+  await assert.rejects(
+    () => gatherFactorEvidence({ pypiPackage: "" }),
+    /pypiPackage must be a non-empty string/
+  );
+});
+
+// ---------------------------------------------------------------------------
+// PyPI downloads (pypistats.org). pypi.org shows no counts; SKILL.md's Tier 3
+// names pypistats `last_week` as the source.
+// ---------------------------------------------------------------------------
+
+const PYPISTATS_FLASK = "https://pypistats.org/api/packages/flask/recent";
+
+test("pypistats payload yields last_week, and nothing invented when it's absent", () => {
+  assert.equal(
+    normalizePypistatsResponse({ data: { last_day: 1, last_week: 3_626_345, last_month: 9 }, package: "x" }),
+    3_626_345
+  );
+  assert.equal(normalizePypistatsResponse({ data: { last_week: 0 } }), 0);
+  assert.equal(normalizePypistatsResponse({ data: {} }), null);
+  assert.equal(normalizePypistatsResponse({ data: { last_week: "3M" } }), null);
+  assert.equal(normalizePypistatsResponse(null), null);
+});
+
+test("PyPI names are PEP 503 normalized, because pypistats is case-sensitive", () => {
+  assert.equal(normalizePypiName("Flask"), "flask");
+  assert.equal(normalizePypiName("zope.interface"), "zope-interface");
+  assert.equal(normalizePypiName("typing__Extensions"), "typing-extensions");
+});
+
+test("a PyPI-only target reports pypi-downloads in place of npm-downloads", async () => {
+  const fetchImpl = stubFetch({ [PYPISTATS_FLASK]: { data: { last_week: 12_000_000 } } });
+  const evidence = await gatherFactorEvidence({ pypiPackage: "Flask" }, { fetchImpl });
+  assert.deepEqual(fetchImpl.calls, [PYPISTATS_FLASK]);
+  assert.deepEqual(evidence.popularity, [
+    { source: "github-stars", status: "unverified", reason: "no-repo" },
+    {
+      source: "pypi-downloads",
+      status: "ok",
+      weeklyDownloads: 12_000_000,
+      sourceUrl: "https://pypistats.org/packages/flask",
+    },
+  ]);
+  const outcome = mapPopularityBand(evidence.popularity);
+  assert.deepEqual(outcome.band, { low: 10, high: 10 });
+  assert.ok(outcome.notes.includes("pypi-downloads: 12,000,000 last week (pypistats) -> 10"));
+});
+
+test("pypistats failing (rate limit, 404) degrades to unverified and keeps the link", async () => {
+  const evidence = await gatherFactorEvidence({ pypiPackage: "flask" }, { fetchImpl: stubFetch({}) });
+  assert.deepEqual(evidence.popularity[1], {
+    source: "pypi-downloads",
+    status: "unverified",
+    reason: "unreachable",
+    sourceUrl: "https://pypistats.org/packages/flask",
+  });
+  const outcome = mapPopularityBand(evidence.popularity);
+  assert.equal(outcome.status, "unbanded");
+  assert.ok(outcome.notes.includes("pypi-downloads: N/A (unverified — unreachable)"));
+});
+
+test("a target naming both registries gets both download records, npm first", async () => {
+  const fetchImpl = stubFetch({
+    [DOWNLOADS_URL]: { downloads: 50_000 },
+    "https://pypistats.org/api/packages/next/recent": { data: { last_week: 200_000 } },
+  });
+  const evidence = await gatherFactorEvidence({ npmPackage: "next", pypiPackage: "next" }, { fetchImpl });
+  assert.deepEqual(evidence.popularity.map((r) => r.source), ["github-stars", "npm-downloads", "pypi-downloads"]);
+  // Bands are OR'd: the better of the two wins.
+  assert.deepEqual(mapPopularityBand(evidence.popularity).band, { low: 7, high: 9 });
 });
 
 // ---------------------------------------------------------------------------

@@ -43,6 +43,7 @@ export interface FactorEvidence {
 
 const GITHUB_API_BASE = "https://api.github.com/repos";
 const NPM_DOWNLOADS_BASE = "https://api.npmjs.org/downloads/point/last-week";
+const PYPISTATS_API_BASE = "https://pypistats.org/api/packages";
 
 /** Pages a person can open to check stars, last push, and downloads. */
 export function githubRepoUrl(repo: string): string {
@@ -53,6 +54,16 @@ export function githubRepoUrl(repo: string): string {
 export function npmPackageUrl(name: string): string {
   const path = name.split("/").map(encodeURIComponent).join("/").replace(/^%40/, "@");
   return `https://www.npmjs.com/package/${path}`;
+}
+
+/** PEP 503 name normalization. pypistats is case-sensitive ("Flask" 404s,
+ *  "flask" works) and keys projects by their normalized name. */
+export function normalizePypiName(name: string): string {
+  return name.toLowerCase().replace(/[-_.]+/g, "-");
+}
+
+export function pypistatsPackageUrl(name: string): string {
+  return `https://pypistats.org/packages/${encodeURIComponent(normalizePypiName(name))}`;
 }
 
 /** "owner/name", each segment non-empty and free of path separators.
@@ -75,6 +86,13 @@ function assertValidTarget(target: FactorTarget): void {
     if (typeof target.npmPackage !== "string" || target.npmPackage === "") {
       throw new Error(
         "gatherFactorEvidence: target.npmPackage must be a non-empty string"
+      );
+    }
+  }
+  if (target.pypiPackage !== undefined) {
+    if (typeof target.pypiPackage !== "string" || target.pypiPackage === "") {
+      throw new Error(
+        "gatherFactorEvidence: target.pypiPackage must be a non-empty string"
       );
     }
   }
@@ -143,15 +161,27 @@ export function normalizeNpmDownloadsResponse(payload: unknown): number | null {
   return Math.trunc(raw);
 }
 
+/** pypistats `/recent` response -> last-week download count, or null. Pure. */
+export function normalizePypistatsResponse(payload: unknown): number | null {
+  if (!payload || typeof payload !== "object") return null;
+  const data = (payload as Record<string, unknown>).data;
+  if (!data || typeof data !== "object") return null;
+  const raw = (data as Record<string, unknown>).last_week;
+  if (typeof raw !== "number" || !Number.isFinite(raw) || raw < 0) return null;
+  return Math.trunc(raw);
+}
+
 /**
  * Both live factors for one candidate, in canonical order:
- * popularity [github-stars, npm-downloads], maintenance
- * [github-last-commit].
+ * popularity [github-stars, downloads...], maintenance
+ * [github-last-commit]. The downloads records are `npm-downloads` unless
+ * the target names only a `pypiPackage`, in which case it is
+ * `pypi-downloads` alone, so a PyPI project isn't reported as missing an
+ * npm package. A target naming both gets both, npm first.
  *
- * One GitHub request serves both stars and last-push date, so a candidate
- * costs at most two HTTP calls. A target with no `repo` yields
- * `reason: "no-repo"` for both GitHub-sourced records; no `npmPackage`
- * yields `reason: "no-npm-package"`. Those are not failures — a Tier 4
+ * One GitHub request serves both stars and last-push date. A target with
+ * no `repo` yields `reason: "no-repo"` for both GitHub-sourced records; no
+ * `npmPackage` (and no `pypiPackage`) yields `reason: "no-npm-package"`. Those are not failures — a Tier 4
  * curated template genuinely has no stars — but they are recorded so the
  * band mapper can say which sources were actually available.
  */
@@ -169,7 +199,7 @@ export async function gatherFactorEvidence(
     githubHeaders.authorization = `Bearer ${options.githubToken}`;
   }
 
-  const [repoResult, downloadsResult] = await Promise.all([
+  const [repoResult, downloadsResult, pypiResult] = await Promise.all([
     (async (): Promise<ParsedGithubRepo | null> => {
       if (!target.repo) return null;
       const payload = await fetchJson(
@@ -187,6 +217,15 @@ export async function gatherFactorEvidence(
         doFetch
       );
       return payload === null ? null : normalizeNpmDownloadsResponse(payload);
+    })(),
+    (async (): Promise<number | null> => {
+      if (!target.pypiPackage) return null;
+      const payload = await fetchJson(
+        `${PYPISTATS_API_BASE}/${encodeURIComponent(normalizePypiName(target.pypiPackage))}/recent`,
+        { headers: { accept: "application/json" } },
+        doFetch
+      );
+      return payload === null ? null : normalizePypistatsResponse(payload);
     })(),
   ]);
 
@@ -227,7 +266,18 @@ export async function gatherFactorEvidence(
           sourceUrl: repoUrl,
         };
 
-  return { popularity: [stars, downloads], maintenance: [lastCommit] };
+  const pypiUrl = target.pypiPackage ? pypistatsPackageUrl(target.pypiPackage) : "";
+  const pypiDownloads: PopularityEvidence | null = !target.pypiPackage
+    ? null
+    : pypiResult === null
+      ? { source: "pypi-downloads", status: "unverified", reason: "unreachable", sourceUrl: pypiUrl }
+      : { source: "pypi-downloads", status: "ok", weeklyDownloads: pypiResult, sourceUrl: pypiUrl };
+
+  const popularity: PopularityEvidence[] = [stars];
+  if (target.npmPackage || !pypiDownloads) popularity.push(downloads);
+  if (pypiDownloads) popularity.push(pypiDownloads);
+
+  return { popularity, maintenance: [lastCommit] };
 }
 
 /**
@@ -310,6 +360,16 @@ export function mapPopularityBand(evidence: PopularityEvidence[]): BandOutcome {
         );
       } else {
         notes.push(`npm-downloads: N/A (unverified — ${record.reason})`);
+      }
+    } else if (record.source === "pypi-downloads") {
+      if (record.status === "ok") {
+        const band = lookupBand(DOWNLOAD_BANDS, record.weeklyDownloads);
+        candidates.push(band);
+        notes.push(
+          `pypi-downloads: ${formatCount(record.weeklyDownloads)} last week (pypistats) -> ${bandLabel(band)}`
+        );
+      } else {
+        notes.push(`pypi-downloads: N/A (unverified — ${record.reason})`);
       }
     } else {
       throw new Error(
