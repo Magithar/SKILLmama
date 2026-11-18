@@ -1,8 +1,8 @@
 # Roadmap: what is left
 
-Status as of 2026-11-19: v1.11.0 is released, and `skillmama@0.4.0` is live on
-npm. `main` is one feature ahead of both (item 19). Lint, typecheck, 233 tests,
-coverage thresholds, package validation and the drift guard all pass.
+Status as of 2026-11-19: v1.12.0 is released, and `skillmama@0.5.0` is live on
+npm. Lint, typecheck, 233 tests, coverage thresholds, package validation and
+the drift guard all pass.
 
 `skillmama/SKILL.md` is the shipped product and the source of truth.
 `packages/core` implements the deterministic parts of the same pipeline as the
@@ -18,7 +18,6 @@ tracks open work. Item numbers are stable, so closed items leave gaps.
 
 | # | Task | Notes |
 | --- | --- | --- |
-| 19 | Release PyPI downloads in the CLI | On `main`, not on npm. `skillmama check --ecosystem PyPI` bands Popularity on pypistats.org `last_week` as well as stars, and links it in the Sources block. It adds a `pypiPackage` API field, so it ships as `skillmama@0.5.0`, with `v1.12.0` for the repo. |
 | 14 | File the skills.sh re-audit issue | Checked 2026-11-19: both audits are still dated Nov 6, 2026. Gen Agent Trust Hub shows FAIL (HIGH, from the `curl \| python3` publisher checks) and Snyk shows WARN (W011, third-party content). The FAIL was fixed in v1.10.0. File one upstream issue asking for a re-audit, covering the stale dep-egress audit too. W011 may stay a WARN, since the skill reads third-party content by design. |
 
 ## P2: hygiene

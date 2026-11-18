@@ -6,6 +6,12 @@ All notable changes to SKILLmama are documented here.
 
 ## [Unreleased]
 
+---
+
+## [1.12.0] - 2026-11-19
+
+Shipped to npm as `skillmama@0.5.0`.
+
 ### Added
 - **`skillmama check` reads PyPI download counts.** For `--ecosystem PyPI`, Popularity
   now uses `last_week` from pypistats.org alongside GitHub stars, and links the
@@ -14,6 +20,10 @@ All notable changes to SKILLmama are documented here.
   `gatherFactorEvidence()` takes a new `pypiPackage` field and emits a `pypi-downloads`
   record. Names are PEP 503 normalized, since pypistats is case-sensitive. A
   rate-limited or failed pypistats request reports `N/A (unverified)`, never a number
+
+### Changed
+- **The roadmap tracks only open work.** Release history lives here in the changelog;
+  item numbers are kept stable
 
 ---
 
