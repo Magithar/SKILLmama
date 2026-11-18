@@ -58,6 +58,33 @@ test("what did not run is always reported, on every result", async () => {
   );
 });
 
+test("every check in the text output links to the page it was read from", async () => {
+  const result = await runCheck(target, { fetchImpl: stubFetch(clean), today: TODAY });
+  const text = renderCheckText(result);
+  const sources = text.slice(text.indexOf("Sources:"));
+  assert.ok(text.indexOf("Sources:") > text.indexOf("Verdict"));
+  for (const url of [
+    "https://osv.dev/list?ecosystem=npm&q=left-pad",
+    "https://registry.npmjs.org/left-pad",
+    "https://github.com/stevemao/left-pad",
+    "https://www.npmjs.com/package/left-pad",
+  ]) {
+    assert.ok(sources.includes(url), `missing ${url}`);
+  }
+  // Five records: osv, publisher-continuity, stars, downloads, last-commit.
+  assert.equal(sources.split("\n").length - 1, 5);
+});
+
+test("a check with nothing to link says so instead of dropping its line", async () => {
+  const result = await runCheck(
+    { name: "x", ecosystem: "PyPI", version: "1.0.0" },
+    { fetchImpl: stubFetch(clean), today: TODAY }
+  );
+  const text = renderCheckText(result);
+  assert.match(text, /publisher-continuity +unverified +none \(unsupported-ecosystem\)/);
+  assert.match(text, /github-stars +unverified +none \(no-repo\)/);
+});
+
 test("a missing repo is reported as not checked, not silently omitted", async () => {
   const result = await runCheck(
     { name: "x", ecosystem: "npm", version: "1.0.0", npmPackage: "x" },

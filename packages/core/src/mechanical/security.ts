@@ -79,6 +79,27 @@ const CRATES_IO_USER_AGENT = "skillmama (https://github.com/Magithar/SKILLmama)"
 
 const OSV_ECOSYSTEMS: readonly OsvEcosystem[] = ["npm", "PyPI", "Go", "crates.io"];
 
+/** Human-checkable pages for each Stage 1 fact. OSV's query API is a POST,
+ *  so the osv.dev package listing stands in for it; it lists advisories
+ *  for every version, while the API was asked about one. */
+export function osvListUrl(name: string, ecosystem: OsvEcosystem): string {
+  return `https://osv.dev/list?ecosystem=${encodeURIComponent(ecosystem)}&q=${encodeURIComponent(name)}`;
+}
+
+export function osvAdvisoryUrl(id: string): string {
+  return `https://osv.dev/vulnerability/${encodeURIComponent(id)}`;
+}
+
+/** The registry document the publisher history is read from. npmjs.com
+ *  does not show who published each version; the JSON does. */
+export function npmRegistryUrl(name: string): string {
+  return `${NPM_REGISTRY_BASE}/${encodeURIComponent(name)}`;
+}
+
+export function cratesVersionsUrl(name: string): string {
+  return `https://crates.io/crates/${encodeURIComponent(name)}/versions`;
+}
+
 function assertValidTarget(target: SecurityTarget): void {
   if (!target || typeof target !== "object") {
     throw new Error("gatherSecurityEvidence: target must be an object");
@@ -466,6 +487,8 @@ export async function gatherSecurityEvidence(
   const doFetch = options.fetchImpl ?? fetch;
   const today = options.today ?? isoLocalDate();
 
+  const osvUrl = osvListUrl(target.name, target.ecosystem);
+
   const [osvEvidence, continuityEvidence] = await Promise.all([
     (async (): Promise<SecurityEvidence> => {
       const payload = await fetchJson(
@@ -481,29 +504,32 @@ export async function gatherSecurityEvidence(
         doFetch
       );
       if (payload === null) {
-        return { source: "osv", status: "unverified", reason: "unreachable" };
+        return { source: "osv", status: "unverified", reason: "unreachable", sourceUrl: osvUrl };
       }
       return {
         source: "osv",
         status: "ok",
         queriedVersion: target.version,
         advisories: normalizeOsvQueryResponse(payload),
+        sourceUrl: osvUrl,
       };
     })(),
     (async (): Promise<SecurityEvidence> => {
       if (target.ecosystem === "npm") {
+        const sourceUrl = npmRegistryUrl(target.name);
         const payload = await fetchJson(
-          `${NPM_REGISTRY_BASE}/${encodeURIComponent(target.name)}`,
+          sourceUrl,
           { headers: { accept: "application/json" } },
           doFetch
         );
         if (payload === null) {
-          return { source: "publisher-continuity", status: "unverified", reason: "unreachable" };
+          return { source: "publisher-continuity", status: "unverified", reason: "unreachable", sourceUrl };
         }
         return {
           source: "publisher-continuity",
           status: "ok",
           handoff: detectPublisherHandoff(payload, today),
+          sourceUrl,
         };
       }
       if (target.ecosystem === "crates.io") {
@@ -512,13 +538,15 @@ export async function gatherSecurityEvidence(
           { headers: { accept: "application/json", "user-agent": CRATES_IO_USER_AGENT } },
           doFetch
         );
+        const sourceUrl = cratesVersionsUrl(target.name);
         if (payload === null) {
-          return { source: "publisher-continuity", status: "unverified", reason: "unreachable" };
+          return { source: "publisher-continuity", status: "unverified", reason: "unreachable", sourceUrl };
         }
         return {
           source: "publisher-continuity",
           status: "ok",
           handoff: detectCratesIoPublisherHandoff(payload, today),
+          sourceUrl,
         };
       }
       return {
@@ -655,7 +683,16 @@ function assertValidFindings(findings: ContentFinding[]): void {
 }
 
 function advisoryLabel(a: OsvAdvisory): string {
-  return a.summary ? `${a.severity} ${a.id}: ${a.summary}` : `${a.severity} ${a.id}`;
+  const label = a.summary ? `${a.severity} ${a.id}: ${a.summary}` : `${a.severity} ${a.id}`;
+  return `${label} (${osvAdvisoryUrl(a.id)})`;
+}
+
+/** Hand-built evidence may omit sourceUrl; only a non-empty string is linked.
+ *  `label` says what the link is for: "source" on a finding, "check manually"
+ *  on a check that did not complete. */
+function sourceSuffix(record: SecurityEvidence, label: string): string {
+  const url = (record as { sourceUrl?: unknown }).sourceUrl;
+  return typeof url === "string" && url !== "" ? ` · ${label}: ${url}` : "";
 }
 
 export function resolveSecurityVerdict(
@@ -691,7 +728,7 @@ export function resolveSecurityVerdict(
       ): record is Extract<SecurityEvidence, { status: "unverified" }> =>
         record.status === "unverified"
     )
-    .map((record) => `${record.source}: N/A (unverified — ${record.reason})`);
+    .map((record) => `${record.source}: N/A (unverified — ${record.reason})${sourceSuffix(record, "check manually")}`);
 
   const notes: string[] = [];
   for (const advisory of blockers) notes.push(`OSV blocks: ${advisoryLabel(advisory)}`);
@@ -704,7 +741,7 @@ export function resolveSecurityVerdict(
   }
   if (continuity?.handoff) {
     const h = continuity.handoff;
-    notes.push(`Publisher handoff: ${h.from} -> ${h.to}, version ${h.version}, ${h.date}`);
+    notes.push(`Publisher handoff: ${h.from} -> ${h.to}, version ${h.version}, ${h.date}${sourceSuffix(continuity, "source")}`);
   }
   for (const finding of warnFindings) notes.push(`${finding.rule}: ${finding.detail}`);
   notes.push(...unverifiedNotes);

@@ -44,19 +44,19 @@ export interface FactorTarget {
   npmPackage?: string;
 }
 
+/**
+ * `sourceUrl` on these records is the page a person can open to check the
+ * number: the GitHub repo page or the npm package page. It is present
+ * whenever there is something to point at (ok and `unreachable`), absent
+ * for `no-repo` / `no-npm-package`.
+ */
 export type PopularityEvidence =
-  | { source: "github-stars"; status: "ok"; stars: number }
-  | {
-      source: "github-stars";
-      status: "unverified";
-      reason: "unreachable" | "no-repo";
-    }
-  | { source: "npm-downloads"; status: "ok"; weeklyDownloads: number }
-  | {
-      source: "npm-downloads";
-      status: "unverified";
-      reason: "unreachable" | "no-npm-package";
-    };
+  | { source: "github-stars"; status: "ok"; stars: number; sourceUrl: string }
+  | { source: "github-stars"; status: "unverified"; reason: "unreachable"; sourceUrl: string }
+  | { source: "github-stars"; status: "unverified"; reason: "no-repo" }
+  | { source: "npm-downloads"; status: "ok"; weeklyDownloads: number; sourceUrl: string }
+  | { source: "npm-downloads"; status: "unverified"; reason: "unreachable"; sourceUrl: string }
+  | { source: "npm-downloads"; status: "unverified"; reason: "no-npm-package" };
 
 export type MaintenanceEvidence =
   | {
@@ -68,12 +68,15 @@ export type MaintenanceEvidence =
       /** SKILL.md's 1–3 band is "> 365 days OR archived", so archived is
        *  evidence in its own right, not a derived opinion. */
       archived: boolean;
+      sourceUrl: string;
     }
   | {
       source: "github-last-commit";
       status: "unverified";
-      reason: "unreachable" | "no-repo";
-    };
+      reason: "unreachable";
+      sourceUrl: string;
+    }
+  | { source: "github-last-commit"; status: "unverified"; reason: "no-repo" };
 
 /**
  * The result of mapping evidence onto SKILL.md's bands.

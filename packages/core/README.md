@@ -292,15 +292,24 @@ Not checked:
 
 Verdict  WARN
 
-  - OSV HIGH GHSA-35jh-r3h4-6jhm: Command Injection in lodash has a fixed
-    version available — recommend the fixed version
+  - OSV HIGH GHSA-35jh-r3h4-6jhm: Command Injection in lodash
+    (https://osv.dev/vulnerability/GHSA-35jh-r3h4-6jhm) has a fixed version
+    available — recommend the fixed version
   ...
 
 Popularity    10/10  (pick a point in this band)
 Maintenance   7-9/10  (pick a point in this band)
+  ...
+
+Sources:
+  osv                   ok          https://osv.dev/list?ecosystem=npm&q=lodash
+  publisher-continuity  ok          https://registry.npmjs.org/lodash
+  github-stars          ok          https://github.com/lodash/lodash
+  npm-downloads         ok          https://www.npmjs.com/package/lodash
+  github-last-commit    ok          https://github.com/lodash/lodash
 ```
 
-Three things about that output are deliberate:
+Four things about that output are deliberate:
 
 - **What did not run prints before the verdict.** This command has no LLM, so
   it cannot produce Phase 3.5's content findings — it passes an empty finding
@@ -312,6 +321,10 @@ Three things about that output are deliberate:
   and the output says so, because SKILL.md is explicit that querying "latest"
   instead of the version you intend to recommend is a trap. Outside npm, no
   version is guessed at all: `--version` is required.
+- **Every check names its source.** Each evidence record carries a
+  `sourceUrl`, a page you can open to check the same fact by hand. A check
+  that failed keeps its link so you know where to look; one with nothing to
+  link (no repo, unsupported ecosystem) says so instead of dropping its line.
 
 `GITHUB_TOKEN`, if set, is sent to the GitHub API. Unauthenticated requests are
 capped at 60/hour per IP; a rate-limited response degrades to `unverified`

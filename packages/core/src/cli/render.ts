@@ -110,7 +110,40 @@ export function renderCheckText(
         .join("\n")
   );
 
+  const sources = renderSources(result);
+  if (sources) sections.push(sources);
+
   return sections.join("\n\n");
+}
+
+/**
+ * One line per evidence record, in the order the checks ran, so every
+ * verdict and band above can be traced to the page it came from. Records
+ * with nothing to point at (no repo, no npm package, unsupported
+ * ecosystem) still get a line, saying so, rather than vanishing.
+ */
+function renderSources(result: CheckResult): string {
+  const records = [
+    ...result.security.evidence,
+    ...result.popularity.evidence,
+    ...result.maintenance.evidence,
+  ];
+  if (records.length === 0) return "";
+  const width = Math.max(...records.map((r) => r.source.length)) + 2;
+  return (
+    "Sources:\n" +
+    records
+      .map((record) => {
+        const url = (record as { sourceUrl?: unknown }).sourceUrl;
+        const where =
+          typeof url === "string" && url !== ""
+            ? url
+            : `none (${record.status === "unverified" ? record.reason : "no link"})`;
+        const status = record.status === "ok" ? "ok" : "unverified";
+        return `  ${record.source.padEnd(width)}${status.padEnd(12)}${where}`;
+      })
+      .join("\n")
+  );
 }
 
 function renderBand(outcome: BandOutcome): string {

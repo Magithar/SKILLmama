@@ -75,6 +75,9 @@ function stubFetch(routes) {
 const REPO_URL = "https://api.github.com/repos/vercel/next.js";
 const DOWNLOADS_URL = "https://api.npmjs.org/downloads/point/last-week/next";
 
+const GH_PAGE = "https://github.com/vercel/next.js";
+const NPM_PAGE = "https://www.npmjs.com/package/next";
+
 test("a repo plus an npm package costs exactly two requests", async () => {
   const fetchImpl = stubFetch({
     [REPO_URL]: { stargazers_count: 130_000, pushed_at: "2026-08-23T12:00:00Z", archived: false },
@@ -86,8 +89,8 @@ test("a repo plus an npm package costs exactly two requests", async () => {
   );
   assert.equal(fetchImpl.calls.length, 2);
   assert.deepEqual(evidence.popularity, [
-    { source: "github-stars", status: "ok", stars: 130_000 },
-    { source: "npm-downloads", status: "ok", weeklyDownloads: 7_000_000 },
+    { source: "github-stars", status: "ok", stars: 130_000, sourceUrl: GH_PAGE },
+    { source: "npm-downloads", status: "ok", weeklyDownloads: 7_000_000, sourceUrl: NPM_PAGE },
   ]);
   assert.deepEqual(evidence.maintenance, [
     {
@@ -95,6 +98,7 @@ test("a repo plus an npm package costs exactly two requests", async () => {
       status: "ok",
       lastCommitDate: "2026-08-23",
       archived: false,
+      sourceUrl: GH_PAGE,
     },
   ]);
 });
@@ -118,33 +122,44 @@ test("transport failure degrades to unverified, never to a number", async () => 
     { repo: "vercel/next.js", npmPackage: "next" },
     { fetchImpl: thrower }
   );
+  // A failed check keeps its link, so the reader knows where to look by hand.
   assert.deepEqual(evidence.popularity[0], {
     source: "github-stars",
     status: "unverified",
     reason: "unreachable",
+    sourceUrl: GH_PAGE,
   });
   // 404 on the downloads route (no handler registered) is equally unverified.
   assert.deepEqual(evidence.popularity[1], {
     source: "npm-downloads",
     status: "unverified",
     reason: "unreachable",
+    sourceUrl: NPM_PAGE,
   });
   assert.deepEqual(evidence.maintenance[0], {
     source: "github-last-commit",
     status: "unverified",
     reason: "unreachable",
+    sourceUrl: GH_PAGE,
   });
 });
 
 test("a reachable repo missing pushed_at leaves maintenance unverified but keeps stars", async () => {
   const fetchImpl = stubFetch({ [REPO_URL]: { stargazers_count: 40 } });
   const evidence = await gatherFactorEvidence({ repo: "vercel/next.js" }, { fetchImpl });
-  assert.deepEqual(evidence.popularity[0], { source: "github-stars", status: "ok", stars: 40 });
+  assert.deepEqual(evidence.popularity[0], { source: "github-stars", status: "ok", stars: 40, sourceUrl: GH_PAGE });
   assert.deepEqual(evidence.maintenance[0], {
     source: "github-last-commit",
     status: "unverified",
     reason: "unreachable",
+    sourceUrl: GH_PAGE,
   });
+});
+
+test("scoped npm packages link to npmjs.com with the scope slash intact", async () => {
+  const fetchImpl = stubFetch({});
+  const evidence = await gatherFactorEvidence({ npmPackage: "@types/node" }, { fetchImpl });
+  assert.equal(evidence.popularity[1].sourceUrl, "https://www.npmjs.com/package/@types/node");
 });
 
 test("a github token is sent as a bearer header when supplied", async () => {

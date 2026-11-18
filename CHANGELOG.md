@@ -6,6 +6,30 @@ All notable changes to SKILLmama are documented here.
 
 ## [Unreleased]
 
+### Added
+- **Every score and verdict links to its evidence.** `SKILL.md` now asks for an inline
+  link on each Popularity, Maintenance, and Security value: the GitHub repo, the npm
+  package page, the osv.dev listing and each cited advisory, and the registry publisher
+  history. PyPI download counts come from, and link to, pypistats.org. A number that
+  can't be linked is reported as `N/A (unverified)`, saying whether the source was
+  unavailable or the check wasn't run
+- **`sourceUrl` on every evidence record in `packages/core`.** `gatherSecurityEvidence()`
+  and `gatherFactorEvidence()` attach a page a person can open to check the same fact.
+  Failed checks keep the link so the reader knows where to look; records with nothing to
+  point at (no repo, no npm package, unsupported ecosystem) have none. Advisory notes
+  from `resolveSecurityVerdict()` end with the advisory's osv.dev link. Handoff notes end
+  with `· source: <url>` and unverified notes with `· check manually: <url>`. This changes
+  the note text, so code matching note strings needs updating
+- **`skillmama check` prints a Sources block**, one line per check, after the bands
+
+### Changed
+- **The README's end-to-end example is now a live run** (2026-11-18) against a sample
+  FastAPI + Postgres project, replacing the illustrative one. Every number links to where
+  it was read. Chroma is listed as BLOCKED: chromadb 1.5.9, its latest release, has two
+  CRITICAL and two HIGH OSV advisories with no fixed version
+- **The pipeline diagram** shows that Phase 3.5 records the version, time and source link,
+  that Phase 4 factors are read live and linked, and that Phase 5 links every value
+
 ---
 
 ## [1.10.0] - 2026-11-08

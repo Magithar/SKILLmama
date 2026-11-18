@@ -44,6 +44,17 @@ export interface FactorEvidence {
 const GITHUB_API_BASE = "https://api.github.com/repos";
 const NPM_DOWNLOADS_BASE = "https://api.npmjs.org/downloads/point/last-week";
 
+/** Pages a person can open to check stars, last push, and downloads. */
+export function githubRepoUrl(repo: string): string {
+  return `https://github.com/${repo}`;
+}
+
+/** npmjs.com expects the scope slash unencoded: /package/@scope/name. */
+export function npmPackageUrl(name: string): string {
+  const path = name.split("/").map(encodeURIComponent).join("/").replace(/^%40/, "@");
+  return `https://www.npmjs.com/package/${path}`;
+}
+
 /** "owner/name", each segment non-empty and free of path separators.
  *  A full URL is not accepted: the caller owns URL parsing, and quietly
  *  coercing one here would make a typo look like a missing repo. */
@@ -179,20 +190,24 @@ export async function gatherFactorEvidence(
     })(),
   ]);
 
+  const repoUrl = target.repo ? githubRepoUrl(target.repo) : "";
+  const npmUrl = target.npmPackage ? npmPackageUrl(target.npmPackage) : "";
+
   const stars: PopularityEvidence = !target.repo
     ? { source: "github-stars", status: "unverified", reason: "no-repo" }
     : repoResult === null || repoResult.stars === null
-      ? { source: "github-stars", status: "unverified", reason: "unreachable" }
-      : { source: "github-stars", status: "ok", stars: repoResult.stars };
+      ? { source: "github-stars", status: "unverified", reason: "unreachable", sourceUrl: repoUrl }
+      : { source: "github-stars", status: "ok", stars: repoResult.stars, sourceUrl: repoUrl };
 
   const downloads: PopularityEvidence = !target.npmPackage
     ? { source: "npm-downloads", status: "unverified", reason: "no-npm-package" }
     : downloadsResult === null
-      ? { source: "npm-downloads", status: "unverified", reason: "unreachable" }
+      ? { source: "npm-downloads", status: "unverified", reason: "unreachable", sourceUrl: npmUrl }
       : {
           source: "npm-downloads",
           status: "ok",
           weeklyDownloads: downloadsResult,
+          sourceUrl: npmUrl,
         };
 
   const lastCommit: MaintenanceEvidence = !target.repo
@@ -202,12 +217,14 @@ export async function gatherFactorEvidence(
           source: "github-last-commit",
           status: "unverified",
           reason: "unreachable",
+          sourceUrl: repoUrl,
         }
       : {
           source: "github-last-commit",
           status: "ok",
           lastCommitDate: repoResult.lastCommitDate,
           archived: repoResult.archived,
+          sourceUrl: repoUrl,
         };
 
   return { popularity: [stars, downloads], maintenance: [lastCommit] };

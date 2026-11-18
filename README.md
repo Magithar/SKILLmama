@@ -312,7 +312,10 @@ Notes:
               │   Live checks (per candidate):         │
               │   OSV.dev advisory lookup (npm/PyPI/   │
               │     Go/crates.io, exact version)       │
-              │   npm publisher-continuity check       │
+              │   npm/crates.io publisher continuity   │
+              │                                        │
+              │   Records: version, UTC time, and      │
+              │   a link a person can open to check    │
               │                                        │
               │   Hard Gate (per candidate):           │
               │   🚫 BLOCKED → discard, never score    │
@@ -359,7 +362,9 @@ Notes:
               │   M — Maintenance     (last commit)    │
               │   S — Simplicity      (install effort) │
               │                                        │
-              │   Each factor: 1–10                    │
+              │   Each factor: 1–10, read live and     │
+              │   linked (GitHub, npm, PyPI Stats);    │
+              │   no link → N/A (unverified)           │
               └───────────────┬────────────────────────┘
                               │
                               ▼
@@ -367,6 +372,7 @@ Notes:
               │   PHASE 5 — Present Results            │
               │                                        │
               │   #1, #2, #3 — full score breakdown    │
+              │   Every value links to its source      │
               │   Also Considered — table              │
               │   MCP callout (if found)               │
               │   Companion Skills (if found)          │
@@ -462,10 +468,10 @@ Results open with a scoring table prefixed by the detected stack, then a ranked 
 #1 — [Name] · Score: X.X/10
 [One sentence on why it wins for this stack]
 - Compatibility: X/10 — [reason]
-- Popularity:    X/10 — [stars/downloads]
-- Maintenance:   X/10 — [last commit / release cadence]
+- Popularity:    X/10 — [stars/downloads] ([GitHub] · [npm] or [PyPI Stats])
+- Maintenance:   X/10 — [last commit / release cadence] ([GitHub])
 - Simplicity:    X/10 — [setup effort]
-- Security:      [PASS | ⚠️ SQP-N — finding | 🚫 BLOCKED] · checked [version], [YYYY-MM-DD HH:MM UTC]
+- Security:      [PASS | ⚠️ SQP-N — finding | 🚫 BLOCKED] · checked [version], [YYYY-MM-DD HH:MM UTC] · [OSV] · [publisher history]
 - Install: `[command]` (pinned to the version on the Security line)
 - Links: [npm] · [PyPI] · [pkg.go.dev] · [Smithery] · [GitHub]
 ```
@@ -479,12 +485,16 @@ Followed by:
 
 Security findings from the internal gate surface inline on each candidate's `Security:` line — there is no separate gate section in the output.
 
+Every Popularity, Maintenance, and Security value links to the page it was read from, so you can check any number yourself. A value that can't be linked is reported as `N/A (unverified)`, with whether the source was unavailable or the check wasn't run.
+
 ---
 
 ## End-to-End Example
 
-This is an illustrative example of the output format, so its scores and links may not match a live
-run.
+A live run from 2026-11-18 against a small sample project: FastAPI, SQLAlchemy and psycopg in
+`pyproject.toml`, a Postgres 16 service in `docker-compose.yml`, and `OPENAI_API_KEY` in
+`.env.example`. Every number below was read from the linked page during the run, so expect them to
+have drifted by the time you read this.
 
 **User prompt:**
 
@@ -495,9 +505,9 @@ find me a vector database for my FastAPI + Python project
 **Step 1 — Architecture Scan**
 
 ```
-✓ pyproject.toml    → Python 3.11, FastAPI, SQLAlchemy → PostgreSQL
-✓ Dockerfile        → containerized, no GPU
-✓ .env.example      → OPENAI_API_KEY present → RAG use case confirmed
+✓ pyproject.toml      → Python 3.11, FastAPI, SQLAlchemy, psycopg, openai
+✓ docker-compose.yml  → api + postgres:16 (volume pgdata), Dockerfile build
+✓ .env.example        → DATABASE_URL (Postgres), OPENAI_API_KEY → RAG use case
 ```
 
 Detected stack: `Python / FastAPI / PostgreSQL / Docker / OpenAI`
@@ -523,12 +533,13 @@ CONSTRAINTS: containerizable, Python client, open-source
 **Step 4 — 4-Tier Search**
 
 ```
-Tier 1 GitHub    → qdrant/qdrant (17k★), chroma-core/chroma (14k★),
-                   pgvector/pgvector (11k★), milvus-io/milvus (29k★)
-Tier 2 MCP       → qdrant-mcp-server, chroma-mcp
-Tier 3 PyPI      → qdrant-client (380k/wk), chromadb (620k/wk), pgvector (180k/wk)
-Tier 4 Templates → LangChain + Qdrant RAG template, FastAPI + Chroma starter
-Skills (3.6)     → "qdrant-memory-skill", "chroma-rag-skill" on skills.sh + TerminalSkills.io + SkillsMP
+Tier 1 GitHub    → milvus-io/milvus (46.7k★), qdrant/qdrant (35.6k★), chroma-core/chroma (29.7k★),
+                   pgvector/pgvector (23.7k★), weaviate/weaviate (17.0k★)
+Tier 2 MCP       → qdrant/mcp-server-qdrant (official), vector-mcp (multi-backend)
+Tier 3 PyPI      → pgvector (10.9M/wk), qdrant-client (3.6M/wk), chromadb (2.0M/wk),
+                   weaviate-client (1.3M/wk), pymilvus (740k/wk)   [pypistats.org, last week]
+Tier 4 Templates → danny-avila/rag_api (FastAPI + pgvector), vstorm-co/full-stack-ai-agent-template
+Skills (3.6)     → qdrant/skills, timescale/pg-aiguide (pgvector-semantic-search), zilliztech/milvus-skill
 ```
 
 **Step 5 — Output**
@@ -546,55 +557,76 @@ Sources searched: Tier 1 (GitHub) · Tier 2 (MCP) · Tier 3 (PyPI) · Tier 4 (Te
 
 | Candidate | Compat | Pop | Maint | Simple | Score    |
 |-----------|--------|-----|-------|--------|----------|
-| Qdrant    | 9      | 8   | 10    | 9      | **8.85** |
-| pgvector  | 10     | 7   | 9     | 7      | **8.50** |
-| Chroma    | 8      | 8   | 9     | 10     | **8.45** |
-| Milvus    | 6      | 9   | 10    | 4      | **7.20** |
+| Qdrant    | 9      | 10  | 10    | 9      | **9.45** |
+| Weaviate  | 8      | 10  | 10    | 7      | **8.75** |
+| pgvector  | 6      | 10  | 9     | 8      | **7.95** |
+| Milvus    | 7      | 10  | 10    | 4      | **7.90** |
 
 ---
 
-#1 — Qdrant · Score: 8.85/10
-Docker-native, official Python client, active MCP server for AI workflows.
-- Compatibility: 9/10  — official qdrant-client SDK, FastAPI examples in docs
-- Popularity:    8/10  — 17k GitHub stars, 380k PyPI downloads/week
-- Maintenance:  10/10  — committed 2 days ago, weekly releases
-- Simplicity:   9/10  — docker run + pip install, 5-min setup
-- Security:     PASS  — no findings · checked qdrant-client 1.15.1, 2026-11-08 09:42 UTC
-- Install: docker run -p 6333:6333 qdrant/qdrant && pip install qdrant-client==1.15.1
-- Links: [skills.sh](https://skills.sh/qdrant) · [PyPI](https://pypi.org/project/qdrant-client) · [Smithery](https://smithery.ai/server/qdrant-mcp-server) · [GitHub](https://github.com/qdrant/qdrant)
+#1 — Qdrant · Score: 9.45/10
+Official Python client, one container next to your existing compose services, official MCP server.
+- Compatibility: 9/10  — official qdrant-client SDK with an async client; no API key or extra env var needed locally
+- Popularity:   10/10  — 35.6k GitHub stars, 3.6M PyPI downloads/week ([GitHub](https://github.com/qdrant/qdrant) · [PyPI Stats](https://pypistats.org/packages/qdrant-client))
+- Maintenance:  10/10  — pushed 2026-11-18, v1.20.2 released 2026-11-16 ([GitHub](https://github.com/qdrant/qdrant/releases))
+- Simplicity:    9/10  — one `docker run` (ports 6333/6334) plus pip install ([quickstart](https://qdrant.tech/documentation/quickstart/))
+- Security:     PASS  — no OSV advisories · checked qdrant-client 1.20.0, 2026-11-18 19:32 UTC · [OSV](https://osv.dev/list?ecosystem=PyPI&q=qdrant-client) · publisher history N/A (unsupported ecosystem: PyPI)
+- Install: pip install qdrant-client==1.20.0 (server image: qdrant/qdrant:v1.20.2)
+- Links: [PyPI](https://pypi.org/project/qdrant-client/) · [GitHub](https://github.com/qdrant/qdrant) · [MCP server](https://github.com/qdrant/mcp-server-qdrant)
 
-#2 — pgvector · Score: 8.50/10
-Stay on PostgreSQL — no new infra, native SQL queries.
-- Links: [PyPI](https://pypi.org/project/pgvector) · [GitHub](https://github.com/pgvector/pgvector)
+#2 — Weaviate · Score: 8.75/10
+Single-container server with built-in hybrid search; a little more setup than Qdrant.
+- Compatibility: 8/10  — official weaviate-client v4; it talks gRPC as well as HTTP, so the container needs both ports exposed
+- Popularity:   10/10  — 17.0k GitHub stars, 1.3M PyPI downloads/week ([GitHub](https://github.com/weaviate/weaviate) · [PyPI Stats](https://pypistats.org/packages/weaviate-client))
+- Maintenance:  10/10  — pushed 2026-11-18, v1.40.5 released 2026-11-10 ([GitHub](https://github.com/weaviate/weaviate/releases))
+- Simplicity:    7/10  — one container; auto-schema works for a first try, but Weaviate recommends defining collections yourself for production ([Docker guide](https://docs.weaviate.io/deploy/installation-guides/docker-installation) · [collections](https://docs.weaviate.io/weaviate/config-refs/collections))
+- Security:     PASS  — no OSV advisories · checked weaviate-client 4.24.1, 2026-11-18 19:32 UTC · [OSV](https://osv.dev/list?ecosystem=PyPI&q=weaviate-client) · publisher history N/A (unsupported ecosystem: PyPI)
+- Install: pip install weaviate-client==4.24.1
+- Links: [PyPI](https://pypi.org/project/weaviate-client/) · [GitHub](https://github.com/weaviate/weaviate)
 
-#3 — Chroma · Score: 8.45/10
-Easiest local dev setup; best for prototyping before scaling.
-- Links: [PyPI](https://pypi.org/project/chromadb) · [Smithery](https://smithery.ai/server/chroma-mcp) · [GitHub](https://github.com/chroma-core/chroma)
+#3 — pgvector · Score: 7.95/10
+Stay on the Postgres you already run, with SQLAlchemy support in the Python package.
+- Compatibility: 6/10  — ⚠️ requires the pgvector extension, which the `postgres:16` image in docker-compose.yml doesn't include. SKILL.md caps a verified missing dependency at the 4–6 band. The fix is small: switch to `pgvector/pgvector:pg16` and run `CREATE EXTENSION vector`. With that done, Compatibility is 9 and the total is 9.15, which puts pgvector at #2
+- Popularity:   10/10  — 23.7k GitHub stars, 10.9M PyPI downloads/week ([GitHub](https://github.com/pgvector/pgvector) · [PyPI Stats](https://pypistats.org/packages/pgvector))
+- Maintenance:   9/10  — pushed 2026-11-18, but the last tag (v0.8.7) is from 2026-10-01, 48 days earlier. SKILL.md's 10 band also asks for active releases, which a 48-day-old tag doesn't show ([GitHub](https://github.com/pgvector/pgvector/tags))
+- Simplicity:    8/10  — one image swap and one SQL statement, no new service ([Docker image](https://github.com/pgvector/pgvector#docker))
+- Security:     PASS  — no OSV advisories · checked pgvector 0.5.1, 2026-11-18 19:32 UTC · [OSV](https://osv.dev/list?ecosystem=PyPI&q=pgvector) · publisher history N/A (unsupported ecosystem: PyPI)
+- Install: pip install pgvector==0.5.1 (database image: pgvector/pgvector:pg16)
+- Links: [PyPI](https://pypi.org/project/pgvector/) · [GitHub](https://github.com/pgvector/pgvector-python)
+
+Tiebreaker: pgvector (7.95) and Milvus (7.90) are within 0.5. pgvector takes #3 because it reuses
+the Postgres service you already run, while Milvus standalone adds etcd and MinIO.
 
 ---
 
 Also Considered:
-| Name   | Score | Why not #1                        | Links |
-|--------|-------|-----------------------------------|-------|
-| Milvus | 7.20  | Complex setup, over-engineered for solo/small team | [PyPI](https://pypi.org/project/pymilvus) · [gh](https://github.com/milvus-io/milvus) |
+| Name   | Score   | Why not #1 | Links |
+|--------|---------|------------|-------|
+| Milvus | 7.90    | Standalone runs etcd and MinIO alongside Milvus ([compose file](https://github.com/milvus-io/milvus/releases/download/v3.0.6/milvus-standalone-docker-compose.yaml)), heavy for one FastAPI service | [PyPI](https://pypi.org/project/pymilvus/) · [gh](https://github.com/milvus-io/milvus) |
+| Chroma | BLOCKED | CRITICAL GHSA-f4j7-r4q5-qw2c: pre-auth code injection, "by sending a malicious model repository and trust_remote_code set to true" to the collections endpoint; plus 1 more CRITICAL and 2 HIGH, none with a fixed version · checked chromadb 1.5.9, 2026-11-18 19:29 UTC | [gh](https://github.com/chroma-core/chroma) · [advisory](https://osv.dev/vulnerability/GHSA-f4j7-r4q5-qw2c) |
 
 ---
 
-MCP Option: qdrant-mcp-server — install as MCP tool for direct AI memory integration.
-[Smithery](https://smithery.ai/server/qdrant-mcp-server) · [GitHub](https://github.com/qdrant/mcp-server-qdrant)
+MCP Option: qdrant/mcp-server-qdrant, the official MCP server for semantic memory over Qdrant.
+[GitHub](https://github.com/qdrant/mcp-server-qdrant)
 
 ---
 
 Companion Skills:
-> qdrant/mcp-server-qdrant ships its own skill:
-> npx skills add qdrant/mcp-server-qdrant
-> [skills.sh](https://skills.sh/qdrant/mcp-server-qdrant) · [GitHub](https://github.com/qdrant/mcp-server-qdrant)
+> qdrant/skills: official Qdrant skills (client SDKs, deployment, multitenancy, performance)
+> npx skills add qdrant/skills
+> [skills.sh](https://skills.sh/qdrant/skills) · [GitHub](https://github.com/qdrant/skills)
+> Security: ⚠️ SQP-2 — qdrant-clients-sdk tells the agent to curl skills.qdrant.tech for code snippets without telling the user
+
+> timescale/pg-aiguide: pgvector-semantic-search (HNSW/IVFFlat, halfvec, filtered search)
+> npx skills add timescale/pg-aiguide --skill pgvector-semantic-search
+> [skills.sh](https://skills.sh/timescale/pg-aiguide/pgvector-semantic-search) · [GitHub](https://github.com/timescale/pg-aiguide)
 > Security: PASS
 
 Next Steps:
-1. docker run qdrant/qdrant and pip install qdrant-client to validate locally
-2. Use the LangChain + Qdrant RAG template as a starting point
-3. If staying Postgres-only, evaluate pgvector — saves an infra hop
+1. Add a qdrant/qdrant:v1.20.2 service with a volume to docker-compose.yml and pip install qdrant-client==1.20.0
+2. Embed your documents with OpenAI, store them in Qdrant, and retrieve the top matches before each model call
+3. If you'd rather not add a service, swap postgres:16 for pgvector/pgvector:pg16 and try pgvector first
 ```
 
 ---

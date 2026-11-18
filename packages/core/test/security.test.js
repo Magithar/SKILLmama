@@ -435,8 +435,19 @@ test("npm candidate yields both checks in canonical order [osv, publisher-contin
   );
   assert.deepEqual(evidence.map((e) => e.source), ["osv", "publisher-continuity"]);
   assert.deepEqual(evidence, [
-    { source: "osv", status: "ok", queriedVersion: "1.3.0", advisories: [] },
-    { source: "publisher-continuity", status: "ok", handoff: null },
+    {
+      source: "osv",
+      status: "ok",
+      queriedVersion: "1.3.0",
+      advisories: [],
+      sourceUrl: "https://osv.dev/list?ecosystem=npm&q=left-pad",
+    },
+    {
+      source: "publisher-continuity",
+      status: "ok",
+      handoff: null,
+      sourceUrl: "https://registry.npmjs.org/left-pad",
+    },
   ]);
 });
 
@@ -495,8 +506,19 @@ test("crates.io candidate yields both checks in canonical order [osv, publisher-
   );
   assert.deepEqual(evidence.map((e) => e.source), ["osv", "publisher-continuity"]);
   assert.deepEqual(evidence, [
-    { source: "osv", status: "ok", queriedVersion: "1.3.0", advisories: [] },
-    { source: "publisher-continuity", status: "ok", handoff: null },
+    {
+      source: "osv",
+      status: "ok",
+      queriedVersion: "1.3.0",
+      advisories: [],
+      sourceUrl: "https://osv.dev/list?ecosystem=crates.io&q=serde",
+    },
+    {
+      source: "publisher-continuity",
+      status: "ok",
+      handoff: null,
+      sourceUrl: "https://crates.io/crates/serde/versions",
+    },
   ]);
 });
 
@@ -554,10 +576,12 @@ test("OSV unreachable degrades to unverified — and never reads as passed", asy
       today: TODAY,
     }
   );
+  // The link survives the failure, so the reader can run the check by hand.
   assert.deepEqual(evidence[0], {
     source: "osv",
     status: "unverified",
     reason: "unreachable",
+    sourceUrl: "https://osv.dev/list?ecosystem=npm&q=pkg",
   });
 });
 
@@ -573,8 +597,18 @@ test("non-2xx responses degrade to unverified, same as network errors", async ()
     }
   );
   assert.deepEqual(evidence, [
-    { source: "osv", status: "unverified", reason: "unreachable" },
-    { source: "publisher-continuity", status: "unverified", reason: "unreachable" },
+    {
+      source: "osv",
+      status: "unverified",
+      reason: "unreachable",
+      sourceUrl: "https://osv.dev/list?ecosystem=npm&q=pkg",
+    },
+    {
+      source: "publisher-continuity",
+      status: "unverified",
+      reason: "unreachable",
+      sourceUrl: "https://registry.npmjs.org/pkg",
+    },
   ]);
 });
 
@@ -599,6 +633,7 @@ test("one check failing does not take the other down with it", async () => {
     source: "publisher-continuity",
     status: "ok",
     handoff: { from: "old", to: "new", version: "2.0.0", date: "2026-06-01" },
+    sourceUrl: "https://registry.npmjs.org/pkg",
   });
 });
 
@@ -734,7 +769,7 @@ test("CRITICAL/HIGH with no fix blocks; note carries the summary verbatim", () =
     []
   );
   assert.equal(mapping.verdict, "BLOCKED");
-  assert.deepEqual(mapping.notes[0], "OSV blocks: CRITICAL GHSA-xxxx-0001: RCE via crafted payload");
+  assert.deepEqual(mapping.notes[0], "OSV blocks: CRITICAL GHSA-xxxx-0001: RCE via crafted payload (https://osv.dev/vulnerability/GHSA-xxxx-0001)");
 });
 
 test("a candidate matching several rules at once is BLOCKED, never downgraded", () => {
@@ -786,12 +821,12 @@ test("fixable CRITICAL/HIGH warns and names the recommendation; MODERATE/LOW sum
   assert.equal(mapping.verdict, "WARN");
   assert.ok(
     mapping.notes.some((note) =>
-      note === "OSV CRITICAL GHSA-xxxx-0001: flaw summary has a fixed version available — recommend the fixed version"
+      note === "OSV CRITICAL GHSA-xxxx-0001: flaw summary (https://osv.dev/vulnerability/GHSA-xxxx-0001) has a fixed version available — recommend the fixed version"
     )
   );
   assert.ok(
     mapping.notes.some((note) =>
-      note === "OSV MODERATE/LOW advisories: MODERATE GHSA-xxxx-0003: minor flaw"
+      note === "OSV MODERATE/LOW advisories: MODERATE GHSA-xxxx-0003: minor flaw (https://osv.dev/vulnerability/GHSA-xxxx-0003)"
     )
   );
 });
@@ -807,6 +842,28 @@ test("a publisher handoff warns and names both publishers, version, and date", (
       "Publisher handoff: original-author -> successor, version 2.0.0, 2026-03-01"
     )
   );
+});
+
+test("handoff and unverified notes carry the evidence link when it is present", () => {
+  const mapping = resolveSecurityVerdict(
+    [
+      { source: "osv", status: "unverified", reason: "unreachable", sourceUrl: "https://osv.dev/list?ecosystem=npm&q=pkg" },
+      {
+        source: "publisher-continuity",
+        status: "ok",
+        handoff: { from: "a", to: "b", version: "2.0.0", date: "2026-03-01" },
+        sourceUrl: "https://registry.npmjs.org/pkg",
+      },
+    ],
+    []
+  );
+  assert.ok(mapping.notes.includes("Publisher handoff: a -> b, version 2.0.0, 2026-03-01 · source: https://registry.npmjs.org/pkg"));
+  assert.ok(mapping.notes.includes("osv: N/A (unverified — unreachable) · check manually: https://osv.dev/list?ecosystem=npm&q=pkg"));
+});
+
+test("advisory ids with unusual characters are percent-encoded in their osv.dev link", () => {
+  const mapping = resolveSecurityVerdict([osvOk([advisory({ id: "RUSTSEC-2026/0001", severity: "HIGH", hasFix: false })]), continuityOk(null)], []);
+  assert.ok(mapping.notes[0].endsWith("(https://osv.dev/vulnerability/RUSTSEC-2026%2F0001)"));
 });
 
 test("unverified checks floor the verdict at WARN — never read as passed", () => {
@@ -855,8 +912,8 @@ test("identical inputs produce byte-identical notes (fixed emission order)", () 
   const first = run();
   assert.deepEqual(first, run());
   assert.deepEqual(first, [
-    "OSV HIGH GHSA-a-0001: a has a fixed version available — recommend the fixed version",
-    "OSV MODERATE/LOW advisories: LOW GHSA-b-0002: b",
+    "OSV HIGH GHSA-a-0001: a (https://osv.dev/vulnerability/GHSA-a-0001) has a fixed version available — recommend the fixed version",
+    "OSV MODERATE/LOW advisories: LOW GHSA-b-0002: b (https://osv.dev/vulnerability/GHSA-b-0002)",
     "Publisher handoff: x -> y, version 1, 2026-01-01",
     "W-1: w",
     "publisher-continuity: N/A (unverified — unreachable)",

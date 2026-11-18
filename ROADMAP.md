@@ -1,6 +1,6 @@
 # Roadmap — what is left
 
-Status as of 2026-11-08, at v1.10.0. Lint, typecheck, 220 tests, coverage
+Status as of 2026-11-08, at v1.10.0. Lint, typecheck, 225 tests, coverage
 thresholds, package validation, and the drift guard all pass. v1.6.0 through
 v1.10.0 are tagged with GitHub Releases published. `skillmama@0.3.0` is live on
 npm, publishing independently of the repo's own version.
@@ -21,6 +21,11 @@ a reader of the docs can assess), so the package cannot score a candidate alone
 ---
 
 ## Done since the last revision
+
+**Evidence links (unreleased).** Every Popularity, Maintenance, and Security
+value in `SKILL.md` results links to the page it was read from, and every
+evidence record in `packages/core` carries a `sourceUrl`. `skillmama check`
+prints them in a Sources block. Not yet released to npm.
 
 **v1.10.0 is tagged and released, and `skillmama@0.3.0` is live on npm.**
 v1.10.0 covers results showing the checked version and time (item 13), and the
@@ -113,12 +118,15 @@ perform live registry checks when its environment has no network access.
 | 11 | skills.sh listing | Resolved/no action: the README badge and project link already resolve to the SKILLmama listing. |
 | 14 | Recheck the skills.sh audit badges | As of 2026-11-08 the listing shows Gen Agent Trust Hub FAIL (HIGH, "downloads and executes remote code", from `curl \| python3` in the publisher checks) and Snyk WARN (W011, third-party content). Both were addressed in v1.10.0, but the badges are from the Nov 6 scan. Around 2026-11-12, check the audit dates at skills.sh/magithar/skillmama/skillmama/security/agent-trust-hub and /snyk. If they haven't re-run, file one upstream issue covering this and the stale dep-egress audit. W011 may stay as a WARN, since the skill reads third-party content by design. |
 | 15 | Mention `skillmama stickers` in the npm README | `packages/core/README.md`, the page npmjs.com shows, doesn't list the command added in `0.3.0`. Add it before the next npm release. |
+| 16 | Record the commit a release was built from | Read `gitHead` from the npm packument for the checked version and show it next to the version. Print "commit unknown" when the field is missing; never infer one from the latest tag. |
 
 ## P3 — optional
 
 | # | Task | Notes |
 | --- | --- | --- |
 | 12 | `analyzeProject()`'s accepted v1 limits | npm alias / workspace / `file:` / GitHub specifiers read by key only, `go.mod replace` not followed, `requirements.txt -r` includes not followed, no recursion below the top level. All deliberate; revisit only if a real scan gets them wrong. |
+| 17 | Maintainer responsiveness | Issue response time and stale-issue analysis as one check. Costs many GitHub API calls per candidate (60/hour unauthenticated) and stale bots and triage bots distort the numbers. Build only once it is decided which `mapMaintenanceBand()` band it would change, and report a rate-limited run as `N/A (unverified)`. |
+| 18 | Compare against previous evaluations | Needs somewhere to keep history, since the skill has no state today; a local cache file is the simplest. Depends on item 16 so the diff has stable fields to compare. |
 
 ---
 

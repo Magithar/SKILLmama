@@ -64,6 +64,12 @@ export interface PublisherHandoff {
  * owns the normalization traps SKILL.md documents (dedupe advisories on
  * aliases; query the version you intend to recommend, not the latest; drop
  * bot publishers before handoff detection).
+ *
+ * `sourceUrl` is a page a person can open to check the same fact by hand:
+ * the osv.dev listing for the package, the npm registry document the
+ * publisher history was read from, or the crates.io versions page. It is
+ * kept on `unreachable` records too, so a failed check still tells the
+ * reader where to look. Only `unsupported-ecosystem` has none.
  */
 export type SecurityEvidence =
   | {
@@ -72,8 +78,16 @@ export type SecurityEvidence =
       /** The version that was queried — not necessarily the latest. */
       queriedVersion: string;
       advisories: OsvAdvisory[];
+      sourceUrl: string;
     }
-  | { source: "osv"; status: "unverified"; reason: "unreachable" }
+  | {
+      source: "osv";
+      status: "unverified";
+      reason: "unreachable";
+      /** Absent only when the candidate is not a published package, so
+       *  there is no package page to point at. */
+      sourceUrl?: string;
+    }
   | {
       source: "publisher-continuity";
       status: "ok";
@@ -81,11 +95,19 @@ export type SecurityEvidence =
        *  CI-published, or stale-only). npm has no notion of "check failed
        *  to find anything" distinct from a clean result. */
       handoff: PublisherHandoff | null;
+      sourceUrl: string;
     }
   | {
       source: "publisher-continuity";
       status: "unverified";
-      reason: "unreachable" | "unsupported-ecosystem";
+      reason: "unreachable";
+      sourceUrl: string;
+    }
+  | {
+      source: "publisher-continuity";
+      status: "unverified";
+      /** No registry to point at, so no sourceUrl. */
+      reason: "unsupported-ecosystem";
     };
 
 /**
