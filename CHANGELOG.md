@@ -6,6 +6,12 @@ All notable changes to SKILLmama are documented here.
 
 ## [Unreleased]
 
+---
+
+## [1.11.0] - 2026-11-19
+
+Shipped to npm as `skillmama@0.4.0`.
+
 ### Added
 - **Every score and verdict links to its evidence.** `SKILL.md` now asks for an inline
   link on each Popularity, Maintenance, and Security value: the GitHub repo, the npm
@@ -21,6 +27,7 @@ All notable changes to SKILLmama are documented here.
   with `· source: <url>` and unverified notes with `· check manually: <url>`. This changes
   the note text, so code matching note strings needs updating
 - **`skillmama check` prints a Sources block**, one line per check, after the bands
+- **`skillmama stickers` is documented in the npm README**, the page npmjs.com shows
 
 ### Changed
 - **PyPI and Go packages no longer WARN just because publisher continuity can't run.**

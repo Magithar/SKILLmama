@@ -1,8 +1,8 @@
 # Roadmap — what is left
 
-Status as of 2026-11-08, at v1.10.0. Lint, typecheck, 225 tests, coverage
+Status as of 2026-11-19, at v1.11.0. Lint, typecheck, 227 tests, coverage
 thresholds, package validation, and the drift guard all pass. v1.6.0 through
-v1.10.0 are tagged with GitHub Releases published. `skillmama@0.3.0` is live on
+v1.11.0 are tagged with GitHub Releases published. `skillmama@0.4.0` is live on
 npm, publishing independently of the repo's own version.
 
 `skillmama/SKILL.md` is the shipped product and the sole source of truth.
@@ -22,10 +22,13 @@ a reader of the docs can assess), so the package cannot score a candidate alone
 
 ## Done since the last revision
 
-**Evidence links (unreleased).** Every Popularity, Maintenance, and Security
-value in `SKILL.md` results links to the page it was read from, and every
-evidence record in `packages/core` carries a `sourceUrl`. `skillmama check`
-prints them in a Sources block. Not yet released to npm.
+**v1.11.0 is tagged and released, and `skillmama@0.4.0` is live on npm.**
+Every Popularity, Maintenance, and Security value in `SKILL.md` results links
+to the page it was read from, and every evidence record in `packages/core`
+carries a `sourceUrl`, printed by `skillmama check` in a Sources block. PyPI and
+Go packages no longer WARN just because publisher continuity can't run there,
+so the CLI and the skill agree. The README example is a live run. Item 15 (the
+npm README missing `skillmama stickers`) is done.
 
 **v1.10.0 is tagged and released, and `skillmama@0.3.0` is live on npm.**
 v1.10.0 covers results showing the checked version and time (item 13), and the
@@ -117,7 +120,6 @@ perform live registry checks when its environment has no network access.
 | 10 | Recheck the upstream skills-CLI bug | Rechecked 2026-11-06 against `skills@1.7.6`, the latest release: Codex and Antigravity global installs still land only in `~/.agents/skills`. The two Antigravity fix PRs, vercel-labs/skills#1483 and #2028, have closed unmerged, and we know of no other fix in flight. Keep the Codex/Antigravity manual-copy guidance until a fix merges and ships. |
 | 11 | skills.sh listing | Resolved/no action: the README badge and project link already resolve to the SKILLmama listing. |
 | 14 | Recheck the skills.sh audit badges | As of 2026-11-08 the listing shows Gen Agent Trust Hub FAIL (HIGH, "downloads and executes remote code", from `curl \| python3` in the publisher checks) and Snyk WARN (W011, third-party content). Both were addressed in v1.10.0, but the badges are from the Nov 6 scan. Around 2026-11-12, check the audit dates at skills.sh/magithar/skillmama/skillmama/security/agent-trust-hub and /snyk. If they haven't re-run, file one upstream issue covering this and the stale dep-egress audit. W011 may stay as a WARN, since the skill reads third-party content by design. |
-| 15 | Mention `skillmama stickers` in the npm README | `packages/core/README.md`, the page npmjs.com shows, doesn't list the command added in `0.3.0`. Add it before the next npm release. |
 | 16 | Record the commit a release was built from | Read `gitHead` from the npm packument for the checked version and show it next to the version. Print "commit unknown" when the field is missing; never infer one from the latest tag. |
 
 ## P3 — optional
