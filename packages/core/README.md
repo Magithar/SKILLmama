@@ -110,9 +110,12 @@ CRITICAL/HIGH with no fix blocks (note carries the advisory summary
 verbatim); with a fix warns ("recommend the fixed version"); MODERATE/LOW
 warns; a recent publisher handoff warns; DISCARD-weight findings block
 outright over WARN/FLAG; FLAG rules surface independently as `sqpFlags`;
-and any unverified check floors the verdict at WARN, because the closed
-`GateVerdict` union has no honest third state for "didn't check" and
-SKILL.md forbids letting unverified read as passed. Notes are emitted in a
+and a check that couldn't reach its registry floors the verdict at WARN,
+because the closed `GateVerdict` union has no honest third state for
+"didn't check" and SKILL.md forbids letting unverified read as passed. An
+unsupported ecosystem (publisher continuity on PyPI or Go) is reported in
+the notes but doesn't change the verdict: it can never run there, and a
+WARN on every PyPI package would teach readers to ignore WARN. Notes are emitted in a
 fixed order so identical inputs give byte-identical output;
 `verifyCandidate()` only assembles the `SecurityCheckResult`.
 

@@ -866,19 +866,36 @@ test("advisory ids with unusual characters are percent-encoded in their osv.dev 
   assert.ok(mapping.notes[0].endsWith("(https://osv.dev/vulnerability/RUSTSEC-2026%2F0001)"));
 });
 
-test("unverified checks floor the verdict at WARN — never read as passed", () => {
-  for (const record of [
-    { source: "osv", status: "unverified", reason: "unreachable" },
-    { source: "publisher-continuity", status: "unverified", reason: "unsupported-ecosystem" },
+test("an unreachable check floors the verdict at WARN — never read as passed", () => {
+  for (const [record, other] of [
+    [{ source: "osv", status: "unverified", reason: "unreachable" }, continuityOk(null)],
+    [{ source: "publisher-continuity", status: "unverified", reason: "unreachable" }, osvOk([])],
   ]) {
-    const other =
-      record.source === "osv"
-        ? continuityOk(null)
-        : osvOk([]);
     const mapping = resolveSecurityVerdict([record, other], []);
     assert.equal(mapping.verdict, "WARN", JSON.stringify(record));
-    assert.ok(mapping.notes.some((note) => note.startsWith(`${record.source}: N/A (unverified`)));
+    assert.ok(mapping.notes.some((note) => note.startsWith(`${record.source}: N/A (unverified — unreachable)`)));
   }
+});
+
+test("an unsupported ecosystem is reported but does not change the verdict", () => {
+  const unsupported = { source: "publisher-continuity", status: "unverified", reason: "unsupported-ecosystem" };
+  const clean = resolveSecurityVerdict([osvOk([]), unsupported], []);
+  assert.equal(clean.verdict, "PASS");
+  assert.deepEqual(clean.notes, [
+    "publisher-continuity: N/A (unsupported-ecosystem) · this registry publishes no per-release uploader, so it was not checked",
+  ]);
+  // Other rules still apply on top of it.
+  const withAdvisory = resolveSecurityVerdict(
+    [osvOk([advisory({ severity: "LOW", hasFix: true })]), unsupported],
+    []
+  );
+  assert.equal(withAdvisory.verdict, "WARN");
+  // And OSV failing alongside it still floors the verdict.
+  const osvDown = resolveSecurityVerdict(
+    [{ source: "osv", status: "unverified", reason: "unreachable" }, unsupported],
+    []
+  );
+  assert.equal(osvDown.verdict, "WARN");
 });
 
 test("FLAG findings populate sqpFlags independently of a passing verdict, deduped", () => {

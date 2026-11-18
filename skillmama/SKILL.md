@@ -315,7 +315,7 @@ else:
 
 crates.io needs no separate bot list: `published_by` is null both for trusted publishing (a CI-based release with no human account — crates.io's equivalent of npm's `GitHub Actions`) and for versions published before crates.io tracked publishers at all, so a null login is dropped the same way a missing `_npmUser` is. The four rules above apply unchanged — in particular, rustls rotates releases among an active team (`ctz`, `djc`, `cpu`) the same way express/lodash/chalk do on npm, so "any human-to-human change" is still the wrong test. crates.io's crawler policy 403s requests with no descriptive `User-Agent`; npm's registry has no such requirement.
 
-PyPI and Go expose no per-release uploader, so report `N/A (unsupported ecosystem)` for candidates on those registries. Never imply it was checked.
+PyPI and Go expose no per-release uploader, so report `N/A (unsupported ecosystem)` for candidates on those registries. Never imply it was checked. This is a fixed limit of the registry, not a failed check, so on its own it doesn't change the verdict: a candidate with clean OSV results is still PASS, with the `N/A` shown next to it. A check that was attempted and failed is different (see unreachable, below).
 
 Link the publisher evidence to the page it was read from: `https://registry.npmjs.org/<pkg>` for npm (npmjs.com does not show who published each version, the registry document does) or `https://crates.io/crates/<crate>/versions` for crates.io.
 

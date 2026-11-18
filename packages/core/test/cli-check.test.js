@@ -119,11 +119,22 @@ test("a non-npm ecosystem never implies publisher continuity was checked", async
     { name: "flask", ecosystem: "PyPI", version: "2.0.0", repo: "pallets/flask" },
     { fetchImpl: stubFetch(clean), today: TODAY }
   );
-  assert.equal(result.security.verdict, "WARN");
+  // An unsupported ecosystem is a fixed limit of the registry, not a failed
+  // check, so a clean OSV result still passes, but the note must say so.
+  assert.equal(result.security.verdict, "PASS");
   assert.ok(
-    result.security.notes.some((n) => n.includes("unsupported-ecosystem")),
-    "an unverified check must floor the verdict at WARN and say why"
+    result.security.notes.some((n) => n.includes("unsupported-ecosystem") && n.includes("not checked")),
+    "a PASS must still say publisher continuity was not checked"
   );
+  assert.match(renderCheckText(result), /N\/A \(unsupported-ecosystem\)/);
+});
+
+test("a PyPI package whose registry is unreachable still floors at WARN", async () => {
+  const result = await runCheck(
+    { name: "flask", ecosystem: "PyPI", version: "2.0.0", repo: "pallets/flask" },
+    { fetchImpl: stubFetch({ ...clean, "https://api.osv.dev": null }), today: TODAY }
+  );
+  assert.equal(result.security.verdict, "WARN");
 });
 
 test("181-365 days bands to 3-5, SKILL.md's formerly-unfilled range", async () => {

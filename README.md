@@ -717,8 +717,8 @@ Implemented in core:
   the npm publisher-continuity check. Evidence only; no verdict.
 - **`resolveSecurityVerdict()` / `verifyCandidate()`** — Phase 3.5 Stage 2's decision
   table: OSV CRITICAL/HIGH with no fix blocks, with a fix warns, MODERATE/LOW warn,
-  a recent publisher handoff warns, any unverified check floors the verdict at WARN
-  ("never read as passed"), DISCARD-weight findings block outright over WARN/FLAG,
+  a recent publisher handoff warns, an unreachable check floors the verdict at WARN
+  ("never read as passed") while an unsupported ecosystem is reported without changing it, DISCARD-weight findings block outright over WARN/FLAG,
   and FLAG rules surface independently as `sqpFlags`.
 - **`gatherFactorEvidence()` / `mapPopularityBand()` / `mapMaintenanceBand()`** —
   Phase 4's two live-data factors, split like Phase 3.5: one GitHub request for

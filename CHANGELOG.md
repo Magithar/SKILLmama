@@ -23,6 +23,13 @@ All notable changes to SKILLmama are documented here.
 - **`skillmama check` prints a Sources block**, one line per check, after the bands
 
 ### Changed
+- **PyPI and Go packages no longer WARN just because publisher continuity can't run.**
+  `resolveSecurityVerdict()` used to floor the verdict at WARN for any unverified check,
+  so every PyPI and Go package warned, while `SKILL.md` reported PASS with
+  `N/A (unsupported ecosystem)`. Now an unsupported ecosystem is reported in the notes
+  ("not checked") without changing the verdict, matching the skill. A check that was
+  attempted and failed (`unreachable`) still floors the verdict at WARN. `SKILL.md`
+  now states this rule explicitly
 - **The README's end-to-end example is now a live run** (2026-11-18) against a sample
   FastAPI + Postgres project, replacing the illustrative one. Every number links to where
   it was read. Chroma is listed as BLOCKED: chromadb 1.5.9, its latest release, has two

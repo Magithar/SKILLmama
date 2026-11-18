@@ -575,10 +575,18 @@ export async function gatherSecurityEvidence(
  *   WARN — OSV CRITICAL/HIGH WITH a fix ("recommend the fixed version");
  *   MODERATE/LOW advisories ("summarize rather than discard"); a recent
  *   publisher handoff ("name both publishers and the version and date,
- *   let the user judge"); WARN-weight findings. Also the floor when any
- *   check is `unverified`: SKILL.md says report it N/A (unverified) and
+ *   let the user judge"); WARN-weight findings. Also the floor when a
+ *   check is `unreachable`: it was attempted and failed, SKILL.md says
  *   "never let an unverified candidate read as having passed", and the
  *   closed GateVerdict union has no third honest state.
+ *
+ *   `unsupported-ecosystem` is reported but does NOT floor the verdict.
+ *   PyPI and Go never publish a per-release uploader, so the check can't
+ *   run for any of their packages, and a WARN that fires on every
+ *   candidate in an ecosystem teaches the reader to ignore WARN (the same
+ *   reasoning as SKILL.md's 12-month handoff filter). SKILL.md lists no
+ *   WARN rule for it and asks only for `N/A (unsupported ecosystem)`; the
+ *   note below keeps it visible so a PASS never implies it was checked.
  *
  *   FLAG findings never change the verdict: their rule ids go to sqpFlags,
  *   reported independently per SKILL.md.
@@ -721,14 +729,16 @@ export function resolveSecurityVerdict(
   const warnFindings = findings.filter((f) => f.weight === "WARN");
   const flagFindings = findings.filter((f) => f.weight === "FLAG");
 
-  const unverifiedNotes = evidence
-    .filter(
-      (
-        record
-      ): record is Extract<SecurityEvidence, { status: "unverified" }> =>
-        record.status === "unverified"
-    )
-    .map((record) => `${record.source}: N/A (unverified — ${record.reason})${sourceSuffix(record, "check manually")}`);
+  const unverified = evidence.filter(
+    (record): record is Extract<SecurityEvidence, { status: "unverified" }> =>
+      record.status === "unverified"
+  );
+  const unreachable = unverified.filter((record) => record.reason === "unreachable");
+  const unverifiedNotes = unverified.map((record) =>
+    record.reason === "unsupported-ecosystem"
+      ? `${record.source}: N/A (unsupported-ecosystem) · this registry publishes no per-release uploader, so it was not checked`
+      : `${record.source}: N/A (unverified — ${record.reason})${sourceSuffix(record, "check manually")}`
+  );
 
   const notes: string[] = [];
   for (const advisory of blockers) notes.push(`OSV blocks: ${advisoryLabel(advisory)}`);
@@ -753,7 +763,7 @@ export function resolveSecurityVerdict(
   const warned =
     fixable.length > 0 || minor.length > 0 ||
     (continuity?.handoff != null) || warnFindings.length > 0 ||
-    unverifiedNotes.length > 0;
+    unreachable.length > 0;
 
   return {
     verdict: blocked ? "BLOCKED" : warned ? "WARN" : "PASS",

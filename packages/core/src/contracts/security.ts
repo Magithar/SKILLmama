@@ -10,8 +10,10 @@ import type { Candidate } from "./candidate.js";
  *   OSV.dev advisory query and the npm publisher-continuity check. Both are
  *   plain HTTP APIs; neither involves judgment. Every record carries an
  *   explicit status — "unverified" records (registry unreachable, ecosystem
- *   unsupported) must be surfaced, never dropped, per SKILL.md: "Never let
- *   an unverified candidate read as having passed."
+ *   unsupported) must be surfaced, never dropped. An unreachable check
+ *   floors the verdict at WARN, per SKILL.md: "Never let an unverified
+ *   candidate read as having passed." An unsupported ecosystem is a fixed
+ *   limit of the registry, so it is reported without changing the verdict.
  *
  *   Stage 2 — JUDGMENT (LLM reasoning): consumes evidence plus content
  *   findings (guardrail circumvention, undisclosed exfiltration, SQP-1/2/3 —
