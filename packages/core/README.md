@@ -243,15 +243,17 @@ throws by name; there is no mode in which a stage silently does less.
 
 ## The `skillmama` CLI
 
-Two commands, both running only the parts of SKILLmama's pipeline that need no
-judgment. Source in [`src/cli/`](src/cli); process-level behavior is pinned by
-`test/cli-e2e.test.js`, which spawns the built binary against `fixtures/`.
+Two working commands, both running only the parts of SKILLmama's pipeline that
+need no judgment, plus `stickers`. Source in [`src/cli/`](src/cli);
+process-level behavior is pinned by `test/cli-e2e.test.js`, which spawns the
+built binary against `fixtures/`.
 
 ### Usage
 
 ```
 skillmama scan [dir]        Structured project scan (default: current directory)
 skillmama check <package>   Live-data checks against a published package
+skillmama stickers          Open the free SKILLmama stickers in your browser
 ```
 
 | Option | Effect |
@@ -332,6 +334,12 @@ Four things about that output are deliberate:
 `GITHUB_TOKEN`, if set, is sent to the GitHub API. Unauthenticated requests are
 capped at 60/hour per IP; a rate-limited response degrades to `unverified`
 rather than to a wrong number.
+
+#### stickers
+
+Opens the README's Stickers section, five free PNGs, in your browser and prints
+the link and sticker names, so it still works over SSH. Piped output, CI and
+`--json` never open a browser; `--json` prints only the link.
 
 ### What this CLI still does not do
 
