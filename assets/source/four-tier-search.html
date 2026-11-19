@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SKILLmama 4-Tier Search</title>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@400;600;700&display=block" rel="stylesheet">
+<style>
+  :root { --bg: #0b0b0b; --cream: #fbf1df; --green: #5bc476; --dim: #a89f90; --px: 4px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--cream);
+    font-family: "JetBrains Mono", Menlo, monospace; font-size: 17px; line-height: 1.45;
+    width: 1200px; padding: 56px 48px 56px;
+  }
+  header { display: flex; align-items: center; gap: 24px; margin-bottom: 44px; }
+  header img { width: 120px; height: 120px; }
+  header h1 { font-family: "Silkscreen", monospace; font-size: 54px; font-weight: 700; line-height: 1; }
+  header h1 span { color: var(--green); }
+  header p { color: var(--dim); margin-top: 10px; font-size: 18px; }
+
+  .px { box-shadow:
+      0 calc(-1 * var(--px)) 0 0 var(--c, var(--cream)),
+      0 var(--px) 0 0 var(--c, var(--cream)),
+      calc(-1 * var(--px)) 0 0 0 var(--c, var(--cream)),
+      var(--px) 0 0 0 var(--c, var(--cream)); }
+
+  .input { width: 640px; margin: 4px auto 0; padding: 14px 20px; text-align: center; background: var(--cream); color: var(--bg); }
+  .input .k { font-family: "Silkscreen", monospace; font-size: 15px; opacity: .7; }
+  .input .v { font-family: "Silkscreen", monospace; font-size: 22px; font-weight: 700; }
+
+  .arrow { width: var(--px); height: 30px; background: var(--cream); margin: 4px auto 0; position: relative; }
+  .arrow::after { content: ""; position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%);
+    border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 12px solid var(--cream); }
+  .arrow + * { margin-top: 18px; }
+
+  .tier { display: grid; grid-template-columns: 150px 1fr 230px; align-items: stretch; margin: 4px; background: var(--bg); }
+  .tier .num { background: var(--green); color: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .tier .num .l { font-family: "Silkscreen", monospace; font-size: 15px; opacity: .75; }
+  .tier .num .n { font-family: "Silkscreen", monospace; font-size: 56px; font-weight: 700; line-height: 1; }
+  .tier .main { padding: 16px 22px; }
+  .tier .src { font-family: "Silkscreen", monospace; font-size: 24px; font-weight: 700; line-height: 1.15; }
+  .tier .what { margin-top: 6px; }
+  .tier .eg { margin-top: 6px; color: var(--dim); font-size: 15px; }
+  .tier .sig { border-left: 2px dashed var(--dim); padding: 16px 18px; font-size: 15px; }
+  .tier .sig .h { font-family: "Silkscreen", monospace; color: var(--green); font-size: 14px; margin-bottom: 4px; }
+
+  .check { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 18px auto 0; width: fit-content;
+    padding: 8px 18px; border: var(--px) dashed var(--green); color: var(--green); font-family: "Silkscreen", monospace; font-size: 17px; }
+  .check .yes { background: var(--green); color: var(--bg); padding: 0 8px; }
+  .between { display: flex; flex-direction: column; align-items: center; }
+
+  .divider { display: flex; align-items: center; gap: 16px; margin: 40px 0 26px; color: var(--dim);
+    font-family: "Silkscreen", monospace; font-size: 15px; }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 0; border-top: 2px dashed var(--dim); }
+
+  .companion { border: var(--px) dashed var(--green); padding: 18px 22px; display: grid; grid-template-columns: 1fr 1.1fr; gap: 24px; }
+  .companion .tag { font-family: "Silkscreen", monospace; color: var(--green); font-size: 15px; }
+  .companion .t { font-family: "Silkscreen", monospace; font-size: 24px; font-weight: 700; line-height: 1.15; margin: 2px 0 6px; }
+  .sites { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: center; }
+  .site { border: 2px solid var(--green); padding: 8px 10px; text-align: center; font-weight: 700; }
+  .muted { color: var(--dim); }
+  .g { color: var(--green); }
+  .out { width: 640px; margin: 4px auto 0; padding: 14px 20px; text-align: center; background: var(--green); color: var(--bg); }
+  .out .v { font-family: "Silkscreen", monospace; font-size: 22px; font-weight: 700; }
+  footer { margin-top: 36px; text-align: center; color: var(--dim); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="../logo.png" alt="">
+  <div>
+    <h1>4-Tier <span>Search</span></h1>
+    <p>Where SKILLmama looks for candidates, in order. It stops early once it has enough.</p>
+  </div>
+</header>
+
+<div class="input px"><div class="k">Phase 2 output</div><div class="v">3–5 search terms</div></div>
+<div class="arrow"></div>
+
+<div class="tier px">
+  <div class="num"><span class="l">Tier</span><span class="n">1</span></div>
+  <div class="main"><div class="src">GitHub</div><div class="what">Open-source libraries, frameworks, SDKs</div></div>
+  <div class="sig"><div class="h">Signals</div>stars, last commit, contributors, issues, releases, own SKILL.md</div>
+</div>
+<div class="between"><div class="check">8+ candidates? <span class="yes">Yes → stop</span> No ↓</div></div>
+
+<div class="tier px" style="margin-top:18px">
+  <div class="num"><span class="l">Tier</span><span class="n">2</span></div>
+  <div class="main"><div class="src">MCP Ecosystem</div><div class="what">AI-native tools installable as MCP servers</div><div class="eg">found on GitHub (modelcontextprotocol), Smithery, the web</div></div>
+  <div class="sig"><div class="h">Signals</div>server repo and listing</div>
+</div>
+<div class="between"><div class="check">8+ candidates? <span class="yes">Yes → stop</span> No ↓</div></div>
+
+<div class="tier px" style="margin-top:18px">
+  <div class="num"><span class="l">Tier</span><span class="n">3</span></div>
+  <div class="main"><div class="src">Package Registries</div><div class="what">npm · PyPI · pkg.go.dev</div></div>
+  <div class="sig"><div class="h">Signals</div>weekly downloads, latest version date</div>
+</div>
+<div class="between"><div class="check">8+ candidates? <span class="yes">Yes → stop</span> No ↓</div></div>
+
+<div class="tier px" style="margin-top:18px">
+  <div class="num"><span class="l">Tier</span><span class="n">4</span></div>
+  <div class="main"><div class="src">Curated Templates</div><div class="what">Starter templates and cookbook examples</div><div class="eg">LangGraph, OpenHands, "awesome" lists</div></div>
+  <div class="sig"><div class="h">Signals</div>a ready setup for your stack</div>
+</div>
+<div class="arrow"></div>
+
+<div class="out px" style="--c: var(--green)"><div class="v">Candidates → Security Gate</div></div>
+
+<div class="divider">Separate pass · Phase 3.6</div>
+
+<div class="companion">
+  <div>
+    <div class="tag">Not a tier · not scored · never skipped</div>
+    <div class="t">Companion Skills</div>
+    <div>For each top candidate, look for an agent skill that already knows how to use it.</div>
+  </div>
+  <div class="sites">
+    <div class="site">skills.sh</div>
+    <div class="site">TerminalSkills.io</div>
+    <div class="site">SkillsMP</div>
+    <div class="site">GitHub SKILL.md</div>
+  </div>
+</div>
+
+<footer>github.com/Magithar/SKILLmama</footer>
+</body>
+</html>

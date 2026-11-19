@@ -273,13 +273,9 @@ Every candidate that passes the gate is scored 1–10 on four dimensions:
 
 ## 4-Tier Search Hierarchy
 
-| Tier | Source                                          | What it finds                              |
-| ---- | ----------------------------------------------- | ------------------------------------------ |
-| 1    | GitHub                                          | Open-source libraries, frameworks, SDKs    |
-| 2    | [Smithery](https://smithery.ai) / MCP Ecosystem | AI-native tools installable as MCP servers |
-| 3    | npm / PyPI / pkg.go.dev                         | Package registries with download signals   |
-| 4    | Curated Templates                               | LangGraph, OpenHands, cookbook examples    |
-| —    | [skills.sh](https://skills.sh) / [TerminalSkills.io](https://terminalskills.io) / [SkillsMP](https://skillsmp.com) (Phase 3.6) | Companion agent skills for top candidates |
+<p align="center"><img src="assets/four-tier-search.png" alt="SKILLmama 4-tier search: GitHub, then the MCP ecosystem, then npm, PyPI and pkg.go.dev, then curated templates, stopping once there are 8 or more candidates; companion skills are a separate, unscored pass" width="800"/></p>
+
+Sources linked from the diagram: [Smithery](https://smithery.ai) for MCP servers, and [skills.sh](https://skills.sh), [TerminalSkills.io](https://terminalskills.io) and [SkillsMP](https://skillsmp.com) for companion skills.
 
 ---
 
