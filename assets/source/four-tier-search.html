@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>SKILLmama 4-Tier Search</title>
-<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@400;600;700&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@700&family=JetBrains+Mono:wght@400;600;700;800&display=block" rel="stylesheet">
 <style>
   :root { --bg: #0b0b0b; --cream: #fbf1df; --green: #5bc476; --dim: #a89f90; --px: 4px; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -14,7 +14,7 @@
   }
   header { display: flex; align-items: center; gap: 24px; margin-bottom: 44px; }
   header img { width: 120px; height: 120px; }
-  header h1 { font-family: "Silkscreen", monospace; font-size: 54px; font-weight: 700; line-height: 1; }
+  header h1 { font-family: "JetBrains Mono", monospace; font-size: 54px; font-weight: 700; line-height: 1; }
   header h1 span { color: var(--green); }
   header p { color: var(--dim); margin-top: 10px; font-size: 18px; }
 
@@ -25,8 +25,8 @@
       var(--px) 0 0 0 var(--c, var(--cream)); }
 
   .input { width: 640px; margin: 4px auto 0; padding: 14px 20px; text-align: center; background: var(--cream); color: var(--bg); }
-  .input .k { font-family: "Silkscreen", monospace; font-size: 15px; opacity: .7; }
-  .input .v { font-family: "Silkscreen", monospace; font-size: 22px; font-weight: 700; }
+  .input .k { font-family: "JetBrains Mono", monospace; font-size: 15px; opacity: .7; }
+  .input .v { font-family: "JetBrains Mono", monospace; font-size: 22px; font-weight: 700; }
 
   .arrow { width: var(--px); height: 30px; background: var(--cream); margin: 4px auto 0; position: relative; }
   .arrow::after { content: ""; position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%);
@@ -35,34 +35,42 @@
 
   .tier { display: grid; grid-template-columns: 150px 1fr 230px; align-items: stretch; margin: 4px; background: var(--bg); }
   .tier .num { background: var(--green); color: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .tier .num .l { font-family: "Silkscreen", monospace; font-size: 15px; opacity: .75; }
-  .tier .num .n { font-family: "Silkscreen", monospace; font-size: 56px; font-weight: 700; line-height: 1; }
+  .tier .num .l { font-family: "JetBrains Mono", monospace; font-size: 15px; opacity: .75; }
+  .tier .num .n { font-family: "JetBrains Mono", monospace; font-size: 56px; font-weight: 700; line-height: 1; }
   .tier .main { padding: 16px 22px; }
-  .tier .src { font-family: "Silkscreen", monospace; font-size: 24px; font-weight: 700; line-height: 1.15; }
+  .tier .src { font-family: "JetBrains Mono", monospace; font-size: 24px; font-weight: 700; line-height: 1.15; }
   .tier .what { margin-top: 6px; }
   .tier .eg { margin-top: 6px; color: var(--dim); font-size: 15px; }
   .tier .sig { border-left: 2px dashed var(--dim); padding: 16px 18px; font-size: 15px; }
-  .tier .sig .h { font-family: "Silkscreen", monospace; color: var(--green); font-size: 14px; margin-bottom: 4px; }
+  .tier .sig .h { font-family: "JetBrains Mono", monospace; color: var(--green); font-size: 14px; margin-bottom: 4px; }
 
   .check { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 18px auto 0; width: fit-content;
-    padding: 8px 18px; border: var(--px) dashed var(--green); color: var(--green); font-family: "Silkscreen", monospace; font-size: 17px; }
+    padding: 8px 18px; border: var(--px) dashed var(--green); color: var(--green); font-family: "JetBrains Mono", monospace; font-size: 17px; }
   .check .yes { background: var(--green); color: var(--bg); padding: 0 8px; }
   .between { display: flex; flex-direction: column; align-items: center; }
 
   .divider { display: flex; align-items: center; gap: 16px; margin: 40px 0 26px; color: var(--dim);
-    font-family: "Silkscreen", monospace; font-size: 15px; }
+    font-family: "JetBrains Mono", monospace; font-size: 15px; }
   .divider::before, .divider::after { content: ""; flex: 1; height: 0; border-top: 2px dashed var(--dim); }
 
   .companion { border: var(--px) dashed var(--green); padding: 18px 22px; display: grid; grid-template-columns: 1fr 1.1fr; gap: 24px; }
-  .companion .tag { font-family: "Silkscreen", monospace; color: var(--green); font-size: 15px; }
-  .companion .t { font-family: "Silkscreen", monospace; font-size: 24px; font-weight: 700; line-height: 1.15; margin: 2px 0 6px; }
+  .companion .tag { font-family: "JetBrains Mono", monospace; color: var(--green); font-size: 15px; }
+  .companion .t { font-family: "JetBrains Mono", monospace; font-size: 24px; font-weight: 700; line-height: 1.15; margin: 2px 0 6px; }
   .sites { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: center; }
   .site { border: 2px solid var(--green); padding: 8px 10px; text-align: center; font-weight: 700; }
   .muted { color: var(--dim); }
   .g { color: var(--green); }
   .out { width: 640px; margin: 4px auto 0; padding: 14px 20px; text-align: center; background: var(--green); color: var(--bg); }
-  .out .v { font-family: "Silkscreen", monospace; font-size: 22px; font-weight: 700; }
+  .out .v { font-family: "JetBrains Mono", monospace; font-size: 22px; font-weight: 700; }
   footer { margin-top: 36px; text-align: center; color: var(--dim); font-size: 14px; }
+
+  /* fonts: pixel face for the page title only, mono for everything small */
+  h1 { font-family: "Silkscreen", "JetBrains Mono", monospace !important; font-size: 54px !important; }
+  .title, .src, .t, .formula, .weight .pct, .tier .num .n, .input .v, .out .v { font-weight: 800 !important; letter-spacing: 0; }
+  .title, .src, .t { font-size: 24px !important; }
+  .tag, .split-label, .decision, .check, .stop, .badge, .tier .n:not(.tier .num .n), .tier .num .l,
+  .input .k, .gate-grid h4, .tier .sig .h, .companion .tag, .divider, .weight .k {
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
 </style>
 </head>
 <body>
