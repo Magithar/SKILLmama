@@ -129,8 +129,8 @@ This triggered the real pipeline in testing — a Phase 1.5 constraint question 
 
 ### Optional — install and verify in one command
 
-[`skill-land`](https://www.npmjs.com/package/skill-land) installs to several agents in one command and
-**exits non-zero if the file didn't land**:
+[`skill-land`](https://github.com/Magithar/skill-land) ([npm](https://www.npmjs.com/package/skill-land))
+installs to several agents in one command and **exits non-zero if the file didn't land**:
 
 ```bash
 npx skill-land Magithar/SKILLmama --for claude-code,codex,antigravity
@@ -413,7 +413,7 @@ skillspector scan <repo-url>
 > Earlier versions of this README said `pip install skillspector`. That package does not exist on
 > PyPI (404); SkillSpector installs from git via `uv`. Corrected 2026-08-08.
 
-[`skill-land`](https://www.npmjs.com/package/skill-land) runs this scan
+[`skill-land`](https://github.com/Magithar/skill-land) runs this scan
 before writing a skill to disk and reports the findings. It does **not** block on them: measured
 against 18 known-good installed skills, SkillSpector's static mode returns `DO_NOT_INSTALL` for
 44% of them. Pass `--strict` if you want it to refuse.
@@ -796,6 +796,16 @@ Click a sticker to open it, then download the image to print it, use it as a cus
 | Logo | Thumbs-up | Celebrate | Coffee | Sleepy cat |
 
 Free to print and share, just don't sell them. The stickers are separate from the code's Apache 2.0 license.
+
+---
+
+## Related
+
+- [skill-land](https://github.com/Magithar/skill-land): install a skill to the directory the agent
+  actually reads, then prove it landed. Works for SKILLmama on Codex and Antigravity, where
+  `npx skills add -g` writes somewhere they never look.
+- [Magithar/skills](https://github.com/Magithar/skills): more agent skills, in a Claude Code
+  marketplace that also lists SKILLmama.
 
 ---
 
