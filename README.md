@@ -308,32 +308,7 @@ Sources linked from the diagram: [Smithery](https://smithery.ai) for MCP servers
 
 ## Output Format
 
-Results open with a scoring table prefixed by the detected stack, then a ranked card per pick:
-
-```
-**Scoring all candidates against [stack]:**
-
-| Candidate | Compat | Pop | Maint | Simple | Score |
-|-----------|--------|-----|-------|--------|-------|
-| Name      | X      | X   | X     | X      | X.X   |
-
-#1 — [Name] · Score: X.X/10
-[One sentence on why it wins for this stack]
-- Compatibility: X/10 — [reason]
-- Popularity:    X/10 — [stars/downloads] ([GitHub] · [npm] or [PyPI Stats])
-- Maintenance:   X/10 — [last commit / release cadence] ([GitHub])
-- Simplicity:    X/10 — [setup effort]
-- Security:      [PASS | ⚠️ SQP-N — finding | 🚫 BLOCKED] · checked [version], [YYYY-MM-DD HH:MM UTC] · [OSV] · [publisher history]
-- Install: `[command]` (pinned to the version on the Security line)
-- Links: [npm] · [PyPI] · [pkg.go.dev] · [Smithery] · [GitHub]
-```
-
-Followed by:
-
-- **Also Considered** table with Name · Score · Why not #1 · Links. Blocked candidates appear here as `BLOCKED`, with the finding and the version and time they were checked
-- **MCP Option** callout with Smithery + GitHub links
-- **Companion Skills** — installable agent skills for top picks (if found)
-- **Next Steps** — 3 concrete actions
+<p align="center"><img src="assets/output-format.png" alt="SKILLmama output format, top to bottom: a header with capability, stack and sources; a scoring table; ranked cards for #1 to #3 with four factor scores, a Security line, a pinned install command and links; an Also Considered table; optional MCP and companion skill sections; and three next steps" width="800"/></p>
 
 Security findings from the internal gate surface inline on each candidate's `Security:` line — there is no separate gate section in the output.
 

@@ -1,0 +1,205 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SKILLmama Output Format</title>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@700&family=JetBrains+Mono:wght@400;600;700;800&display=block" rel="stylesheet">
+<style>
+  :root { --bg: #0b0b0b; --cream: #fbf1df; --green: #5bc476; --dim: #a89f90; --line: #3a3630; --px: 4px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--cream);
+    font-family: "JetBrains Mono", Menlo, monospace; font-size: 16px; line-height: 1.5;
+    width: 1200px; padding: 56px 48px 56px;
+  }
+  header { display: flex; align-items: center; gap: 24px; margin-bottom: 40px; }
+  header img { width: 120px; height: 120px; }
+  header h1 { font-family: "Silkscreen", monospace; font-size: 54px; font-weight: 700; line-height: 1; }
+  header h1 span { color: var(--green); }
+  header p { color: var(--dim); margin-top: 10px; font-size: 18px; }
+
+  .px { box-shadow:
+      0 calc(-1 * var(--px)) 0 0 var(--c, var(--cream)),
+      0 var(--px) 0 0 var(--c, var(--cream)),
+      calc(-1 * var(--px)) 0 0 0 var(--c, var(--cream)),
+      var(--px) 0 0 0 var(--c, var(--cream)); }
+
+  .row { display: grid; grid-template-columns: 64px 1fr; gap: 20px; margin-top: 28px; }
+  .row:first-of-type { margin-top: 0; }
+  .num { width: 56px; height: 56px; margin-top: 4px; background: var(--green); color: var(--bg);
+    display: grid; place-items: center; font-weight: 800; font-size: 26px; }
+  .num.opt { background: transparent; color: var(--green); border: var(--px) dashed var(--green); }
+
+  .sec { margin: 4px; padding: 18px 22px; background: var(--bg); }
+  .sec.dashed { box-shadow: none; border: var(--px) dashed var(--green); margin: 0; }
+  .label { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; color: var(--green); }
+  .label .opt { color: var(--dim); margin-left: 8px; }
+  .h { font-weight: 800; font-size: 22px; margin: 2px 0 10px; }
+  .ph { color: var(--dim); }
+  .g { color: var(--green); }
+  .kv { display: grid; grid-template-columns: 170px 1fr; row-gap: 4px; }
+  .kv .k { color: var(--dim); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 2px solid var(--line); padding: 6px 10px; text-align: left; }
+  th { color: var(--green); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; font-size: 13px; }
+  td.n { text-align: center; }
+  td.score { font-weight: 800; text-align: center; }
+
+  /* result card */
+  .stack { position: relative; }
+  .ghost { position: absolute; left: 14px; right: -14px; height: 100%; border: 2px solid var(--line); }
+  .ghost.g1 { top: 14px; } .ghost.g2 { top: 28px; left: 28px; right: -28px; }
+  .card { position: relative; background: var(--bg); padding: 18px 22px; margin: 4px; }
+  .card-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .rank { font-weight: 800; font-size: 26px; }
+  .total { font-weight: 800; font-size: 22px; color: var(--bg); background: var(--green); padding: 2px 12px; }
+  .why { border-left: var(--px) solid var(--green); padding: 4px 12px; margin: 10px 0 14px; color: var(--cream); }
+  .factors { display: grid; grid-template-columns: 160px 70px 1fr; row-gap: 8px; column-gap: 14px; align-items: center; }
+  .factors .f { font-weight: 700; }
+  .factors .s { font-weight: 800; color: var(--green); }
+  .bar { height: 10px; background: #1d2a20; position: relative; }
+  .bar i { position: absolute; inset: 0 auto 0 0; background: var(--green); }
+  .src { color: var(--dim); font-size: 14px; }
+  .lines { margin-top: 14px; border-top: 2px dashed var(--line); padding-top: 12px; display: grid; grid-template-columns: 110px 1fr; row-gap: 6px; }
+  .lines .k { font-weight: 700; }
+  .chip { display: inline-block; font-weight: 700; font-size: 13px; padding: 0 8px; margin-right: 6px; letter-spacing: .5px; }
+  .chip.pass { background: var(--green); color: var(--bg); }
+  .chip.warn { border: 2px solid var(--green); color: var(--green); padding: 0 6px; }
+  .chip.block { background: var(--cream); color: var(--bg); }
+  .chip.present { border: 2px solid var(--dim); color: var(--dim); padding: 0 6px; }
+  .note { margin-top: 12px; color: var(--dim); font-size: 14px; }
+  .ghost-note { margin-top: 38px; color: var(--dim); font-size: 14px; padding-left: 4px; }
+
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .quote { border-left: var(--px) solid var(--green); padding: 2px 12px; }
+  ol.steps { list-style: none; counter-reset: s; }
+  ol.steps li { counter-increment: s; padding-left: 34px; position: relative; margin-top: 4px; }
+  ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 2px; width: 22px; height: 22px;
+    background: var(--green); color: var(--bg); font-weight: 800; font-size: 13px; display: grid; place-items: center; }
+
+  footer { margin-top: 40px; text-align: center; color: var(--dim); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="../logo.png" alt="">
+  <div>
+    <h1>Output <span>Format</span></h1>
+    <p>What a SKILLmama answer looks like, top to bottom. Every number links to its source.</p>
+  </div>
+</header>
+
+<!-- 1 header -->
+<div class="row">
+  <div class="num">1</div>
+  <div class="sec px">
+    <div class="label">Header</div>
+    <div class="kv" style="margin-top:8px">
+      <span class="k">Capability</span><span class="ph">[what you asked for]</span>
+      <span class="k">Stack</span><span class="ph">[detected stack]</span>
+      <span class="k">Sources searched</span><span>GitHub · MCP · npm/PyPI · Templates · <span class="g">Skills</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- 2 scoring table -->
+<div class="row">
+  <div class="num">2</div>
+  <div class="sec px">
+    <div class="label">Scoring table</div>
+    <div class="h">Every candidate, scored against your stack</div>
+    <table>
+      <tr><th>Candidate</th><th>Compat</th><th>Pop</th><th>Maint</th><th>Simple</th><th>Score</th></tr>
+      <tr><td class="ph">[Name]</td><td class="n">X</td><td class="n">X</td><td class="n">X</td><td class="n">X</td><td class="score g">X.X</td></tr>
+      <tr><td class="ph">[Name]</td><td class="n">X</td><td class="n">X</td><td class="n">X</td><td class="n">X</td><td class="score g">X.X</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 3 ranked cards -->
+<div class="row">
+  <div class="num">3</div>
+  <div>
+    <div class="stack">
+      <div class="ghost g2"></div>
+      <div class="ghost g1"></div>
+      <div class="card px" style="--c: var(--green)">
+        <div class="label">Recommended · #1, #2, #3</div>
+        <div class="card-top" style="margin-top:4px">
+          <span class="rank">#1 <span class="ph">[Name]</span></span>
+          <span class="total">X.X / 10</span>
+        </div>
+        <div class="why ph">[One sentence: what it is and why it wins for this stack]</div>
+        <div class="factors">
+          <span class="f">Compatibility</span><span class="s">X/10</span><span class="bar"><i style="width:90%"></i></span>
+          <span class="src" style="grid-column:2 / 4;margin:-6px 0 2px">stack fit, with a ⚠️ note if a required dependency is missing</span>
+          <span class="f">Popularity</span><span class="s">X/10</span><span class="bar"><i style="width:100%"></i></span>
+          <span class="src" style="grid-column:2 / 4;margin:-6px 0 2px">stars, downloads · linked to GitHub, npm or PyPI Stats</span>
+          <span class="f">Maintenance</span><span class="s">X/10</span><span class="bar"><i style="width:80%"></i></span>
+          <span class="src" style="grid-column:2 / 4;margin:-6px 0 2px">last commit, release cadence · linked to GitHub</span>
+          <span class="f">Simplicity</span><span class="s">X/10</span><span class="bar"><i style="width:70%"></i></span>
+          <span class="src" style="grid-column:2 / 4;margin:-6px 0 2px">setup effort</span>
+        </div>
+        <div class="lines">
+          <span class="k">Security</span>
+          <span><span class="ph">one of</span> <span class="chip pass">PASS</span><span class="chip warn">WARN</span><span class="chip warn">SQP-N</span> checked <span class="ph">[version]</span> at <span class="ph">[UTC time]</span> · OSV · publisher history</span>
+          <span class="k">Install</span><span>pinned to the exact version that was checked</span>
+          <span class="k">Links</span><span>npm · PyPI · pkg.go.dev · Smithery · GitHub</span>
+        </div>
+      </div>
+    </div>
+    <div class="ghost-note">#2 and #3 follow with the same structure.</div>
+  </div>
+</div>
+
+<!-- 4 also considered -->
+<div class="row">
+  <div class="num">4</div>
+  <div class="sec px">
+    <div class="label">Also considered</div>
+    <div class="h">The rest, and why each isn't #1</div>
+    <table>
+      <tr><th>Name</th><th>Score</th><th>Why not #1</th></tr>
+      <tr><td class="ph">[Name]</td><td class="score">X.X</td><td>brief reason</td></tr>
+      <tr><td class="ph">[Name]</td><td><span class="chip present">ALREADY PRESENT</span></td><td>already in your stack</td></tr>
+      <tr><td class="ph">[Name]</td><td><span class="chip block">BLOCKED</span></td><td>the finding, with the version and time it was checked</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 5 + 6 optional -->
+<div class="row">
+  <div class="num opt">5</div>
+  <div class="two">
+    <div class="sec dashed">
+      <div class="label">MCP option <span class="opt">if found</span></div>
+      <div class="h">Use it as an MCP tool</div>
+      <div class="quote">install command<br><span class="ph">Smithery · GitHub</span></div>
+    </div>
+    <div class="sec dashed">
+      <div class="label">Companion skills <span class="opt">if found</span></div>
+      <div class="h">Skills that know the library</div>
+      <div class="quote">npx skills add <span class="ph">[owner/repo]</span><br><span class="ph">Security: PASS or ⚠️ SQP-N</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 7 next steps -->
+<div class="row">
+  <div class="num">6</div>
+  <div class="sec px">
+    <div class="label">Next steps</div>
+    <div class="h">Three concrete actions</div>
+    <ol class="steps">
+      <li class="ph">[Install and wire up the #1 pick]</li>
+      <li class="ph">[First thing to build with it]</li>
+      <li class="ph">[The fallback if #1 doesn't fit]</li>
+    </ol>
+  </div>
+</div>
+
+<footer>Security findings appear on each candidate's Security line. There is no separate gate section.</footer>
+</body>
+</html>
