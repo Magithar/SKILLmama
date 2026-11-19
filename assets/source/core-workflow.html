@@ -1,0 +1,315 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SKILLmama Core Workflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@400;600;700&display=block" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0b0b;
+    --cream: #fbf1df;
+    --green: #5bc476;
+    --dim: #a89f90;
+    --px: 4px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: "JetBrains Mono", Menlo, monospace;
+    font-size: 17px;
+    line-height: 1.45;
+    width: 1200px;
+    padding: 56px 48px 64px;
+  }
+  .pixel { font-family: "Silkscreen", "JetBrains Mono", monospace; letter-spacing: 0.5px; }
+
+  /* header */
+  header { display: flex; align-items: center; gap: 24px; margin-bottom: 44px; }
+  header img { width: 120px; height: 120px; image-rendering: pixelated; }
+  header h1 { font-family: "Silkscreen", monospace; font-size: 54px; font-weight: 700; line-height: 1; }
+  header h1 span { color: var(--green); }
+  header p { color: var(--dim); margin-top: 10px; font-size: 18px; }
+
+  /* pixel box: notched corners via box-shadow */
+  .box {
+    position: relative;
+    background: var(--bg);
+    padding: 16px 20px;
+    margin: var(--px);
+    box-shadow:
+      0 calc(-1 * var(--px)) 0 0 var(--cream),
+      0 var(--px) 0 0 var(--cream),
+      calc(-1 * var(--px)) 0 0 0 var(--cream),
+      var(--px) 0 0 0 var(--cream);
+  }
+  .box.green {
+    box-shadow:
+      0 calc(-1 * var(--px)) 0 0 var(--green),
+      0 var(--px) 0 0 var(--green),
+      calc(-1 * var(--px)) 0 0 0 var(--green),
+      var(--px) 0 0 0 var(--green);
+  }
+  .box.solid { background: var(--cream); color: var(--bg); }
+  .box.solid-green { background: var(--green); color: var(--bg); box-shadow:
+      0 calc(-1 * var(--px)) 0 0 var(--green),
+      0 var(--px) 0 0 var(--green),
+      calc(-1 * var(--px)) 0 0 0 var(--green),
+      var(--px) 0 0 0 var(--green); }
+  .tag {
+    font-family: "Silkscreen", monospace; font-size: 15px; color: var(--green);
+    display: block; margin-bottom: 4px;
+  }
+  .box.solid .tag, .box.solid-green .tag { color: var(--bg); opacity: .7; }
+  .title { font-family: "Silkscreen", monospace; font-size: 22px; font-weight: 700; line-height: 1.15; }
+  .body { margin-top: 8px; color: var(--cream); }
+  .box.solid .body, .box.solid-green .body { color: var(--bg); }
+  .muted { color: var(--dim); }
+  .g { color: var(--green); }
+  ul { list-style: none; }
+  ul li::before { content: "■ "; color: var(--green); font-size: 11px; vertical-align: 2px; }
+
+  .center { margin-left: auto; margin-right: auto; }
+  .w-sm { width: 420px; }
+  .w-md { width: 640px; }
+  .w-lg { width: 760px; }
+
+  /* arrows */
+  .arrow { width: var(--px); height: 40px; background: var(--cream); margin: 0 auto; position: relative; }
+  .arrow::after {
+    content: ""; position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%);
+    border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 12px solid var(--cream);
+  }
+  .arrow.short { height: 28px; }
+  .arrow.green { background: var(--green); }
+  .arrow.green::after { border-top-color: var(--green); }
+  .gap-after-arrow { margin-top: 16px; }
+
+  /* decision */
+  .decision {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    width: fit-content; margin: 16px auto 0; padding: 10px 22px;
+    border: var(--px) dashed var(--green); color: var(--green);
+    font-family: "Silkscreen", monospace; font-size: 20px;
+  }
+  .decision .q { width: 26px; height: 26px; background: var(--green); color: var(--bg); transform: rotate(45deg);
+    display: grid; place-items: center; }
+  .decision .q span { transform: rotate(-45deg); font-size: 16px; font-weight: 700; }
+
+  /* split / merge connectors */
+  .split { position: relative; height: 56px; margin: 0 25%; border: var(--px) solid var(--cream); border-bottom: 0; margin-top: 0; }
+  .split-label { position: absolute; top: 12px; font-family: "Silkscreen", monospace; font-size: 18px; color: var(--green); }
+  .split-label.l { left: 16px; } .split-label.r { right: 16px; }
+  .stem { width: var(--px); height: 28px; background: var(--cream); margin: 0 auto; }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; }
+  .col { display: flex; flex-direction: column; padding: 0 24px; }
+  .col > .box { width: 100%; margin-left: 0; margin-right: 0; }
+  .col .fill { flex: 1; width: var(--px); background: var(--cream); margin: 0 auto; min-height: 24px; }
+  .merge { height: 40px; margin: 0 25%; border: var(--px) solid var(--cream); border-top: 0; }
+
+  .side-row { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 16px; }
+  .note { border: 2px dashed var(--dim); padding: 10px 14px; color: var(--cream); font-size: 15px; }
+  .note b { color: var(--green); font-family: "Silkscreen", monospace; font-weight: 400; }
+  .stop { display: inline-block; margin-top: 10px; background: var(--cream); color: var(--bg);
+    font-family: "Silkscreen", monospace; padding: 2px 10px; font-size: 15px; }
+  .pick { text-align: center; color: var(--green); font-size: 15px; margin: 6px 0; }
+
+  /* tiers */
+  .tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 14px; }
+  .tier { border: 2px solid var(--green); padding: 10px; text-align: center; }
+  .tier .n { font-family: "Silkscreen", monospace; color: var(--green); font-size: 15px; }
+  .tier .t { font-weight: 700; margin-top: 2px; }
+  .tier .s { font-size: 13px; color: var(--dim); }
+  .tier-flow { text-align: center; color: var(--dim); font-size: 14px; margin-top: 10px; }
+
+  .gate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 12px; }
+  .gate-grid h4 { font-family: "Silkscreen", monospace; font-weight: 400; color: var(--green); font-size: 15px; margin-bottom: 4px; }
+  .badge { display: inline-block; font-family: "Silkscreen", monospace; font-size: 14px; padding: 0 8px; margin-right: 6px; }
+  .badge.block { background: var(--cream); color: var(--bg); }
+  .badge.warn { border: 2px solid var(--green); color: var(--green); padding: 0 6px; }
+
+  .formula { font-family: "Silkscreen", monospace; font-size: 24px; margin: 12px 0 14px; color: var(--bg); }
+  .weights { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .weight { background: var(--bg); color: var(--cream); padding: 10px; }
+  .weight .pct { font-family: "Silkscreen", monospace; font-size: 26px; color: var(--green); line-height: 1; }
+  .weight .k { font-weight: 700; margin-top: 6px; }
+  .weight .d { font-size: 13px; color: var(--dim); }
+  .bar { height: 8px; background: var(--green); margin-top: 8px; }
+
+  footer { margin-top: 40px; text-align: center; color: var(--dim); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="../logo.png" alt="">
+  <div>
+    <h1>Core <span>Workflow</span></h1>
+    <p>How SKILLmama goes from a request to ranked, verified picks.</p>
+  </div>
+</header>
+
+<div class="box solid w-sm center" style="text-align:center">
+  <div class="title">User request</div>
+</div>
+<div class="arrow short"></div>
+<div class="decision"><div class="q"><span>?</span></div>Capability named?</div>
+<div class="stem"></div>
+<div class="split"><span class="split-label l">Yes</span><span class="split-label r">No</span></div>
+
+<div class="cols">
+  <!-- FLOW A -->
+  <div class="col">
+    <div class="arrow short" style="margin-top:0"></div>
+    <div class="box solid-green gap-after-arrow">
+      <span class="tag">Flow A</span>
+      <div class="title">Capability Search</div>
+    </div>
+    <div class="arrow short"></div>
+    <div class="box gap-after-arrow">
+      <span class="tag">Phase 0</span>
+      <div class="title">Parse Request</div>
+      <div class="body">Extract capability, stack, constraints</div>
+    </div>
+    <div class="arrow short"></div>
+    <div class="decision" style="font-size:17px"><div class="q"><span>?</span></div>Capability vague?</div>
+    <div class="side-row">
+      <div class="note"><b>Yes</b> ask 1 clarifying question &nbsp;·&nbsp; <b>No</b> continue</div>
+    </div>
+    <div class="arrow short"></div>
+    <div class="box gap-after-arrow">
+      <span class="tag">Phase 1</span>
+      <div class="title">Architecture Scan</div>
+      <div class="body">Read package files, Dockerfile, README, source. Extract language, frameworks, DBs.</div>
+    </div>
+    <div class="arrow short"></div>
+    <div class="box gap-after-arrow">
+      <span class="tag">Phase 1.5</span>
+      <div class="title">Confirm Constraints</div>
+      <div class="body">Only if none stated: ask 1 informed question.</div>
+      <span class="stop">Stop · await reply</span>
+    </div>
+    <div class="fill"></div>
+  </div>
+
+  <!-- FLOW B -->
+  <div class="col">
+    <div class="arrow short" style="margin-top:0"></div>
+    <div class="box solid-green gap-after-arrow">
+      <span class="tag">Flow B</span>
+      <div class="title">Project Scanner</div>
+    </div>
+    <div class="arrow short"></div>
+    <div class="box gap-after-arrow">
+      <span class="tag">Phase B1</span>
+      <div class="title">Deep Project Scan</div>
+      <div class="body">Build a stack profile: language, framework, DB, auth, cache, AI/LLM, queue, search, email...</div>
+    </div>
+    <div class="arrow short"></div>
+    <div class="box gap-after-arrow">
+      <span class="tag">Phase B2</span>
+      <div class="title">Gap Analysis</div>
+      <div class="body">Missing categories ranked High / Medium / Low</div>
+    </div>
+    <div class="arrow short"></div>
+    <div class="box gap-after-arrow">
+      <span class="tag">Phase B3</span>
+      <div class="title">Ask 3 Questions</div>
+      <ul class="body">
+        <li>Which gap(s)?</li>
+        <li>Constraints?</li>
+        <li>Anything missed?</li>
+      </ul>
+      <span class="stop">Stop · await reply</span>
+    </div>
+    <div class="fill" style="min-height:16px;flex:0 0 16px"></div>
+    <div class="pick">user picks a capability</div>
+    <div class="fill"></div>
+  </div>
+</div>
+<div class="merge"></div>
+<div class="arrow"></div>
+
+<div class="box w-md center gap-after-arrow">
+  <span class="tag">Phase 2</span>
+  <div class="title">Derive Search Terms</div>
+  <div class="body">capability + stack → 3–5 search terms</div>
+</div>
+<div class="arrow"></div>
+
+<div class="box green w-lg center gap-after-arrow">
+  <span class="tag">Phase 3</span>
+  <div class="title">4-Tier Search</div>
+  <div class="tiers">
+    <div class="tier"><div class="n">Tier 1</div><div class="t">GitHub</div><div class="s">stars, recency, contributors</div></div>
+    <div class="tier"><div class="n">Tier 2</div><div class="t">MCP</div><div class="s">ecosystem servers</div></div>
+    <div class="tier"><div class="n">Tier 3</div><div class="t">Registries</div><div class="s">npm / PyPI</div></div>
+    <div class="tier"><div class="n">Tier 4</div><div class="t">Templates</div><div class="s">&amp; cookbooks</div></div>
+  </div>
+  <div class="tier-flow">searched in order → once <span class="g">8+ candidates</span> are found, remaining tiers are skipped</div>
+</div>
+<div class="arrow"></div>
+
+<div class="box w-lg center gap-after-arrow">
+  <span class="tag">Phase 3.5</span>
+  <div class="title">Security Gate · Libraries</div>
+  <div class="gate-grid">
+    <div>
+      <h4>Live checks</h4>
+      <ul>
+        <li>OSV.dev advisories (npm, PyPI, Go, crates.io), exact version</li>
+        <li>npm / crates.io publisher continuity</li>
+        <li class="muted">Records version, UTC time, and a link to check</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Hard gate</h4>
+      <div><span class="badge block">Blocked</span>discard, never score</div>
+      <div style="margin-top:6px"><span class="badge warn">Warn</span>show, user confirms</div>
+      <h4 style="margin-top:12px">Quality flags</h4>
+      <div>SQP-1 vague triggers<br>SQP-2 missing warnings<br>SQP-3 policy violations</div>
+    </div>
+  </div>
+</div>
+<div class="arrow"></div>
+
+<div class="box green w-lg center gap-after-arrow">
+  <span class="tag">Phase 3.6 · required, never skipped</span>
+  <div class="title">Companion Skills Search</div>
+  <div class="body">For each candidate: <span class="g">skills.sh</span> · <span class="g">terminalskills.io</span> · <span class="g">skillsmp.com</span> · <span class="g">GitHub SKILL.md</span></div>
+</div>
+<div class="arrow"></div>
+
+<div class="box w-lg center gap-after-arrow">
+  <span class="tag">Phase 3.7</span>
+  <div class="title">Security Gate · Skills</div>
+  <div class="body"><span class="badge block">Blocked</span>discard &nbsp; <span class="badge warn">SQP-1/2/3</span>flag, keep &nbsp; <span class="badge warn">Warn</span>show with caution</div>
+</div>
+<div class="arrow"></div>
+
+<div class="box solid w-lg center gap-after-arrow">
+  <span class="tag">Phase 4</span>
+  <div class="title">Score Each Candidate</div>
+  <div class="formula">C×0.40 + P×0.30 + M×0.15 + S×0.15</div>
+  <div class="weights">
+    <div class="weight"><div class="pct">40%</div><div class="k">Compatibility</div><div class="d">stack fit</div><div class="bar" style="width:100%"></div></div>
+    <div class="weight"><div class="pct">30%</div><div class="k">Popularity</div><div class="d">stars / downloads</div><div class="bar" style="width:75%"></div></div>
+    <div class="weight"><div class="pct">15%</div><div class="k">Maintenance</div><div class="d">last commit</div><div class="bar" style="width:37.5%"></div></div>
+    <div class="weight"><div class="pct">15%</div><div class="k">Simplicity</div><div class="d">install effort</div><div class="bar" style="width:37.5%"></div></div>
+  </div>
+  <div class="body" style="margin-top:12px">Each factor 1–10, read live and linked. No link → N/A (unverified).</div>
+</div>
+<div class="arrow"></div>
+
+<div class="box solid-green w-lg center gap-after-arrow">
+  <span class="tag">Phase 5</span>
+  <div class="title">Present Results</div>
+  <div class="body">#1, #2, #3 with full score breakdown · every value links to its source · Also Considered table · MCP callout · Companion Skills · 3 next steps</div>
+</div>
+
+<footer>github.com/Magithar/SKILLmama</footer>
+
+</body>
+</html>
