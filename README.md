@@ -8,14 +8,16 @@
 </p>
 
 <p align="center">
-  SKILLmama eliminates the hours spent researching which library, SDK, or tool to use — it scans your project's actual stack, searches across 4 tiers of the ecosystem plus a companion-skills pass, and returns the top 3 ranked picks with scored evidence. No more Reddit threads or outdated blog posts; just the right tool for your exact setup, with install commands and links, in seconds.<br/><br/>
+  SKILLmama eliminates the hours spent researching which library, SDK, or tool to use.<br/>
+  It scans your project's actual stack, searches across 4 tiers of the ecosystem plus a companion-skills pass,<br/>
+  and returns the top 3 ranked picks with scored evidence, install commands and links.<br/><br/>
   Works with <a href="#claude-code">Claude Code</a>, <a href="#claudeai-web--desktop">Claude.ai</a>, <a href="#openai-codex">OpenAI Codex</a>, and <a href="#antigravity">Antigravity</a>.
 </p>
 
 ---
 
 <p align="center">
-  <a href="#see-it-in-action">Demo</a> • <a href="#install">Install</a> • <a href="#usage">Usage</a> • <a href="#ai-adapters">AI Adapters</a> • <a href="#core-workflow">Core Workflow</a> • <a href="#ranking-formula">Ranking Formula</a> • <a href="#4-tier-search-hierarchy">4-Tier Search</a> • <a href="#output-format">Output Format</a> • <a href="#end-to-end-example">Example</a> • <a href="#project-structure">Project Structure</a> • <a href="#packages">Packages</a> • <a href="#evals">Evals</a> • <a href="#roadmap">Roadmap</a> • <a href="#stickers">Stickers</a>
+  <a href="#see-it-in-action">Demo</a> • <a href="#build-in-public-series">Series</a> • <a href="#install">Install</a> • <a href="#usage">Usage</a> • <a href="#ai-adapters">AI Adapters</a> • <a href="#core-workflow">Core Workflow</a> • <a href="#ranking-formula">Ranking Formula</a> • <a href="#4-tier-search-hierarchy">4-Tier Search</a> • <a href="#output-format">Output Format</a> • <a href="#end-to-end-example">Example</a> • <a href="#project-structure">Project Structure</a> • <a href="#packages">Packages</a> • <a href="#evals">Evals</a> • <a href="#roadmap">Roadmap</a> • <a href="#stickers">Stickers</a>
 </p>
 
 ---
@@ -26,17 +28,21 @@
 
 ---
 
-**📖 Build-in-public series on Dev.to:**
+## Build-in-public series
 
-**[Part 1](https://dev.to/magithar/stop-guessing-which-library-to-use-i-built-an-ai-capability-discovery-engine-3p7p)** — scoring formula, 5-tier search, end-to-end example.<br/>
-**[Part 2](https://dev.to/magithar/a-high-score-means-nothing-if-the-tool-is-dangerous-so-i-added-a-security-gate-3hpc)** — security gate, SQP rules, companion skills.<br/>
-**[Part 3](https://dev.to/magithar/i-got-tired-of-asking-what-am-i-missing-so-i-made-my-ai-ask-first-g8)** — project scanner, Flow B, gap analysis.<br/>
-**[Part 4](https://dev.to/magithar/a-reader-pointed-out-my-ask-first-principle-only-covered-half-my-tool-so-i-fixed-it-345c)** — Phase 1.5, constraint confirmation in Flow A.<br/>
-**[Part 5](https://dev.to/magithar/the-bug-was-in-my-own-instructions-not-my-code-255p)** — tested my own install instructions, found they were wrong.<br/>
-**[Part 6](https://dev.to/magithar/i-watched-a-talk-called-dont-ship-skills-without-evals-then-checked-if-mine-had-any-1k0e)** — eval harness, trigger-classification tests, bugs found by testing instead of assuming.<br/>
-**[Part 7](https://dev.to/magithar/i-asked-the-same-question-with-and-without-my-own-skill-the-version-without-it-won-on-one-thing-5gjn)** — paired skill-on/skill-off ablation, the deployment persistence check it exposed, and the live CVE it later caught.<br/>
-**[Part 8](https://dev.to/magithar/a-reader-asked-what-my-security-check-actually-verifies-the-honest-answer-sent-me-back-to-the-1fif)** — building the live OSV.dev and npm publisher-continuity checks, and the real CVE that proved them.<br/>
-**[Part 9](https://dev.to/magithar/i-wrote-code-for-a-skill-thats-supposed-to-require-judgment-heres-where-i-drew-the-line-4j81)** — the mechanical/judgment boundary, the conformance test, and the crates.io extension.
+Nine posts on Dev.to about how SKILLmama was built.
+
+| Part | Topic |
+| ---- | ----- |
+| [1](https://dev.to/magithar/stop-guessing-which-library-to-use-i-built-an-ai-capability-discovery-engine-3p7p) | Scoring formula, 5-tier search, end-to-end example |
+| [2](https://dev.to/magithar/a-high-score-means-nothing-if-the-tool-is-dangerous-so-i-added-a-security-gate-3hpc) | Security gate, SQP rules, companion skills |
+| [3](https://dev.to/magithar/i-got-tired-of-asking-what-am-i-missing-so-i-made-my-ai-ask-first-g8) | Project scanner, Flow B, gap analysis |
+| [4](https://dev.to/magithar/a-reader-pointed-out-my-ask-first-principle-only-covered-half-my-tool-so-i-fixed-it-345c) | Phase 1.5, constraint confirmation in Flow A |
+| [5](https://dev.to/magithar/the-bug-was-in-my-own-instructions-not-my-code-255p) | Tested my own install instructions, found they were wrong |
+| [6](https://dev.to/magithar/i-watched-a-talk-called-dont-ship-skills-without-evals-then-checked-if-mine-had-any-1k0e) | Eval harness, trigger-classification tests, bugs found by testing instead of assuming |
+| [7](https://dev.to/magithar/i-asked-the-same-question-with-and-without-my-own-skill-the-version-without-it-won-on-one-thing-5gjn) | Paired skill-on/skill-off ablation, the deployment persistence check it exposed, and the live CVE it later caught |
+| [8](https://dev.to/magithar/a-reader-asked-what-my-security-check-actually-verifies-the-honest-answer-sent-me-back-to-the-1fif) | Building the live OSV.dev and npm publisher-continuity checks, and the real CVE that proved them |
+| [9](https://dev.to/magithar/i-wrote-code-for-a-skill-thats-supposed-to-require-judgment-heres-where-i-drew-the-line-4j81) | The mechanical/judgment boundary, the conformance test, and the crates.io extension |
 
 ---
 
@@ -102,24 +108,29 @@ testing here and independently in
 [#1470](https://github.com/vercel-labs/skills/issues/1470), including extraction
 from the `agy` binary's own embedded docs.
 
-```bash
-mkdir -p ~/.gemini/config/skills/skillmama
-curl -sL https://raw.githubusercontent.com/Magithar/SKILLmama/main/skillmama/SKILL.md \
-  -o ~/.gemini/config/skills/skillmama/SKILL.md
-```
+1. Copy the file:
 
-**Fully restart Antigravity** (skills load at startup), then ask **"Which skills are installed?"**
-to confirm. SKILLmama should appear in the list and in the `/` command picker.
+   ```bash
+   mkdir -p ~/.gemini/config/skills/skillmama
+   curl -sL https://raw.githubusercontent.com/Magithar/SKILLmama/main/skillmama/SKILL.md \
+     -o ~/.gemini/config/skills/skillmama/SKILL.md
+   ```
+
+2. **Fully restart Antigravity** (skills load at startup), then ask **"Which skills are installed?"**
+   to confirm. SKILLmama should appear in the list and in the `/` command picker.
+
+3. **Invoke it explicitly.** Type `/` and select **SKILLmama** from the picker (or type `SKILLmama`
+   before your request), then your capability question:
+
+   ```
+   SKILLmama find me the best vector database for a Python project
+   ```
 
 For a project-scoped install instead, put it in `<workspace>/.agents/skills/skillmama/SKILL.md`.
 
-**Usage — invoke explicitly**, confirmed working via live testing: type `/` and select **SKILLmama** from the picker (or type `SKILLmama` before your request), then your capability question:
-
-```
-SKILLmama find me the best vector database for a Python project
-```
-
-This triggered the real pipeline in testing — a Phase 1.5 constraint question ("do you have any specific constraints or preferences? ... Reply 'none' to search with no filters"), not a generic answer. Plain natural-language prompts with no explicit `SKILLmama` invocation were not confirmed to auto-trigger the skill — invoke it explicitly for reliable results.
+Explicit invocation was confirmed in live testing: it triggered the real pipeline, starting with a
+Phase 1.5 constraint question rather than a generic answer. Plain prompts that don't name
+`SKILLmama` were not confirmed to trigger the skill.
 
 > Per [Antigravity's official Agent Skills docs](https://antigravity.google/docs/skills), the agent is also supposed to auto-trigger relevant skills from context alone, without explicit invocation — driven by the skill's `description:` frontmatter. We haven't verified that mode here (only explicit invocation was tested), so treat auto-trigger as unconfirmed and invoke explicitly for now.
 
@@ -217,20 +228,34 @@ Before scoring, every candidate passes through the gate (Phase 3.5). The first t
 
 | Layer | What it checks | Action |
 | ----- | -------------- | ------ |
-| Advisories | Live [OSV.dev](https://osv.dev) lookup for the exact version being recommended, across npm, PyPI, Go, and crates.io | 🚫 BLOCKED if CRITICAL/HIGH with no fix available (the advisory's trigger condition, if OSV states one — a specific mode, flag, or endpoint — is quoted verbatim so you can judge whether your own usage is exposed), ⚠️ WARN if a fix exists (the fixed version is named) or if MODERATE/LOW |
-| Publisher continuity | Whether npm or crates.io publish rights changed hands between releases, the [event-stream](https://blog.npmjs.org/post/180565383195/details-about-the-event-stream-incident) failure mode that advisory scanning misses | ⚠️ WARN naming both publishers and the date, never an automatic discard. CI/trusted-publishing releases are not counted as a handoff |
-| Hard Gate | Data exfiltration, no-disclosure destructive ops, jailbreak instructions | 🚫 BLOCKED (discarded) or ⚠️ WARN (user confirms) |
+| Advisories | Live [OSV.dev](https://osv.dev) lookup for the exact version, across npm, PyPI, Go, and crates.io | 🚫 BLOCKED if CRITICAL/HIGH with no fix<br/>⚠️ WARN if a fix exists, or MODERATE/LOW |
+| Publisher continuity | Whether npm or crates.io publish rights changed hands between releases | ⚠️ WARN, never an automatic discard |
+| Hard Gate | Data exfiltration, no-disclosure destructive ops, jailbreak instructions | 🚫 BLOCKED or ⚠️ WARN (user confirms) |
 | SQP-1 | Vague trigger phrases with no exclusion conditions | Flag in result |
 | SQP-2 | Destructive/sensitive ops with no user-visible warning | Flag in result |
 | SQP-3 | Hardcoded language/locale without user opt-in | Flag in result |
 
-**Known limits.** Stated plainly, because a gate that oversells what it checks is worse than no gate:
+A few details behind those rows:
+
+- **Advisories:** when OSV states the advisory's trigger condition (a specific mode, flag, or
+  endpoint), it is quoted verbatim so you can judge whether your own usage is exposed. A WARN for
+  a fixable advisory names the fixed version.
+- **Publisher continuity** targets the
+  [event-stream](https://blog.npmjs.org/post/180565383195/details-about-the-event-stream-incident)
+  failure mode that advisory scanning misses. The warning names both publishers and the date.
+  CI/trusted-publishing releases are not counted as a handoff.
+
+### Known limits
+
+Stated plainly, because a gate that oversells what it checks is worse than no gate:
 
 - **Publisher continuity covers npm and crates.io.** Those are the two registries that expose a real per-release publisher identity. PyPI and Go don't, so candidates on those registries report `N/A (unsupported ecosystem)` rather than implying the check ran.
 - **It catches handoffs, not account takeovers.** In the ua-parser-js, rc, and coa compromises the attacker published under the real maintainer's name, so this check reads clean. Only the advisory lookup catches those, and only after disclosure.
 - **Only recent handoffs are reported** (under 12 months, most recent only). Measured across 98 popular npm packages: 51% carry a stale handoff somewhere in their history, so reporting all of them would fire on more than half of npm and train you to ignore the warning. With the recency filter, 7%.
 - **Advisory lookup covers the direct package,** not the full transitive dependency tree.
 - **Unreachable service means `N/A (unverified)`,** never a silent pass.
+
+### Deeper static analysis
 
 SQP rules are inspired by [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector) (Apache 2.0). For deeper static analysis with 64 vulnerability patterns, run SkillSpector directly:
 
@@ -246,6 +271,8 @@ skillspector scan <repo-url>
 before writing a skill to disk and reports the findings. It does **not** block on them: measured
 against 18 known-good installed skills, SkillSpector's static mode returns `DO_NOT_INSTALL` for
 44% of them. Pass `--strict` if you want it to refuse.
+
+### How SKILLmama itself scores
 
 This skill scores `7 / LOW / SAFE`. It previously scored `100 / CRITICAL / DO_NOT_INSTALL`, because
 its own Phase 3.7 DISCARD criteria contained phrases like *"instructions to bypass safety checks"*
@@ -369,6 +396,12 @@ Skills (3.6)     → qdrant/skills, timescale/pg-aiguide (pgvector-semantic-sear
 
 **Step 5 — Output**
 
+Qdrant ranks #1 (9.45), Weaviate #2 (8.75) and pgvector #3 (7.95). Chroma is blocked on a
+CRITICAL advisory with no fixed version.
+
+<details>
+<summary><b>Show the full output</b></summary>
+
 ```
 ## SKILLmama Results
 
@@ -454,6 +487,8 @@ Next Steps:
 3. If you'd rather not add a service, swap postgres:16 for pgvector/pgvector:pg16 and try pgvector first
 ```
 
+</details>
+
 ---
 
 ## What SKILLmama Is Not
@@ -501,6 +536,8 @@ rather than merely discouraged.
 > out `.claude/skills/skillmama/SKILL.md` as a real symlink. Without it you'll get a text file
 > containing the target path. It only affects the repo-local slash command, not installs.
 
+---
+
 ## Packages
 
 SKILLmama is a capability discovery system. `SKILL.md` is the agent-native
@@ -516,6 +553,15 @@ to fake the rest.
 | --- | --- | --- |
 | [`packages/core`](packages/core) | [`skillmama`](https://www.npmjs.com/package/skillmama) | published, `0.5.0` |
 
+```bash
+npm ci
+npm test
+npx skillmama scan .           # structured project scan
+npx skillmama check lodash --version 4.17.15   # live OSV + factor checks
+```
+
+### One package, one public surface
+
 There is one package. `packages/core` is a folder name, not a second identity:
 it carries the `skillmama` bin and the programmatic API in a single publishable
 unit, so nothing has to explain a `core`/`cli` split to a user who just wants
@@ -525,13 +571,18 @@ normalizers, and the HTTP payload normalizers stay internal and cannot be
 deep-imported. The supported surface is exactly what `src/index.ts` names, and
 `test/index.test.js` fails if that list drifts in either direction.
 
+### What the CLI does
+
 The CLI is the package's real consumer: `scan` runs `analyzeProject()`, and
 `check` runs the live-data half of the pipeline — OSV advisories, npm publisher
 continuity, and the Popularity/Maintenance band lookups — against a published
 package. It has no LLM, so it cannot produce Phase 3.5's content findings, and
 it says so above the verdict rather than letting a PASS read as "safe".
 
-Implemented in core:
+### Implemented in core
+
+<details>
+<summary><b>Show what each function does</b></summary>
 
 - **`analyzeProject()`** — structured project scan. Parses seven dependency manifests
   and five deployment configs from a directory's top level. Sorted, deduplicated,
@@ -573,12 +624,9 @@ Implemented in core:
   injected, never faked: choosing search terms (Stage A), executing searches
   and judging hits (Stage B), and reading a skill's content for the 3.7 gate.
 
-```bash
-npm ci
-npm test
-npx skillmama scan .           # structured project scan
-npx skillmama check lodash --version 4.17.15   # live OSV + factor checks
-```
+</details>
+
+### Guards
 
 Two guards keep `packages/` honest about SKILL.md:
 
@@ -595,7 +643,17 @@ Two guards keep `packages/` honest about SKILL.md:
 
 ## Evals
 
-SKILLmama ships a manual eval harness at [`evals/skillmama-ablation.md`](evals/skillmama-ablation.md): 5 prompts that should trigger the skill, 5 that shouldn't, run skill-on vs. skill-off. It's checked after any change to the Trigger rules or the core phases — the log has already caught and fixed three real bugs: a silent empty scan when the working directory didn't match the stated stack, Maintenance scores presented as verified when they were actually estimated, and a deployment-persistence blind spot (recommending an in-process store without checking whether the target hosting platform's disk actually survives a restart) — the last one found via a genuine paired skill-off/skill-on ablation run, not just inference.
+SKILLmama ships a manual eval harness at [`evals/skillmama-ablation.md`](evals/skillmama-ablation.md):
+5 prompts that should trigger the skill, 5 that shouldn't, run skill-on vs. skill-off. It's checked
+after any change to the Trigger rules or the core phases.
+
+The log has already caught and fixed three real bugs:
+
+- A silent empty scan when the working directory didn't match the stated stack.
+- Maintenance scores presented as verified when they were actually estimated.
+- A deployment-persistence blind spot: recommending an in-process store without checking whether
+  the hosting platform's disk survives a restart. This one was found by a real paired
+  skill-off/skill-on ablation run, not just inference.
 
 See [`evals/skill-on-vs-skill-off-comparison.md`](evals/skill-on-vs-skill-off-comparison.md) for the full unedited transcript of that ablation run: the same question asked with and without SKILLmama, side by side.
 
