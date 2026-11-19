@@ -30,7 +30,7 @@
 
 ## Build-in-public series
 
-Nine posts on Dev.to about how SKILLmama was built.
+Ten posts on Dev.to about how SKILLmama was built.
 
 | Part | Topic |
 | ---- | ----- |
@@ -43,6 +43,7 @@ Nine posts on Dev.to about how SKILLmama was built.
 | [7](https://dev.to/magithar/i-asked-the-same-question-with-and-without-my-own-skill-the-version-without-it-won-on-one-thing-5gjn) | Paired skill-on/skill-off ablation, the deployment persistence check it exposed, and the live CVE it later caught |
 | [8](https://dev.to/magithar/a-reader-asked-what-my-security-check-actually-verifies-the-honest-answer-sent-me-back-to-the-1fif) | Building the live OSV.dev and npm publisher-continuity checks, and the real CVE that proved them |
 | [9](https://dev.to/magithar/i-wrote-code-for-a-skill-thats-supposed-to-require-judgment-heres-where-i-drew-the-line-4j81) | The mechanical/judgment boundary, the conformance test, and the crates.io extension |
+| [10](https://dev.to/magithar/building-verifiable-security-checks-source-linked-scores-and-honest-verdicts-in-skillmama-511c) | Version and timestamp on every verdict, source links on every score, PyPI downloads, and the skills.sh audit fix |
 
 ---
 
