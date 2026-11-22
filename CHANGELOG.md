@@ -6,6 +6,15 @@ All notable changes to SKILLmama are documented here.
 
 ## [Unreleased]
 
+### Changed
+- **Scores that skip a factor say how much of the weight they cover.** When a factor
+  is N/A, the score now shows `(85% of weight evaluated)` next to it in the Phase 5
+  table and the #1/#2/#3 lines. Renormalizing means a candidate with Maintenance N/A
+  (8.0) can outrank one with verified Maintenance 2 (7.1) when the other factors
+  match, and before this nothing in the output explained why. `scoreCandidate()`
+  adds the same note to `notes`, which its contract already promised but never
+  emitted. Suggested by [@GogaKoreli](https://x.com/GogaKoreli)
+
 ---
 
 ## [1.12.0] - 2026-11-19

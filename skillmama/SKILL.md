@@ -440,7 +440,7 @@ Verify per candidate, don't estimate from general knowledge of the org/project. 
 - 4–6: infrastructure setup or complex config
 - 1–3: heavy self-hosting, sparse docs
 
-If a field is unknown, mark it N/A and weight the remaining factors proportionally.
+If a field is unknown, mark it N/A and weight the remaining factors proportionally. Then show how much of the weight the score rests on, next to the score everywhere it appears: `8.0 (85% of weight evaluated)`. A fully weighted score gets no note. This matters for ranking: with the other three factors at 8, a candidate with Maintenance 2 scores 7.1 and one with Maintenance N/A scores 8.0. Missing data is neither a pass nor a penalty, but the reader has to be able to see why the N/A candidate ranks higher.
 
 ---
 
@@ -457,12 +457,13 @@ If a field is unknown, mark it N/A and weight the remaining factors proportional
 | Candidate | Compat | Pop | Maint | Simple | **Score** |
 |-----------|--------|-----|-------|--------|-----------|
 | [Name] | X | X | X | X | **X.X** |
+| [Name] | X | X | N/A | X | **X.X** (85% of weight evaluated) |
 
 ---
 
 ### Recommended
 
-**#1 — [Name]** · Score: X.X/10
+**#1 — [Name]** · Score: X.X/10 [(NN% of weight evaluated) if any factor is N/A]
 > [One sentence: what it is and why it wins for this stack]
 - Compatibility: X/10 — [reason] [⚠️ note if a required dep was verified missing]
 - Popularity: X/10 — [stars/downloads] ([GitHub](url) · [npm](url) or [PyPI Stats](url))

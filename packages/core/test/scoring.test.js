@@ -92,11 +92,27 @@ test("renormalization records notes; fully-weighted scores carry none", () => {
 
   const renormed = scoreCandidate(CANDIDATE, factors(10, 10, "N/A", 10));
   assert.ok(Array.isArray(renormed.notes));
-  assert.equal(renormed.notes.length, 1);
+  assert.equal(renormed.notes.length, 2);
   assert.match(renormed.notes[0], /maintenance.*N\/A/);
+  assert.equal(renormed.notes[1], "85% of weight evaluated");
 
   const allNA = scoreCandidate(CANDIDATE, factors("N/A", "N/A", "N/A", "N/A"));
-  assert.ok(allNA.notes.length >= 1);
+  assert.ok(allNA.notes.includes("0% of weight evaluated"));
+});
+
+test("N/A outranks a low verified score, and the coverage note says why", () => {
+  // (8,8,2,8) = 7.1 fully weighted; (8,8,N/A,8) = 6.8/0.85 = 8.0
+  const low = scoreCandidate(CANDIDATE, factors(8, 8, 2, 8));
+  const missing = scoreCandidate(CANDIDATE, factors(8, 8, "N/A", 8));
+  assert.equal(low.totalScore, 7.1);
+  assert.equal(low.notes, undefined);
+  assert.equal(missing.totalScore, 8);
+  assert.ok(missing.notes.includes("85% of weight evaluated"));
+});
+
+test("coverage note sums surviving weights", () => {
+  const score = scoreCandidate(CANDIDATE, factors(6, "N/A", "N/A", 8));
+  assert.ok(score.notes.includes("55% of weight evaluated"));
 });
 
 // 4. Validation — fail loudly instead of letting bad input into arithmetic.

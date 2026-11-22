@@ -64,7 +64,8 @@ Also in [`src/mechanical/index.ts`](src/mechanical/index.ts). The deterministic
 slice of Phase 4: given four factors already scored 1–10 per SKILL.md's
 bands, it computes the weighted total
 (`compatibility×0.40 + popularity×0.30 + maintenance×0.15 + simplicity×0.15`),
-renormalizes proportionally when a factor is `"N/A"`, rounds half-up to one
+renormalizes proportionally when a factor is `"N/A"` (and adds a
+`"NN% of weight evaluated"` note so the reader can see it), rounds half-up to one
 decimal with boundary-tolerant handling, and refuses out-of-range input
 loudly. It does **not** produce the factors: Compatibility/Simplicity are
 LLM judgment over verified local evidence, and while Popularity/Maintenance

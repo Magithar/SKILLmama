@@ -228,6 +228,13 @@ export function scoreCandidate(
   const totalScore =
     weightSum === 0 ? "N/A" : roundHalfUp1dp(weightedSum / weightSum);
 
+  // A renormalized total must say how much of the weight it rests on, so
+  // (8,8,N/A,8) = 8.0 can't read as outranking (8,8,2,8) = 7.1 on equal
+  // evidence.
+  if (notes.length > 0) {
+    notes.push(`${Math.round(weightSum * 100)}% of weight evaluated`);
+  }
+
   return {
     candidate,
     compatibility: factors.compatibility,
