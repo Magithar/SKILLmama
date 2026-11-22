@@ -6,6 +6,12 @@ All notable changes to SKILLmama are documented here.
 
 ## [Unreleased]
 
+---
+
+## [1.13.0] - 2026-11-23
+
+Shipped to npm as `skillmama@0.6.0`.
+
 ### Changed
 - **Scores that skip a factor say how much of the weight they cover.** When a factor
   is N/A, the score now shows `(85% of weight evaluated)` next to it in the Phase 5

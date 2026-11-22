@@ -527,7 +527,7 @@ to fake the rest.
 
 | Package | Name | State |
 | --- | --- | --- |
-| [`packages/core`](packages/core) | [`skillmama`](https://www.npmjs.com/package/skillmama) | published, `0.5.0` |
+| [`packages/core`](packages/core) | [`skillmama`](https://www.npmjs.com/package/skillmama) | published, `0.6.0` |
 
 ```bash
 npm ci

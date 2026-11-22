@@ -1,7 +1,7 @@
 # Roadmap: what is left
 
-Status as of 2026-11-19: v1.12.0 is released, and `skillmama@0.5.0` is live on
-npm. Lint, typecheck, 233 tests, coverage thresholds, package validation and
+Status as of 2026-11-23: v1.13.0 is released, and `skillmama@0.6.0` is live on
+npm. Lint, typecheck, 235 tests, coverage thresholds, package validation and
 the drift guard all pass.
 
 `skillmama/SKILL.md` is the shipped product and the source of truth.
