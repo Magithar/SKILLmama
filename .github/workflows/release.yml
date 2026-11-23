@@ -16,30 +16,34 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
           cache: npm
       - name: Use an npm that supports Trusted Publishing
-        run: npm install -g npm@11
+        run: npm install -g npm@11.21.3
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - run: npm run pack:check
       - name: Set package version
-        run: npm version "${{ inputs.version }}" --workspace packages/core --no-git-tag-version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: npm version "$VERSION" --workspace packages/core --no-git-tag-version
       - name: Refresh lockfile
         run: npm install --package-lock-only --ignore-scripts
       - name: Commit and tag release metadata
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add packages/core/package.json package-lock.json
-          git commit -m "chore: release skillmama@${{ inputs.version }}"
-          git tag "skillmama-v${{ inputs.version }}"
+          git commit -m "chore: release skillmama@$VERSION"
+          git tag "skillmama-v$VERSION"
       # Publish before pushing, so a failed publish leaves no tag behind.
       - name: Publish package
         run: npm publish --workspace packages/core --access public

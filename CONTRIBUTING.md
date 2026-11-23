@@ -1,6 +1,6 @@
 # Contributing to SKILLmama
 
-Use Node.js 18.3 or newer and the npm version declared in the root
+Use Node.js 20 or newer and the npm version declared in the root
 `package.json`:
 
 ```sh
