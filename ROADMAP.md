@@ -1,6 +1,6 @@
 # Roadmap: what is left
 
-Status as of 2026-11-23: v1.13.0 is released, and `skillmama@0.6.0` is live on
+Status as of 2026-11-23: v1.14.0 is released, and `skillmama@0.7.0` is live on
 npm. Lint, typecheck, 235 tests, coverage thresholds, package validation and
 the drift guard all pass.
 
@@ -25,7 +25,6 @@ tracks open work. Item numbers are stable, so closed items leave gaps.
 | # | Task | Notes |
 | --- | --- | --- |
 | 10 | Recheck the upstream skills-CLI bug on `skills@1.9.0` | Last checked on `skills@1.7.6` (2026-11-06): Codex and Antigravity global installs land only in `~/.agents/skills`. `1.9.0` came out 2026-11-16. Keep the manual-copy guidance until a fix ships. The two Antigravity fix PRs, vercel-labs/skills#1483 and #2028, closed unmerged. |
-| 20 | Find out why PR #1 got no CI | Magithar/SKILLmama#1 got no Actions run on `pull_request`, even after a close and reopen. Pushes to `main` run normally, Actions is enabled, and GitHub reported no outage. It was the repo's first PR. Check the Actions tab when the next PR opens. |
 | 16 | Show the commit a release was built from | Read `gitHead` from the npm packument for the checked version and show it next to the version. Print "commit unknown" when it is missing. Never infer one from the latest tag. |
 
 ## P3: optional

@@ -6,6 +6,12 @@ All notable changes to SKILLmama are documented here.
 
 ## [Unreleased]
 
+---
+
+## [1.14.0] - 2026-11-23
+
+Shipped to npm as `skillmama@0.7.0`.
+
 ### Changed
 - **Node 20 or newer is required.** `skillmama` now declares `engines.node >=20`,
   and CI tests Node 20, 22 and 24. Node 18 is end-of-life and is no longer tested.
