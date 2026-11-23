@@ -6,6 +6,18 @@ All notable changes to SKILLmama are documented here.
 
 ## [Unreleased]
 
+### Changed
+- **Node 20 or newer is required.** `skillmama` now declares `engines.node >=20`,
+  and CI tests Node 20, 22 and 24. Node 18 is end-of-life and is no longer tested.
+- **The skill's frontmatter describes when to use it.** `name` is now `skillmama`,
+  and `description` lists the requests that should trigger it and the ones that
+  shouldn't.
+
+### Security
+- **Release workflow hardening.** Actions are pinned to commit SHAs, npm is pinned
+  to `11.21.3`, and the release version input goes through `env:` instead of being
+  interpolated into shell commands.
+
 ---
 
 ## [1.13.0] - 2026-11-23

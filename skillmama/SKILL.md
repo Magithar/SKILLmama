@@ -1,11 +1,11 @@
 ---
-name: SKILLmama
-description: AI-Native Capability Discovery Engine — finds, scores, and ranks the best libraries, SDKs, and tools for your stack using a 4-tier search plus a companion-skills pass and deterministic ranking formula (Compatibility 40% / Popularity 30% / Maintenance 15% / Simplicity 15%).
+name: skillmama
+description: Finds, security-checks and ranks libraries, SDKs, MCP servers and tools for the user's stack, or scans a project for missing capabilities. Use when the user asks which library or tool to use for something ("what should I use for auth / queues / a vector DB", "best X for my stack", "recommend something for X"), asks what their project is missing, or types /skillmama. Do not use for how-to, debugging, code review, or help with a tool the user has already chosen.
 ---
 
 # SKILLmama — AI-Native Capability Discovery Skill
 
-> **Recommended model:** Use the most capable model available to your agent (e.g. Claude Sonnet or better, GPT-4.1 or better, Gemini 2.5 Pro or better). This skill runs multiple web searches and applies a scoring formula — a capable model produces significantly better results.
+> **Recommended model:** Use the most capable model available to your agent. This skill runs multiple web searches and applies a scoring formula — a capable model produces significantly better results.
 
 **Trigger:** Use this skill when the user is asking to select, discover, or rank technical tools, libraries, or integrations — specifically:
 - "What library/SDK/tool should I use for X?"
